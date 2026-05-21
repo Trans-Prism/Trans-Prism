@@ -1,0 +1,19 @@
+<!-- 纯几何 SVG 代码 -->
+      <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+        <!-- 黑色底座 -->
+        <rect width="500" height="500" fill="#0F111A"></rect>
+        
+        <!-- 容器：极简六边形光环 (代表 Prism Box) -->
+        <polygon points="250,55 418.8,152.5 418.8,347.5 250,445 81.2,347.5 81.2,152.5" fill="#161925" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" stroke-opacity="0.9"></polygon>
+                 
+        <!-- 核心文字：胶囊态的 TP -->
+        <g fill="none" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+          <!-- 蓝色的 T -->
+          <!-- 横线与竖线精确交汇于 180 -->
+          <path d="M 145 185 L 215 185 M 180 185 L 180 315" stroke="#5BCEFA"></path>
+          
+          <!-- 粉色的 P -->
+          <!-- 一笔画成，带标准半圆的 Loop -->
+          <path d="M 280 315 L 280 185 L 310 185 A 45 45 0 0 1 310 275 L 280 275" stroke="#F5A9B8"></path>
+        </g>
+      </svg>

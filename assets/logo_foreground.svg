@@ -1,0 +1,10 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 六边形线框 -->
+  <polygon points="250,55 418.8,152.5 418.8,347.5 250,445 81.2,347.5 81.2,152.5" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" stroke-opacity="0.9"/>
+  
+  <!-- TP 字母 -->
+  <g fill="none" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 145 185 L 215 185 M 180 185 L 180 315" stroke="#5BCEFA"/>
+    <path d="M 280 315 L 280 185 L 310 185 A 45 45 0 0 1 310 275 L 280 275" stroke="#F5A9B8"/>
+  </g>
+</svg>
