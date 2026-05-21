@@ -35,10 +35,13 @@
 
 * 📚 **离线知识库 (Wiki)**
   * 内嵌精编版 MtF/FtM 生存指南与 HRT 基础知识。
-  * 纯本地化存储，抗网络审查，断网环境下依然可以随时查阅。
+  * 首次使用时需联网缓存 Wiki 页面内容。
+  * 之后每次开启时：若联网则在线显示最新内容，若不联网则自动显示本地缓存版本。
 
-* 🎙️ **声音训练辅助（待开发）**
-  * 提供实时的基频 (Pitch) 与共振峰 (Formant) 分析，辅助跨性别嗓音训练。
+* 🎙️ **声音训练辅助** — 基于 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 集成
+  * 嗓音测试 · 音阶练习 · 88键钢琴 · F0检测 · 主观量表 · AI鼓励
+  * 本地音频分析报告 · 训练记录时间线
+  * 可扩展 AWS 云端后端（可选）
 
 * 🏥 **友善医疗名录（待开发）**
   * 收录国内跨性别友善的内分泌科、精神科医生与就诊指南。
@@ -77,6 +80,7 @@ flutter run
 
 * 感谢 **[Project Trans](https://project-trans.org/)** 及 **[MtF.wiki](https://mtf.wiki/)** 团队，为中文跨性别社群提供了极其宝贵的开源知识库和精神指引。本项目的 Wiki 模块理念离不开他们的卓越工作与前人栽树。
 * 感谢 **[TransFeminine Science](https://transfemscience.org/)** 及开源社区的前辈们在药代动力学算法领域的卓越贡献和开源代码（如 HRT-Recorder），为本项目的 PK 核心引擎提供了坚实的数学基础。
+* 感谢 **[VFS Tracker](https://github.com/Ethanlita/vfs-tracker)** 开源项目（CC BY-NC-SA 4.0），嗓音训练模块的音频录制、分析流程与 UI 设计均参考自该项目。
 * 感谢所有为跨性别生存与医疗权益发声的勇敢者。
 
 ## 📄 许可证 (License)

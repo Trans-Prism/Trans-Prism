@@ -3,9 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/gender_identity.dart';
 import 'models/wiki_config.dart';
+import 'screens/about_screen.dart';
 import 'screens/disclaimer_page.dart';
 import 'screens/wiki_web_screen.dart';
 import 'screens/pk_simulation_screen.dart';
+import 'screens/voice_training/voice_training_home.dart';
 import 'services/wiki_sync_service.dart';
 import 'widgets/wiki_license_notice.dart';
 import 'widgets/loading_indicator.dart';
@@ -477,12 +479,14 @@ class HomeTab extends StatelessWidget {
       _buildMenuCard(
         context,
         title: '声音训练辅助',
-        subtitle: '音频基频与共振峰分析',
+        subtitle: '基于 VFS Tracker 的嗓音训练工具集',
         icon: Icons.mic_external_on_rounded,
         gradientColors: const [Color(0xFF26C6DA), Color(0xFF0097A7)],
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('声音训练模块正在酝酿中...')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const VoiceTrainingHomeScreen()),
           );
         },
       ),
@@ -752,6 +756,74 @@ class _UserTabState extends State<UserTab> {
                   ],
                 ),
               ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // 关于按钮
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade200),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutScreen(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5BCEFA).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF5BCEFA),
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '关于',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1D1D1F),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '应用信息与第三方开源许可',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF86868B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey.shade400,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

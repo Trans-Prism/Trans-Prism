@@ -1,0 +1,209 @@
+import 'package:flutter/material.dart';
+
+import '../../../models/voice_training/voice_event.dart';
+
+/// RBH 量表问卷页面
+///
+/// 从 vfs-tracker SurveyRBH.jsx 移植。
+/// R: 粗糙度 (Roughness)
+/// B: 气息感 (Breathiness)
+/// H: 嘶哑度 (Hoarseness)
+/// 每项 0-3 分
+class RBHSurveyScreen extends StatefulWidget {
+  final RBHScore? initialScore;
+  final ValueChanged<RBHScore> onSave;
+
+  const RBHSurveyScreen({
+    super.key,
+    this.initialScore,
+    required this.onSave,
+  });
+
+  @override
+  State<RBHSurveyScreen> createState() => _RBHSurveyScreenState();
+}
+
+class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
+  late int _roughness;
+  late int _breathiness;
+  late int _hoarseness;
+
+  @override
+  void initState() {
+    super.initState();
+    _roughness = widget.initialScore?.roughness ?? -1;
+    _breathiness = widget.initialScore?.breathiness ?? -1;
+    _hoarseness = widget.initialScore?.hoarseness ?? -1;
+  }
+
+  bool get _isComplete =>
+      _roughness >= 0 && _breathiness >= 0 && _hoarseness >= 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('RBH 量表'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E5F5),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'RBH 量表',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF7B1FA2),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '请对您的声音进行 0-3 分的评价：\n'
+                    '0 = 无，1 = 轻度，2 = 中度，3 = 重度',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildRatingCard('R (粗糙度)', _roughness, (v) {
+              setState(() => _roughness = v);
+            }),
+            const SizedBox(height: 16),
+            _buildRatingCard('B (气息感)', _breathiness, (v) {
+              setState(() => _breathiness = v);
+            }),
+            const SizedBox(height: 16),
+            _buildRatingCard('H (嘶哑度)', _hoarseness, (v) {
+              setState(() => _hoarseness = v);
+            }),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _isComplete
+                    ? () {
+                        widget.onSave(RBHScore(
+                          roughness: _roughness,
+                          breathiness: _breathiness,
+                          hoarseness: _hoarseness,
+                        ));
+                        Navigator.pop(context);
+                      }
+                    : null,
+                icon: const Icon(Icons.check),
+                label: const Text('保存评分'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingCard(
+    String label,
+    int value,
+    ValueChanged<int> onChanged,
+  ) {
+    const ratings = [
+      {'value': 0, 'label': '无', 'color': Color(0xFF4CAF50)},
+      {'value': 1, 'label': '轻度', 'color': Color(0xFFFFC107)},
+      {'value': 2, 'label': '中度', 'color': Color(0xFFFF9800)},
+      {'value': 3, 'label': '重度', 'color': Color(0xFFF44336)},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: ratings.map((r) {
+              final isSelected = value == r['value'];
+              final color = r['color'] as Color;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: InkWell(
+                    onTap: () => onChanged(r['value'] as int),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? color.withOpacity(0.15)
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected ? color : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '${r['value']}',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? color : Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            r['label'] as String,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isSelected ? color : Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
