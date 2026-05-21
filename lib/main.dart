@@ -5,6 +5,7 @@ import 'models/gender_identity.dart';
 import 'models/wiki_config.dart';
 import 'screens/about_screen.dart';
 import 'screens/disclaimer_page.dart';
+import 'screens/medical_directory/medical_directory_list_screen.dart';
 import 'screens/wiki_web_screen.dart';
 import 'screens/pk_simulation_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
@@ -496,7 +497,13 @@ class HomeTab extends StatelessWidget {
         subtitle: '全国跨性别友善医疗机构',
         icon: Icons.local_hospital_rounded,
         gradientColors: const [Color(0xFFFFB74D), Color(0xFFFF8A65)],
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MedicalDirectoryListScreen()),
+          );
+        },
       ),
     ];
   }
