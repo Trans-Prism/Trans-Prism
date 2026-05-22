@@ -269,13 +269,24 @@ class AboutScreen extends StatelessWidget {
           ),
           _buildLicenseCard(
             context,
-            icon: Icons.biotech,
-            title: 'HRT-Recorder-online（血药浓度模拟算法）',
-            license: '详见 README',
-            copyright: 'LaoZhong-Mihari',
-            url: 'https://github.com/LaoZhong-Mihari/HRT-Recorder-online',
+            icon: Icons.web,
+            title: 'Oyama\'s HRT Tracker（血药浓度模拟前端）',
+            license: 'MIT License',
+            copyright: 'SmirnovaOyama',
+            url: 'https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker',
             description:
-                '血药浓度模拟模块的 PK 计算算法参考自 HRT-Recorder 系列开源项目，遵循其 README 中声明的原始许可证条款使用。包含算法：三室模型解析解、两库注射动力学、Bateman 口服模型、舌下双通路模型、贴片零阶/一阶输入模型。',
+                '血药浓度模拟的 Web 交互界面，基于 React + TypeScript + Vite 构建，以 WebView 方式嵌入应用。',
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.biotech,
+            title: 'HRT-Recorder-PKcomponent-Test（PK 算法核心）',
+            license: 'MIT License',
+            copyright: 'LaoZhong-Mihari',
+            url:
+                'https://github.com/LaoZhong-Mihari/HRT-Recorder-PKcomponent-Test',
+            description:
+                '血药浓度模拟的药代动力学算法来源，包含：三室模型解析解、两库注射动力学、Bateman 口服模型、舌下双通路模型、贴片零阶/一阶输入模型。',
           ),
           const SizedBox(height: 32),
           // 版权声明

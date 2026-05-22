@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/piano_sound_service.dart';
 import '../../services/voice_training_service.dart';
+import '../../widgets/loading_indicator.dart';
 
 /// 独立钢琴页面
 ///
@@ -61,9 +62,7 @@ class _PianoScreenState extends State<PianoScreen> {
           ),
         ],
       ),
-      body: _ready
-          ? _buildKeyboard()
-          : const Center(child: CircularProgressIndicator()),
+      body: _ready ? _buildKeyboard() : const LoadingIndicator(),
     );
   }
 

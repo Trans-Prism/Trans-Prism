@@ -1,0 +1,235 @@
+import 'package:flutter/material.dart';
+
+/// 跨性别蓝粉白配色的品牌 Toast，从顶部滑入，自动消失
+///
+/// 替代默认的 ScaffoldMessenger SnackBar，提供更优雅的用药反馈体验。
+class BrandedToast {
+  /// 显示一条品牌 Toast
+  ///
+  /// [context] 用于获取 Overlay
+  /// [message] 显示的文字
+  /// [icon] 可选的前置图标
+  /// [backgroundColor] 默认使用 Trans 蓝粉色渐变
+  /// [duration] 显示时长，默认 2 秒
+  static void show(
+    BuildContext context, {
+    required String message,
+    IconData? icon,
+    Color? backgroundColor,
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    _showToast(
+      context,
+      message: message,
+      icon: icon,
+      backgroundColor: backgroundColor,
+      duration: duration,
+    );
+  }
+
+  /// 成功 Toast（带有 ✅ 图标）
+  static void success(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    _showToast(
+      context,
+      message: message,
+      icon: Icons.check_circle_rounded,
+      duration: duration,
+    );
+  }
+
+  /// 错误 Toast（带有 ⚠️ 图标，红色调）
+  static void error(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    _showToast(
+      context,
+      message: message,
+      icon: Icons.warning_amber_rounded,
+      backgroundColor: const Color(0xFFE57373),
+      duration: duration,
+    );
+  }
+
+  /// 用药提醒 Toast（带有 💊 图标）
+  static void doseRecorded(
+    BuildContext context,
+    String drugName, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    _showToast(
+      context,
+      message: '已记录 $drugName · 稳态加一',
+      icon: Icons.check_circle_rounded,
+      duration: duration,
+    );
+  }
+
+  static void _showToast(
+    BuildContext context, {
+    required String message,
+    IconData? icon,
+    Color? backgroundColor,
+    required Duration duration,
+  }) {
+    // 使用 Overlay 实现全局 toast，不受 Scaffold 层级限制
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => _BrandedToastWidget(
+        message: message,
+        icon: icon,
+        backgroundColor: backgroundColor,
+        onDismiss: () => entry.remove(),
+        duration: duration,
+      ),
+    );
+
+    overlay.insert(entry);
+  }
+}
+
+class _BrandedToastWidget extends StatefulWidget {
+  final String message;
+  final IconData? icon;
+  final Color? backgroundColor;
+  final VoidCallback onDismiss;
+  final Duration duration;
+
+  const _BrandedToastWidget({
+    required this.message,
+    this.icon,
+    this.backgroundColor,
+    required this.onDismiss,
+    required this.duration,
+  });
+
+  @override
+  State<_BrandedToastWidget> createState() => _BrandedToastWidgetState();
+}
+
+class _BrandedToastWidgetState extends State<_BrandedToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -1.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+      reverseCurve: Curves.easeIn,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.3, curve: Curves.easeIn),
+      reverseCurve: const Interval(0.0, 1.0, curve: Curves.easeOut),
+    ));
+
+    // 滑入
+    _controller.forward();
+
+    // 自动消失
+    Future.delayed(widget.duration, () {
+      if (mounted) {
+        _controller.reverse().then((_) {
+          if (mounted) widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 默认使用 Trans 蓝粉渐变
+    final effectiveBg = widget.backgroundColor;
+
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 8,
+      left: 16,
+      right: 16,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Material(
+            elevation: 0,
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                gradient: effectiveBg == null
+                    ? const LinearGradient(
+                        colors: [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      )
+                    : null,
+                color: effectiveBg,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5BCEFA).withOpacity(0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.icon != null) ...[
+                    Icon(
+                      widget.icon,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Text(
+                      widget.message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

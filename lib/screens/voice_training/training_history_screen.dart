@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/voice_training/voice_event.dart';
 import '../../services/voice_training_service.dart';
+import '../../widgets/loading_indicator.dart';
 
 /// 嗓音训练记录查看页面
 ///
@@ -88,7 +89,7 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingIndicator()
           : _events.isEmpty
               ? Center(
                   child: Column(

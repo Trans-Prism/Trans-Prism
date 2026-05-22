@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/medical_directory.dart';
 import '../../services/medical_directory_service.dart';
+import '../../widgets/loading_indicator.dart';
 import 'institution_detail_screen.dart';
 
 /// 友善医疗名录 — 主列表页面
@@ -36,6 +37,8 @@ class _MedicalDirectoryListScreenState
   bool _isSyncing = false;
   SyncResult? _syncResult;
 
+  static const String _disclaimerKey = 'medical_directory_disclaimer_dismissed';
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +55,8 @@ class _MedicalDirectoryListScreenState
           _syncResult = _service.lastSyncResult;
         });
       }
+      // 数据加载完成后检查免责提示
+      _checkDisclaimer();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -139,6 +144,51 @@ class _MedicalDirectoryListScreenState
     );
   }
 
+  /// 进入名录页时弹出免责提示，可选「本次关闭」或「以后关闭」
+  Future<void> _checkDisclaimer() async {
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed = prefs.getBool(_disclaimerKey) ?? false;
+    if (dismissed) return;
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Color(0xFFFFB74D)),
+            SizedBox(width: 8),
+            Text('友善医疗名录'),
+          ],
+        ),
+        content: const Text(
+          '本名录功能尚在开发中，当前数据来源于 mtf.wiki 等社区 Wiki，'
+          '内容可能不完整或不准确，仅供参考。\n\n'
+          '最终医疗决策请咨询专业医师。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('本次关闭'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFFB74D),
+            ),
+            onPressed: () async {
+              await prefs.setBool(_disclaimerKey, true);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: const Text('以后关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,7 +239,7 @@ class _MedicalDirectoryListScreenState
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingIndicator()
           : _errorMessage != null
               ? _buildErrorView()
               : _buildContent(),

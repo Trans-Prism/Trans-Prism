@@ -1,4 +1,4 @@
-package com.example.trans_prism
+package com.daanser.transprism
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../../services/api_settings_service.dart';
 import '../../services/backend_config_service.dart';
+import '../../widgets/loading_indicator.dart';
 
 /// AI API 配置页面
 ///
@@ -188,9 +189,9 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('API 配置')),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: null,
+        body: LoadingIndicator(),
       );
     }
 

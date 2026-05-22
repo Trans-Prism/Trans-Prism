@@ -6,11 +6,16 @@ import 'models/wiki_config.dart';
 import 'screens/about_screen.dart';
 import 'screens/disclaimer_page.dart';
 import 'screens/disclaimer_view_screen.dart';
+import 'screens/hormone_converter_screen.dart';
 import 'screens/medical_directory/medical_directory_list_screen.dart';
 import 'screens/wiki_web_screen.dart';
 import 'screens/pk_simulation_screen.dart';
+import 'screens/inventory_dashboard_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
+import 'services/notification_service.dart';
+import 'services/update_service.dart';
 import 'services/wiki_sync_service.dart';
+import 'widgets/update_dialog.dart';
 import 'widgets/wiki_license_notice.dart';
 import 'widgets/loading_indicator.dart';
 import 'storage/disclaimer_repository.dart';
@@ -94,6 +99,11 @@ class _AppRootControllerState extends State<AppRootController> {
     _loadAppState();
     _loadGreetingSettings();
     WikiSyncService.instance.syncAllInBackground();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    await NotificationService().initialize();
   }
 
   Future<void> _loadAppState() async {
@@ -331,6 +341,33 @@ class MainDashboard extends StatefulWidget {
 class _MainDashboardState extends State<MainDashboard> {
   int _currentIndex = 0;
 
+  bool _updateChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 首页渲染完成后静默检测更新
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
+
+  Future<void> _checkForUpdate() async {
+    // 防止重复检测
+    if (_updateChecked) return;
+    _updateChecked = true;
+
+    final result = await UpdateService().checkForUpdate();
+    if (!mounted) return;
+
+    if (result.hasUpdate && result.latestVersion != null) {
+      UpdateDialog.show(
+        context,
+        version: result.latestVersion!,
+        releaseNotes: result.releaseNotes,
+        apkDownloadUrl: result.apkDownloadUrl,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -375,24 +412,34 @@ class _MainDashboardState extends State<MainDashboard> {
           ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        indicatorColor: Colors.transparent,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined, color: Color(0xFFC7C7CC)),
-            selectedIcon: const Icon(Icons.home, color: Color(0xFF5BCEFA)),
-            label: '首页',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline, color: Color(0xFFC7C7CC)),
-            selectedIcon: const Icon(Icons.person, color: Color(0xFF5BCEFA)),
-            label: '用户',
-          ),
-        ],
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) =>
+              setState(() => _currentIndex = index),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          indicatorColor: Colors.transparent,
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined, color: Color(0xFFC7C7CC)),
+              selectedIcon: const Icon(Icons.home, color: Color(0xFF5BCEFA)),
+              label: '首页',
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.person_outline, color: Color(0xFFC7C7CC)),
+              selectedIcon: const Icon(Icons.person, color: Color(0xFF5BCEFA)),
+              label: '用户',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -423,11 +470,11 @@ class HomeTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '请选择您需要使用的功能模块',
+          Text(
+            '欢迎回到你的稳态空间',
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF86868B),
+              color: Colors.grey[500],
             ),
           ),
           const SizedBox(height: 24),
@@ -449,26 +496,23 @@ class HomeTab extends StatelessWidget {
     return [
       _buildMenuCard(
         context,
-        title: '知识库 (Wiki)',
-        subtitle: genderIdentity == GenderIdentity.ftm
-            ? '包含 ftm.wiki 等'
-            : '包含 mtf.wiki 等',
-        icon: Icons.menu_book_rounded,
-        gradientColors: const [Color(0xFF5BCEFA), Color(0xFF4FC3F7)],
+        title: '药物存量仪表盘',
+        subtitle: '追踪药物存量与本地用药提醒',
+        icon: Icons.medication_liquid_outlined,
+        gradientColors: [const Color(0xFFF5A9B8), const Color(0xFF5BCEFA)],
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => WikiListPage(identity: genderIdentity)),
+                builder: (context) => const InventoryDashboardScreen()),
           );
         },
       ),
       _buildMenuCard(
         context,
         title: '血药浓度模拟',
-        subtitle: 'HRT 药代动力学测算',
+        subtitle: 'Oyama\'s HRT Tracker · PK 药代动力学测算',
         icon: Icons.stacked_line_chart_rounded,
-        gradientColors: const [Color(0xFFF5A9B8), Color(0xFFE573A0)],
         onTap: () {
           Navigator.push(
             context,
@@ -480,10 +524,37 @@ class HomeTab extends StatelessWidget {
       ),
       _buildMenuCard(
         context,
+        title: '知识库 (Wiki)',
+        subtitle: genderIdentity == GenderIdentity.ftm
+            ? '包含 ftm.wiki 等'
+            : '包含 mtf.wiki 等',
+        icon: Icons.menu_book_rounded,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => WikiListPage(identity: genderIdentity)),
+          );
+        },
+      ),
+      _buildMenuCard(
+        context,
+        title: '激素换算器',
+        subtitle: 'E2/T/PRL 等单位实时双向换算',
+        icon: Icons.balance_rounded,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const HormoneConverterScreen()),
+          );
+        },
+      ),
+      _buildMenuCard(
+        context,
         title: '声音训练辅助',
         subtitle: '基于 VFS Tracker 的嗓音训练工具集',
         icon: Icons.mic_external_on_rounded,
-        gradientColors: const [Color(0xFF26C6DA), Color(0xFF0097A7)],
         onTap: () {
           Navigator.push(
             context,
@@ -497,7 +568,6 @@ class HomeTab extends StatelessWidget {
         title: '友善医疗名录',
         subtitle: '全国跨性别友善医疗机构',
         icon: Icons.local_hospital_rounded,
-        gradientColors: const [Color(0xFFFFB74D), Color(0xFFFF8A65)],
         onTap: () {
           Navigator.push(
             context,
@@ -514,7 +584,7 @@ class HomeTab extends StatelessWidget {
     required String title,
     required String subtitle,
     required IconData icon,
-    required List<Color> gradientColors,
+    List<Color> gradientColors = const [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -525,18 +595,19 @@ class HomeTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 32,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 大尺寸渐变图标 - 无背景圈
+            // 双色渐变图标 — Trans Prism 品牌色系
             ShaderMask(
               shaderCallback: (bounds) => LinearGradient(
                 colors: gradientColors,
@@ -553,8 +624,8 @@ class HomeTab extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF1D1D1F),
               ),
             ),
@@ -562,8 +633,8 @@ class HomeTab extends StatelessWidget {
             Text(
               subtitle,
               style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF86868B),
+                fontSize: 11,
+                color: Color(0xFF999999),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -637,6 +708,52 @@ class _UserTabState extends State<UserTab> {
     _greetingController.dispose();
     _customPrefixController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleCheckUpdate(BuildContext context) async {
+    // 显示检测中的提示
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('正在检查更新...'),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    final result = await UpdateService().checkForUpdate();
+
+    if (!context.mounted) return;
+
+    // 隐藏当前 SnackBar
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (result.hasUpdate && result.latestVersion != null) {
+      // 情况 1：检测到新版本 → 弹出更新 Dialog
+      UpdateDialog.show(
+        context,
+        version: result.latestVersion!,
+        releaseNotes: result.releaseNotes,
+        apkDownloadUrl: result.apkDownloadUrl,
+      );
+    } else if (result.networkError) {
+      // 情况 2：网络连接失败 → 提醒用户检查网络
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('网络连接失败，请检查网络后重试'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Color(0xFFE57373),
+        ),
+      );
+    } else {
+      // 情况 3：已是最新版本
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('已是最新版本 🎉'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -818,6 +935,67 @@ class _UserTabState extends State<UserTab> {
                         SizedBox(height: 2),
                         Text(
                           '应用信息与第三方开源许可',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF86868B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey.shade400,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // 检查更新按钮
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade200),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => _handleCheckUpdate(context),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5BCEFA).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.system_update_rounded,
+                      color: Color(0xFF5BCEFA),
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '检查更新',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1D1D1F),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '手动检测是否有新版本可用',
                           style: TextStyle(
                             fontSize: 13,
                             color: Color(0xFF86868B),
