@@ -21,7 +21,6 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
 
   List<Drug> _drugs = [];
   bool _isLoading = true;
-  bool _notificationPermissionRequested = false;
 
   final NotificationService _notificationService = NotificationService();
 
@@ -41,6 +40,94 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     _rescheduleAllReminders();
+    // 加载完成后检查通知权限
+    _checkNotificationPermission();
+  }
+
+  /// 检查通知权限，未授权时弹出说明对话框
+  Future<void> _checkNotificationPermission() async {
+    final hasPerm = await _notificationService.hasPermission();
+    if (hasPerm) {
+      print('🔔 [TP-Perm] 通知权限已授予');
+      return;
+    }
+    if (!mounted) return;
+    print('🔔 [TP-Perm] 通知权限未授予，弹出说明对话框');
+    final granted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.notifications_active_rounded,
+                color: Color(0xFF5BCEFA), size: 28),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                '开启用药提醒',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Trans Prism 需要通知权限来为您提供本地用药提醒服务。',
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.check_circle_outline,
+                    size: 18, color: Color(0xFF5BCEFA)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '不授予权限仍可使用药物库存等其他功能',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.security_rounded,
+                    size: 18, color: Color(0xFF4CAF50)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Trans Prism 是非盈利软件，绝不会推送任何广告或垃圾信息',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('暂不开启', style: TextStyle(color: Colors.grey)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF5BCEFA),
+            ),
+            child: const Text('允许通知'),
+          ),
+        ],
+      ),
+    );
+    if (granted == true && mounted) {
+      await _notificationService.requestPermission();
+    }
   }
 
   Future<void> _saveDrugs() async {
@@ -49,13 +136,71 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   void _setupNotificationCallback() {
-    _notificationService.onDoseRecorded = (drugId) {
-      final index = _drugs.indexWhere((d) => d.id == drugId);
+    _notificationService.onDoseRecorded = (drugId) async {
+      print('💊 [TP-Dash] ========== onDoseRecorded ==========');
+      print('💊 [TP-Dash] drugId=$drugId');
+
+      // 直接从 SharedPreferences 重新加载，避开状态同步问题
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_storageKey);
+      if (jsonStr == null || jsonStr.isEmpty) {
+        print('💊 [TP-Dash] ❌ 无持久化数据');
+        return;
+      }
+      final drugs = Drug.listFromJson(jsonStr);
+      final index = drugs.indexWhere((d) => d.id == drugId);
+      if (index == -1) {
+        print('💊 [TP-Dash] ❌ 未找到药物');
+        return;
+      }
+
+      final drug = drugs[index];
+      print('💊 [TP-Dash] 药物: ${drug.name}');
+      print('💊 [TP-Dash] isDiscreteMode=${drug.isDiscreteMode}');
+      print('💊 [TP-Dash] dailyReminderTimes=${drug.dailyReminderTimes}');
+      print(
+          '💊 [TP-Dash] intervalValue=${drug.intervalValue}, intervalUnit=${drug.intervalUnit}');
+
+      // 记录用药
+      drug.recordDose();
+      print('💊 [TP-Dash] recordDose 完成!');
+      print('💊 [TP-Dash] 新 nextDoseTime=${drug.nextDoseTime}');
+
+      // 持久化
+      await prefs.setString(_storageKey, Drug.listToJson(drugs));
+      print('💊 [TP-Dash] 已保存');
+
+      // 更新内存状态 + UI
+      if (mounted) {
+        setState(() {
+          _drugs = drugs;
+        });
+        print('💊 [TP-Dash] UI 已更新 (setState)');
+      }
+
+      // 调度下次提醒
+      await _notificationService.scheduleMedicineReminder(drug);
+      print('💊 [TP-Dash] ========== 完成 ==========');
+    };
+
+    _notificationService.onSnoozeRequested = (drugId) async {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_storageKey);
+      if (jsonStr == null || jsonStr.isEmpty) return;
+      final drugs = Drug.listFromJson(jsonStr);
+      final index = drugs.indexWhere((d) => d.id == drugId);
       if (index == -1) return;
-      setState(() {
-        _drugs[index].recordDose();
-      });
-      _saveDrugs();
+      final drug = drugs[index];
+      drug.setNextDoseTime(DateTime.now().add(const Duration(minutes: 5)));
+      await prefs.setString(_storageKey, Drug.listToJson(drugs));
+      if (mounted)
+        setState(() {
+          _drugs = drugs;
+        });
+      await _notificationService.scheduleMedicineReminder(drug);
+      if (mounted) {
+        BrandedToast.success(context, '已设置5分钟后提醒 💊');
+      }
     };
   }
 
@@ -63,17 +208,6 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
     for (final drug in _drugs) {
       await _notificationService.scheduleMedicineReminder(drug);
     }
-  }
-
-  Future<bool> _ensureNotificationPermission() async {
-    final hasPermission = await _notificationService.hasPermission();
-    if (hasPermission) return true;
-    if (!_notificationPermissionRequested) {
-      _notificationPermissionRequested = true;
-      final granted = await _notificationService.requestPermission();
-      return granted;
-    }
-    return false;
   }
 
   Future<void> _addDrug() async {
@@ -130,7 +264,11 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
     });
     await _saveDrugs();
     if (enabled) {
-      await _ensureNotificationPermission();
+      // 如果无权限则弹出说明对话框
+      final hasPerm = await _notificationService.hasPermission();
+      if (!hasPerm && mounted) {
+        await _checkNotificationPermission();
+      }
       await _notificationService.scheduleMedicineReminder(_drugs[index]);
     } else {
       await _notificationService.cancelDrugReminders(_drugs[index].id);
@@ -628,7 +766,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
 }
 
 // =============================================================================
-// 添加/编辑药物表单 — 独立 StatefulWidget 确保触摸事件正常工作
+// 添加/编辑药物表单 — 独立 StatefulWidget
 // =============================================================================
 
 class _DrugFormSheet extends StatefulWidget {
@@ -636,7 +774,6 @@ class _DrugFormSheet extends StatefulWidget {
 
   const _DrugFormSheet({this.existingDrug});
 
-  /// 显示 ModalBottomSheet 并返回创建/编辑后的 Drug
   static Future<Drug?> show(BuildContext context, {Drug? existingDrug}) {
     return showModalBottomSheet<Drug>(
       context: context,
@@ -654,11 +791,12 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   final _nameController = TextEditingController();
   final _stockController = TextEditingController();
   final _dosageController = TextEditingController();
-  final _cycleValueController = TextEditingController();
+  final _intervalValueController = TextEditingController();
 
-  late List<String> _reminderTimes;
+  late List<String> _dailyReminderTimes;
   DateTime? _nextDoseTime;
-  late CycleUnit _selectedCycleUnit;
+  late IntervalUnit _selectedIntervalUnit;
+  bool _isDiscreteMode = false;
 
   bool get _isEditing => widget.existingDrug != null;
   final _uuid = const Uuid();
@@ -670,18 +808,16 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
     _nameController.text = existing?.name ?? '';
     _stockController.text = existing?.currentStock.toStringAsFixed(1) ?? '';
     _dosageController.text = existing?.dosage.toStringAsFixed(1) ?? '';
-    _reminderTimes =
-        List<String>.from(existing?.reminderTimes ?? ['08:00', '20:00']);
+    _dailyReminderTimes =
+        List<String>.from(existing?.dailyReminderTimes ?? ['08:00', '20:00']);
     _nextDoseTime = existing?.nextDoseTime;
-    _selectedCycleUnit = existing?.cycleUnit ?? CycleUnit.hours;
+    _selectedIntervalUnit = existing?.intervalUnit ?? IntervalUnit.hours;
+    _isDiscreteMode = existing?.dailyReminderTimes.isNotEmpty ?? false;
 
     if (existing != null) {
-      _cycleValueController.text =
-          existing.cycleValue == existing.cycleValue.roundToDouble()
-              ? existing.cycleValue.toInt().toString()
-              : existing.cycleValue.toStringAsFixed(1);
+      _intervalValueController.text = existing.intervalValue.toString();
     } else {
-      _cycleValueController.text = '12';
+      _intervalValueController.text = '12';
     }
   }
 
@@ -690,7 +826,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
     _nameController.dispose();
     _stockController.dispose();
     _dosageController.dispose();
-    _cycleValueController.dispose();
+    _intervalValueController.dispose();
     super.dispose();
   }
 
@@ -698,7 +834,6 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
     final name = _nameController.text.trim();
     final stock = double.tryParse(_stockController.text.trim());
     final dosage = double.tryParse(_dosageController.text.trim());
-    final cycleVal = double.tryParse(_cycleValueController.text.trim());
 
     if (name.isEmpty) {
       BrandedToast.error(context, '请输入药物名称');
@@ -712,23 +847,43 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
       BrandedToast.error(context, '请输入有效的每次剂量');
       return;
     }
-    if (cycleVal == null || cycleVal <= 0) {
-      BrandedToast.error(context, '请输入有效的周期数值');
-      return;
-    }
 
-    final drug = Drug(
-      id: widget.existingDrug?.id ?? _uuid.v4(),
-      name: name,
-      currentStock: stock,
-      dosage: dosage,
-      cycleValue: cycleVal,
-      cycleUnit: _selectedCycleUnit,
-      nextDoseTime: _nextDoseTime,
-      reminderTimes: List<String>.from(_reminderTimes),
-      reminderEnabled: widget.existingDrug?.reminderEnabled ?? true,
-    );
-    Navigator.pop(context, drug);
+    if (_isDiscreteMode) {
+      if (_dailyReminderTimes.isEmpty) {
+        BrandedToast.error(context, '请至少添加一个提醒时间');
+        return;
+      }
+      final drug = Drug(
+        id: widget.existingDrug?.id ?? _uuid.v4(),
+        name: name,
+        currentStock: stock,
+        dosage: dosage,
+        intervalValue: 24,
+        intervalUnit: IntervalUnit.hours,
+        nextDoseTime: _nextDoseTime,
+        dailyReminderTimes: List<String>.from(_dailyReminderTimes),
+        reminderEnabled: widget.existingDrug?.reminderEnabled ?? true,
+      );
+      Navigator.pop(context, drug);
+    } else {
+      final intervalVal = int.tryParse(_intervalValueController.text.trim());
+      if (intervalVal == null || intervalVal <= 0) {
+        BrandedToast.error(context, '请输入有效的间隔数值');
+        return;
+      }
+      final drug = Drug(
+        id: widget.existingDrug?.id ?? _uuid.v4(),
+        name: name,
+        currentStock: stock,
+        dosage: dosage,
+        intervalValue: intervalVal,
+        intervalUnit: _selectedIntervalUnit,
+        nextDoseTime: _nextDoseTime,
+        dailyReminderTimes: [],
+        reminderEnabled: widget.existingDrug?.reminderEnabled ?? true,
+      );
+      Navigator.pop(context, drug);
+    }
   }
 
   @override
@@ -813,18 +968,22 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
-                  // ── 周期选择 ──
-                  _buildCycleSection(),
-                  const SizedBox(height: 14),
+                  // ── 模式切换 ──
+                  _buildModeSwitch(),
+                  const SizedBox(height: 16),
+
+                  // ── 周期选择（仅固定间隔模式） ──
+                  if (!_isDiscreteMode) _buildCycleSection(),
+                  if (!_isDiscreteMode) const SizedBox(height: 14),
 
                   // ── 下次给药时间 ──
                   _buildNextDoseSection(),
                   const SizedBox(height: 14),
 
-                  // ── 每日提醒时间 ──
-                  _buildTimeSection(),
+                  // ── 每日提醒时间（仅日内离散模式） ──
+                  if (_isDiscreteMode) _buildTimeSection(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -853,6 +1012,51 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                 child: Text(_isEditing ? '保存更改' : '添加药物'),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 模式切换 ──
+  Widget _buildModeSwitch() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF5BCEFA).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isDiscreteMode ? '日内离散模式' : '固定间隔模式',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1D1D1F),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _isDiscreteMode
+                      ? '一日多次用药，如每日 08:00、20:00'
+                      : '一天一次及以上，按固定间隔重复',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _isDiscreteMode,
+            onChanged: (val) => setState(() => _isDiscreteMode = val),
+            activeColor: const Color(0xFF5BCEFA),
           ),
         ],
       ),
@@ -903,7 +1107,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                   SizedBox(
                     width: 72,
                     child: TextField(
-                      controller: _cycleValueController,
+                      controller: _intervalValueController,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       style: const TextStyle(
@@ -927,10 +1131,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: CycleUnit.values.map((unit) {
-                  final isSelected = unit == _selectedCycleUnit;
+                children: IntervalUnit.values.map((unit) {
+                  final isSelected = unit == _selectedIntervalUnit;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCycleUnit = unit),
+                    onTap: () => setState(() => _selectedIntervalUnit = unit),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
@@ -1091,7 +1295,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 8),
           child: Text(
-            '每日提醒时间（短周期可选）',
+            '每日提醒时间',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -1114,7 +1318,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ..._reminderTimes.map((time) {
+                  ..._dailyReminderTimes.map((time) {
                     return Chip(
                       label: Text(
                         time,
@@ -1131,7 +1335,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                       ),
                       onDeleted: () {
                         setState(() {
-                          _reminderTimes.remove(time);
+                          _dailyReminderTimes.remove(time);
                         });
                       },
                       backgroundColor:
@@ -1182,11 +1386,13 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                         },
                       );
                       if (picked != null) {
-                        final formatted = picked.format(context);
-                        if (!_reminderTimes.contains(formatted)) {
+                        // 统一 24h 格式避免 AM/PM 解析问题
+                        final formatted =
+                            '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                        if (!_dailyReminderTimes.contains(formatted)) {
                           setState(() {
-                            _reminderTimes.add(formatted);
-                            _reminderTimes.sort((a, b) => a.compareTo(b));
+                            _dailyReminderTimes.add(formatted);
+                            _dailyReminderTimes.sort((a, b) => a.compareTo(b));
                           });
                         }
                       }

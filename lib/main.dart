@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 
 import 'models/gender_identity.dart';
 import 'models/wiki_config.dart';
@@ -22,6 +24,8 @@ import 'storage/disclaimer_repository.dart';
 import 'storage/gender_identity_repository.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
   runApp(const TransToolboxApp());
 }
 
@@ -104,6 +108,7 @@ class _AppRootControllerState extends State<AppRootController> {
 
   Future<void> _initNotifications() async {
     await NotificationService().initialize();
+    await NotificationService().requestPermission();
   }
 
   Future<void> _loadAppState() async {
@@ -1080,6 +1085,35 @@ class _UserTabState extends State<UserTab> {
               ),
             ),
           ),
+        ),
+        const SizedBox(height: 24),
+
+        // ── 版本号 + 版权信息（居中靠底） ──
+        FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            final version = snapshot.data?.version ?? '?.?.?';
+            return Column(
+              children: [
+                Text(
+                  '当前版本 v$version',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'All Rights Reserved by TransPrism',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade300,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
+          },
         ),
       ],
     );

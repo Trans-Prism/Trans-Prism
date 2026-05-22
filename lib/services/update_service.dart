@@ -63,9 +63,9 @@ class UpdateCheckResult {
 /// 所有网络异常、解析异常均静默处理，绝不阻塞用户。
 /// 异常详情通过 `debugPrint` 输出到终端，方便调试。
 class UpdateService {
-  // ── GitHub API（必须直连，不拼代理）──
+  // ── GitHub API（请求 releases 列表，取第 0 个 = 最新）──
   static const _apiUrl =
-      'https://api.github.com/repos/daanser/Trans-Prism/releases/latest';
+      'https://api.github.com/repos/daanser/Trans-Prism/releases';
 
   // ── GitHub Releases 页面（无 APK 资产时的降级页）──
   static const _releasesPageUrl =
@@ -130,9 +130,7 @@ class UpdateService {
   // API 直连请求
   // ──────────────────────────────────────────────
 
-  /// 直连 GitHub API 获取最新 Release 信息。
-  ///
-  /// **不使用任何代理前缀**，直接请求 `api.github.com`。
+  /// 直连 GitHub API 获取最新 Release 信息（取 releases 数组第 0 个）。
   Future<_GitHubRelease?> _fetchLatestRelease() async {
     try {
       debugPrint('🔍 正在直连 GitHub API 检查更新...');
@@ -165,21 +163,29 @@ class UpdateService {
     }
   }
 
-  /// 解析 GitHub Releases API JSON → [_GitHubRelease]
+  /// 解析 GitHub Releases API JSON（数组）→ [_GitHubRelease]
+  ///
+  /// API 返回 releases 列表，取数组第 0 个（最新，不论 Beta/正式）。
   _GitHubRelease? _parseReleaseJson(String body) {
     try {
-      final json = jsonDecode(body) as Map<String, dynamic>;
-
-      final tagName = json['tag_name'] as String?;
-      if (tagName == null || tagName.isEmpty) {
-        debugPrint('⚠️ JSON 中缺少 tag_name 字段');
+      final json = jsonDecode(body) as List<dynamic>;
+      if (json.isEmpty) {
+        debugPrint('⚠️ releases 数组为空');
         return null;
       }
 
-      final releaseBody = json['body'] as String?;
+      final latest = json[0] as Map<String, dynamic>;
+
+      final tagName = latest['tag_name'] as String?;
+      if (tagName == null || tagName.isEmpty) {
+        debugPrint('⚠️ 最新 release 中缺少 tag_name 字段');
+        return null;
+      }
+
+      final releaseBody = latest['body'] as String?;
 
       // 从 assets 中提取 .apk 下载链接
-      final assets = json['assets'] as List<dynamic>?;
+      final assets = latest['assets'] as List<dynamic>?;
       String? apkUrl;
       if (assets != null) {
         for (final asset in assets) {
@@ -248,12 +254,22 @@ class UpdateService {
     }
   }
 
-  /// 去除版本号前的 "v" 前缀，如 "v1.0.1" → "1.0.1"。
+  /// 去除版本号前缀和后缀，提取纯语义化版本。
+  /// "v1.0.0-beta" → "1.0.0"
+  /// "v1.0.1"     → "1.0.1"
+  /// "1.2.3-alpha" → "1.2.3"
   String _stripVPrefix(String version) {
-    if (version.startsWith('v') || version.startsWith('V')) {
-      return version.substring(1);
+    var v = version;
+    // 去 v/V 前缀
+    if (v.startsWith('v') || v.startsWith('V')) {
+      v = v.substring(1);
     }
-    return version;
+    // 去 -beta / -alpha / -rc 等后缀（只保留 x.y.z 部分）
+    final dashIdx = v.indexOf('-');
+    if (dashIdx != -1) {
+      v = v.substring(0, dashIdx);
+    }
+    return v;
   }
 
   /// 语义化版本号比较：remote > local 返回 true。
