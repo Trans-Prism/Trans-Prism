@@ -11,6 +11,9 @@ import 'screens/disclaimer_view_screen.dart';
 import 'screens/hormone_converter_screen.dart';
 import 'screens/medical_directory/medical_directory_list_screen.dart';
 import 'screens/wiki_web_screen.dart';
+import 'wiki/mtf_wiki/mtf_wiki_screen.dart';
+import 'wiki/ftm_wiki/ftm_wiki_screen.dart';
+import 'wiki/rle_wiki/rle_wiki_screen.dart';
 import 'screens/pk_simulation_screen.dart';
 import 'screens/inventory_dashboard_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
@@ -368,7 +371,7 @@ class _MainDashboardState extends State<MainDashboard> {
         context,
         version: result.latestVersion!,
         releaseNotes: result.releaseNotes,
-        apkDownloadUrl: result.apkDownloadUrl,
+        apkDownloadUrls: result.apkDownloadUrls,
       );
     }
   }
@@ -739,7 +742,7 @@ class _UserTabState extends State<UserTab> {
         context,
         version: result.latestVersion!,
         releaseNotes: result.releaseNotes,
-        apkDownloadUrl: result.apkDownloadUrl,
+        apkDownloadUrls: result.apkDownloadUrls,
       );
     } else if (result.networkError) {
       // 情况 2：网络连接失败 → 提醒用户检查网络
@@ -1201,6 +1204,39 @@ class WikiListPage extends StatelessWidget {
   }
 
   void _openWikiReader(BuildContext context, String displayTitle) {
+    // MtF.Wiki（含折叠态 "MtF.Wiki (已折叠)"）使用本地离线版本
+    if (displayTitle.startsWith('MtF.Wiki')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MtfWikiScreen(),
+        ),
+      );
+      return;
+    }
+
+    // FtM.Wiki（含折叠态 "FtM.Wiki (已折叠)"）使用本地离线版本
+    if (displayTitle.startsWith('FtM.Wiki')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const FtmWikiScreen(),
+        ),
+      );
+      return;
+    }
+
+    // RLE.Wiki 使用本地离线版本
+    if (displayTitle.startsWith('RLE.Wiki')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const RleWikiScreen(),
+        ),
+      );
+      return;
+    }
+
     final config = WikiCatalog.fromDisplayTitle(displayTitle);
     if (config == null) {
       ScaffoldMessenger.of(context).showSnackBar(

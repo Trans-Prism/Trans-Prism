@@ -108,14 +108,26 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
             ),
             const SizedBox(height: 12),
             Text(
-              '本工具箱内置的 Wiki 内容（包括 MtF.Wiki、FtM.Wiki、RLE.Wiki 等）均来源于 Project Trans，'
-              '并采用「署名—相同方式共享 4.0 协议国际版（CC BY-SA 4.0）」进行许可。',
+              '内置的 MtF.Wiki、FtM.Wiki、RLE.Wiki、2345.lgbt 内容来源于 Project Trans：',
+              style: TextStyle(
+                  fontSize: 13, height: 1.55, color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '• MtF.Wiki、FtM.Wiki、RLE.Wiki 的网站内容采用\n'
+              '  「署名—相同方式共享 4.0 协议国际版（CC BY-SA 4.0）」进行许可。',
+              style: TextStyle(
+                  fontSize: 13, height: 1.55, color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '• FtM.Wiki 的源代码采用 LGPLv3 许可证进行许可。',
               style: TextStyle(
                   fontSize: 13, height: 1.55, color: Colors.grey.shade700),
             ),
             const SizedBox(height: 8),
             Text(
-              '您在分享、修改或二次发布相关内容时，须遵守 CC BY-SA 4.0 协议要求，'
+              '您在分享、修改或二次发布相关内容时，须遵守相应协议要求，'
               '包括署名原作者、注明许可协议，并以相同方式共享衍生作品。',
               style: TextStyle(
                   fontSize: 12, height: 1.5, color: Colors.grey.shade600),

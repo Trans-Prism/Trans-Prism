@@ -3,18 +3,20 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// 优雅的品牌化版本更新弹窗
 ///
-/// 大圆角、Pastel 蓝粉渐变品牌色系、微光图标。
-/// 展示最新版本号与 GitHub Releases 的更新日志 (body)。
+/// 支持多镜像站容错：[apkDownloadUrls] 提供一个 URL 列表，
+/// 依次尝试打开直到成功。
 class UpdateDialog extends StatelessWidget {
   final String version;
   final String? releaseNotes;
-  final String? apkDownloadUrl;
+
+  /// 多镜像站下载链接列表（按优先级排列）
+  final List<String> apkDownloadUrls;
 
   const UpdateDialog({
     super.key,
     required this.version,
     this.releaseNotes,
-    this.apkDownloadUrl,
+    this.apkDownloadUrls = const [],
   });
 
   /// 在指定 [context] 上展示更新弹窗。
@@ -22,7 +24,7 @@ class UpdateDialog extends StatelessWidget {
     BuildContext context, {
     required String version,
     String? releaseNotes,
-    String? apkDownloadUrl,
+    List<String> apkDownloadUrls = const [],
   }) {
     return showDialog(
       context: context,
@@ -30,7 +32,7 @@ class UpdateDialog extends StatelessWidget {
       builder: (_) => UpdateDialog(
         version: version,
         releaseNotes: releaseNotes,
-        apkDownloadUrl: apkDownloadUrl,
+        apkDownloadUrls: apkDownloadUrls,
       ),
     );
   }
@@ -63,13 +65,9 @@ class UpdateDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── 顶部渐变品牌图标区域 ──
             _buildHeader(),
-            // ── 标题 ──
             _buildTitle(),
-            // ── 更新日志 ──
             _buildReleaseNotes(context),
-            // ── 按钮组 ──
             _buildActions(context),
           ],
         ),
@@ -77,7 +75,6 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 顶部 Pastel 蓝粉渐变 + 微光图标
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -95,7 +92,6 @@ class UpdateDialog extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 微光圆形图标
           Container(
             width: 64,
             height: 64,
@@ -117,7 +113,6 @@ class UpdateDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          // 微光小圆点装饰
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -147,7 +142,6 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 标题：发现新版本 [version]
   Widget _buildTitle() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 4),
@@ -164,7 +158,6 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 更新日志内容区域
   Widget _buildReleaseNotes(BuildContext context) {
     final notes = releaseNotes;
     if (notes == null || notes.trim().isEmpty) {
@@ -203,13 +196,11 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 底部按钮组：「稍后再说」+「立即更新」
   Widget _buildActions(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: Row(
         children: [
-          // 稍后再说
           Expanded(
             child: OutlinedButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -223,15 +214,11 @@ class UpdateDialog extends StatelessWidget {
               ),
               child: const Text(
                 '稍后再说',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // 立即更新
           Expanded(
             flex: 2,
             child: ElevatedButton(
@@ -248,10 +235,7 @@ class UpdateDialog extends StatelessWidget {
               ),
               child: const Text(
                 '立即更新',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -260,28 +244,32 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 点击「立即更新」：使用外部浏览器打开 APK 下载链接
+  /// 点击「立即更新」：依次尝试每个镜像站 URL
   Future<void> _handleUpdateNow(BuildContext context) async {
-    final url = apkDownloadUrl;
-    if (url == null || url.isEmpty) {
-      // 无 APK 链接时降级到 GitHub Releases 页面
+    if (apkDownloadUrls.isEmpty) {
       const fallbackUrl =
           'https://github.com/daanser/Trans-Prism/releases/latest';
       await _launchUrl(fallbackUrl);
     } else {
-      await _launchUrl(url);
+      // 依次尝试每个镜像 URL，只要有一个成功打开就停止
+      for (final url in apkDownloadUrls) {
+        final opened = await _launchUrl(url);
+        if (opened) break;
+      }
     }
     if (context.mounted) {
       Navigator.of(context).pop();
     }
   }
 
-  Future<void> _launchUrl(String url) async {
+  /// 尝试打开 URL，返回是否成功
+  Future<bool> _launchUrl(String url) async {
     try {
       final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return true; // launchUrl 不抛异常即视为成功
     } catch (_) {
-      // 静默失败：拉起浏览器失败就不做任何事
+      return false;
     }
   }
 }
