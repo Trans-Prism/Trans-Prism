@@ -47,28 +47,19 @@
 * 支持模拟常见 HRT 药物（如雌二醇、CPA、螺内酯代谢物等）的稳态血药浓度曲线。
 * 帮助用户直观理解给药间隔、半衰期与体内浓度波动的数学关系。
 
-### 🔄 跨旗色彩激素换算器
-* 数据直接衍生自 [Next-MtF-wiki](https://github.com/project-trans/Next-MtF-wiki) (CC BY-NC-SA 4.0)。
+### 🔄 激素换算器
+* 数据直接衍生自 [MtF-wiki](https://github.com/project-trans/MtF-wiki) (CC BY-NC-SA 4.0)。
 * **6 项核心激素双向换算**：雌二醇（E2）、睾酮（T）、泌乳素（PRL）、孕酮（P4）、FSH、LH。
 * 支持质量浓度与摩尔浓度的智能单位切换，自动过滤无逻辑的等价单位。
-* **视觉指引系统**：参考范围卡片采用跨性别旗帜色彩（MtF 粉 / FtM 蓝 / NB 中性色）进行视觉映射，数值匹配时高亮弹起。
+
 
 ### 🎙️ 声音训练辅助
 * 基于开源项目 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 集成优化。
 * 包含嗓音测试、音阶练习、88键钢琴、F0检测、主观量表与鼓励机制。
 * 生成本地音频分析报告与训练记录时间线。
 
-### 🏥 友善医疗名录
+### 🏥 友善医疗名录（待开发）
 * 收录国内跨性别友善的内分泌科、精神科医生与就诊指南。
-
----
-
-## 🏗️ 核心架构 (Architecture)
-
-本项目除了 Flutter 客户端，还包含一套高度自动化的云端流水线：
-* **Mono-repo CI/CD**：通过 GitHub Actions 每日定时监听上游 Wiki 仓库。
-* **Python 语法清洗器**：自动拉取上游 Markdown 源码，拦截并洗稿 Hugo / VitePress 专属语法，重构为标准 MkDocs 格式。
-* **无头构建与分发**：云端全自动编译 HTML 静态站点，压缩打包并发布至 Release，为客户端提供源源不断的热更新数据流。
 
 ---
 
