@@ -4,21 +4,22 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
 
-/// 防爆全能版 Wiki 热更新引擎
+import 'wiki_offline_service.dart';
+
+/// 防爆全能版 Wiki 热更新引擎（阅后即焚版）
 ///
-/// ## 版本日志机制
+/// ## 下载流程
 ///
-/// 每次更新后，在 `{appDocDir}/.wiki_{wikiType}_version` 写入当前版本标签。
-/// 下次打开时直接读日志文件内的日期与云端比对，完全不依赖 SharedPreferences。
+/// 1. 戳 GitHub API 获取最新 Release 下载链接 + 版本日期（tag）
+/// 2. 多镜像站容错链下载
+/// 3. 写版本日志 `.xxx-wiki-site.version`
+/// 4. 删除旧 ZIP
+/// 5. 重命名临时文件为 `xxx-wiki-site.zip`
 ///
-/// - **无日志**（首次安装）：自动从云端下载最新离线包并创建日志
-/// - **有日志**：对比日期，云端更新才下载
-/// - **连不上**：静默吞掉异常，用内置包兜底，绝不卡住
+/// ## 更新检查
 ///
-/// ## 查下分离
-///
-/// - **查**：直连 `api.github.com`，绝不走代理
-/// - **下**：多镜像站容错链，每个 5s 超时，逐个尝试
+/// [checkForUpdate] 比对本地版本日志与 GitHub API 最新 tag，
+/// 返回是否有更新。由 WikiListPage 批量调用。
 ///
 /// ## 镜像站容错链
 ///
@@ -26,23 +27,11 @@ import 'package:archive/archive_io.dart';
 /// 2. `ghproxy.net` — 前缀代理
 /// 3. `kkgithub.com` — 替换域名
 /// 4. `githubfast.com` — 替换域名
-///
-/// 全部失败则静默返回，内置包兜底。
-///
-/// ## 三重防爆
-///
-/// 1. 下载前清理残留 ZIP
-/// 2. 解压前粉碎旧缓存
-/// 3. 解压完立即删除 ZIP
 class WikiUpdateManager {
   final String owner = "daanser";
   final String repo = "Trans-Prism-Builder";
 
   /// 镜像站容错链（按优先级排列）
-  ///
-  /// 每个镜像定义两种变换方式：
-  /// - `prefix`：直接拼在原始 URL 前面
-  /// - `replaceHost`：将原始 URL 中的 `github.com` 替换为此域名
   static const List<_MirrorDef> _mirrors = [
     _MirrorDef(prefix: 'https://ghp.ci/'),
     _MirrorDef(prefix: 'https://ghproxy.net/'),
@@ -50,46 +39,33 @@ class WikiUpdateManager {
     _MirrorDef(replaceHost: 'githubfast.com'),
   ];
 
-  /// 每个镜像站的连接超时（5 秒无响应就切下一家）
   static const Duration _mirrorConnectTimeout = Duration(seconds: 5);
-
-  /// API 嗅探超时
   static const Duration _apiTimeout = Duration(seconds: 15);
 
   final Dio _dio = Dio();
 
   // ==================================================================
-  // 版本日志
+  // 版本日志（兼容旧方法，委托到 WikiOfflineService）
   // ==================================================================
 
-  static Future<String> _versionLogPath(String wikiType) async {
-    final dir = await getApplicationDocumentsDirectory();
-    return '${dir.path}/.wiki_${wikiType}_version';
+  static Future<String?> readLocalTag(String wikiType) {
+    return WikiOfflineService.readVersion(wikiType);
   }
 
-  static Future<String?> readLocalTag(String wikiType) async {
-    try {
-      final f = File(await _versionLogPath(wikiType));
-      if (await f.exists()) return await f.readAsString();
-    } catch (_) {}
-    return null;
-  }
-
-  static Future<void> writeLocalTag(String wikiType, String tag) async {
-    try {
-      await File(await _versionLogPath(wikiType)).writeAsString(tag);
-    } catch (_) {}
+  static Future<void> writeLocalTag(String wikiType, String tag) {
+    return WikiOfflineService.writeVersion(wikiType, tag);
   }
 
   // ==================================================================
-  // 沙盒检测
+  // 沙盒检测（兼容旧代码）
   // ==================================================================
 
   static Future<bool> hasSandboxData(String wikiType) async {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final d = Directory('${dir.path}/live_${wikiType}_site');
-      return d.existsSync() && d.listSync().any((e) => e is File);
+      if (!d.existsSync()) return false;
+      return d.listSync(recursive: true).any((e) => e is File);
     } catch (_) {
       return false;
     }
@@ -112,23 +88,117 @@ class WikiUpdateManager {
   }
 
   // ==================================================================
-  // 热更新引擎
+  // 后台静默热更新（兼容旧备份 screen）
   // ==================================================================
 
-  /// 静默检查并执行热更新。
-  ///
-  /// - **无日志（首次运行）**：直接从云端下载最新版
-  /// - **有日志**：对比日期，云端更新才下载
-  /// - **任何异常**：静默消化，不抛到调用方
   Future<void> checkAndPerformHotUpdate(String wikiType) async {
-    // ── 读取本地版本日志 ──
-    final localTag = await readLocalTag(wikiType);
-    debugPrint("[$wikiType] 本地版本: ${localTag ?? '(无日志-首次运行)'}");
+    // 静默后台检测：有更新则下载新版 ZIP
+    try {
+      final result = await _fetchLatestRelease(wikiType);
+      if (result == null) return;
 
-    // ── 嗅探云端 Release ──
-    String? remoteTag;
-    String? rawDownloadUrl;
+      final (remoteTag, downloadUrl, _) = result;
+      final localTag = await readLocalTag(wikiType);
 
+      if (localTag != null) {
+        final remoteDate = _extractDate(remoteTag);
+        final localDate = _extractDate(localTag);
+        if (remoteDate == null) return;
+        if (localDate != null && !remoteDate.isAfter(localDate)) {
+          return;
+        }
+      }
+
+      await _downloadAndSaveZip(wikiType, downloadUrl, remoteTag, null, null);
+    } catch (_) {}
+  }
+
+  // ==================================================================
+  // 前台下载（用户主动开启离线时调用）
+  // ==================================================================
+
+  /// 前台带进度下载最新 Wiki 离线 ZIP。
+  ///
+  /// 流程：
+  /// 1. GitHub API 获取最新 Release
+  /// 2. 镜像链下载到 `offline_wiki/temp_{type}.zip`
+  /// 3. 写版本日志
+  /// 4. 删除旧 `xxx-wiki-site.zip`
+  /// 5. 重命名 temp → `xxx-wiki-site.zip`
+  Future<bool> downloadWithProgress(
+    String wikiType, {
+    required void Function(double progress) onProgress,
+    void Function(String status)? onStatus,
+  }) async {
+    onStatus?.call('正在获取版本信息...');
+
+    final result = await _fetchLatestRelease(wikiType);
+    if (result == null) return false;
+
+    final (remoteTag, downloadUrl, _) = result;
+    return await _downloadAndSaveZip(
+        wikiType, downloadUrl, remoteTag, onProgress, onStatus);
+  }
+
+  // ==================================================================
+  // 静默检查更新（列表页批量调用）
+  // ==================================================================
+
+  /// 检查指定 wiki 是否有新版本可用。
+  ///
+  /// 返回 `(latestDate, downloadUrl)` 或 `null`（网络不可达或无更新）。
+  Future<(String date, String url)?> checkForUpdate(String wikiType) async {
+    try {
+      // 读取本地版本
+      final localVersion = await WikiOfflineService.readVersion(wikiType);
+
+      // 获取云端最新版本
+      final result = await _fetchLatestRelease(wikiType);
+      if (result == null) return null;
+
+      final (remoteTag, downloadUrl, _) = result;
+      final remoteDate = _extractDate(remoteTag);
+      if (remoteDate == null) return null;
+
+      final remoteDateStr =
+          '${remoteDate.year}-${remoteDate.month.toString().padLeft(2, '0')}-${remoteDate.day.toString().padLeft(2, '0')}';
+
+      // 无本地版本 → 新下载
+      if (localVersion == null) {
+        return (remoteDateStr, downloadUrl);
+      }
+
+      // 比对日期
+      final localDate = _extractDate(localVersion);
+      if (localDate == null || remoteDate.isAfter(localDate)) {
+        return (remoteDateStr, downloadUrl);
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 静默下载更新（无进度回调，完成后 Toast）
+  Future<bool> downloadUpdateSilently(
+      String wikiType, String downloadUrl, String latestDate) async {
+    try {
+      final remoteTag = '$wikiType-$latestDate';
+      return await _downloadAndSaveZip(
+          wikiType, downloadUrl, remoteTag, null, null);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ==================================================================
+  // 内部方法
+  // ==================================================================
+
+  /// 从 GitHub API 获取最新 Release 信息
+  Future<(String tag, String url, String fileName)?> _fetchLatestRelease(
+      String wikiType) async {
     try {
       final url =
           'https://api.github.com/repos/$owner/$repo/releases?per_page=10';
@@ -141,7 +211,7 @@ class WikiUpdateManager {
             sendTimeout: _apiTimeout,
             receiveTimeout: _apiTimeout,
           ));
-      if (resp.statusCode != 200) return;
+      if (resp.statusCode != 200) return null;
 
       final releases = resp.data as List<dynamic>;
       Map<String, dynamic>? target;
@@ -152,42 +222,42 @@ class WikiUpdateManager {
           break;
         }
       }
-      if (target == null) return;
+      if (target == null) return null;
 
-      remoteTag = target['tag_name'] as String? ?? '';
+      final tag = target['tag_name'] as String? ?? '';
       final assets = target['assets'] as List<dynamic>? ?? [];
-      if (assets.isEmpty) return;
+      if (assets.isEmpty) return null;
 
       final zip = assets.firstWhere(
         (a) => (a['name'] as String? ?? '').endsWith('.zip'),
       );
-      rawDownloadUrl = zip['browser_download_url'] as String;
+      final downloadUrl = zip['browser_download_url'] as String;
+      final fileName = zip['name'] as String? ?? '${tag}.zip';
+
+      return (tag, downloadUrl, fileName);
     } catch (e) {
-      debugPrint("[$wikiType] 网络嗅探失败(已静默): $e");
-      return;
+      debugPrint("[$wikiType] 网络嗅探失败: $e");
+      return null;
     }
+  }
 
-    // ── 版本决策 ──
-    if (localTag != null) {
-      final remoteDate = _extractDate(remoteTag);
-      final localDate = _extractDate(localTag);
-      if (remoteDate == null) return;
-      if (localDate != null && !remoteDate.isAfter(localDate)) {
-        debugPrint("[$wikiType] 已是最新 ($localTag)");
-        return;
-      }
-    }
-
-    // ── 多镜像站容错下载 + 解压 ──
+  /// 下载 ZIP → 写版本日志 → 删除旧 ZIP → 重命名
+  Future<bool> _downloadAndSaveZip(
+    String wikiType,
+    String rawDownloadUrl,
+    String remoteTag,
+    void Function(double)? onProgress,
+    void Function(String)? onStatus,
+  ) async {
     try {
-      debugPrint("[$wikiType] 开始下载: $remoteTag");
-      final dir = await getApplicationDocumentsDirectory();
-      final zipPath = '${dir.path}/temp_$wikiType.zip';
-      final extractDir = '${dir.path}/live_${wikiType}_site';
+      // 确保 offline_wiki 目录存在
+      final offlineDir = await WikiOfflineService.offlineWikiDir;
+      final offlineDirPath = offlineDir.path;
 
-      // 防爆1
-      final zipFile = File(zipPath);
-      if (zipFile.existsSync()) zipFile.deleteSync();
+      // 清理残留 temp 文件
+      final tempPath = '$offlineDirPath/temp_$wikiType.zip';
+      final tempFile = File(tempPath);
+      if (tempFile.existsSync()) tempFile.deleteSync();
 
       // ── 逐个镜像站尝试下载 ──
       bool downloaded = false;
@@ -196,59 +266,66 @@ class WikiUpdateManager {
         final mirrorUrl = mirror.apply(rawDownloadUrl);
 
         try {
+          onStatus?.call('正在连接镜像 ${i + 1}/${_mirrors.length}...');
           debugPrint("[$wikiType] 尝试镜像[$i]: $mirrorUrl");
-          await _dio.download(mirrorUrl, zipPath,
+          await _dio.download(mirrorUrl, tempPath,
               options: Options(
                 connectTimeout: _mirrorConnectTimeout,
                 sendTimeout: _mirrorConnectTimeout,
                 receiveTimeout: const Duration(seconds: 120),
-              ));
-          // 下载成功 → 退出循环
+              ),
+              onReceiveProgress: onProgress != null
+                  ? (count, total) {
+                      if (total > 0) {
+                        onProgress(count / total.clamp(1, total));
+                        onStatus?.call(
+                            '下载中 ${(count * 100 / total).toStringAsFixed(0)}%...');
+                      }
+                    }
+                  : null);
           downloaded = true;
           debugPrint("[$wikiType] 镜像[$i] 下载成功");
           break;
         } on DioException catch (e) {
           debugPrint("[$wikiType] 镜像[$i] 不可用: ${e.type}");
-          // 继续尝试下一个镜像
         }
       }
 
       if (!downloaded) {
         debugPrint("[$wikiType] 所有镜像均不可用，放弃下载");
-        return;
+        return false;
       }
 
-      // 防爆2
-      final old = Directory(extractDir);
-      if (old.existsSync()) old.deleteSync(recursive: true);
+      if (onProgress != null) onProgress(1.0);
+      onStatus?.call('写入版本信息...');
 
-      // 解压
-      final archive = ZipDecoder().decodeBytes(File(zipPath).readAsBytesSync());
-      for (final f in archive) {
-        if (f.isFile) {
-          File('$extractDir/${f.name}')
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(f.content as List<int>);
-        } else {
-          Directory('$extractDir/${f.name}').createSync(recursive: true);
-        }
-      }
+      // 提取版本日期
+      final date = _extractDate(remoteTag);
+      final dateStr = date != null
+          ? '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
+          : 'unknown';
 
-      // 防爆3
-      if (zipFile.existsSync()) zipFile.deleteSync();
+      // 写版本日志
+      await WikiOfflineService.writeVersion(wikiType, dateStr);
 
-      // 写日志
-      await writeLocalTag(wikiType, remoteTag);
-      debugPrint("[$wikiType] 热更新完成: $remoteTag");
+      // 删除旧 ZIP
+      final finalPath = await WikiOfflineService.zipPath(wikiType);
+      final finalFile = File(finalPath);
+      if (finalFile.existsSync()) finalFile.deleteSync();
+
+      // 重命名 temp → 正式名
+      await tempFile.rename(finalPath);
+
+      onStatus?.call('完成');
+      debugPrint("[$wikiType] 下载完成，版本: $dateStr");
+      return true;
     } catch (e) {
-      debugPrint("[$wikiType] 热更新异常(已静默): $e");
+      debugPrint("[$wikiType] 下载异常: $e");
+      return false;
     }
   }
 
-  // ==================================================================
-  // 工具
-  // ==================================================================
-
+  /// 从 tag 中提取日期
   DateTime? _extractDate(String tag) {
     final m = RegExp(r'(\d{4})-(\d{2})-(\d{2})').firstMatch(tag);
     if (m == null) return null;
@@ -265,10 +342,8 @@ class WikiUpdateManager {
 
   static Future<void> resetHotUpdateState(String wikiType) async {
     try {
-      final f = File(await _versionLogPath(wikiType));
-      if (f.existsSync()) f.deleteSync();
-      final dir = await getApplicationDocumentsDirectory();
-      final sd = Directory('${dir.path}/live_${wikiType}_site');
+      final docDir = await getApplicationDocumentsDirectory();
+      final sd = Directory('${docDir.path}/live_${wikiType}_site');
       if (sd.existsSync()) sd.deleteSync(recursive: true);
     } catch (_) {}
   }
@@ -276,17 +351,11 @@ class WikiUpdateManager {
 
 /// 镜像站定义
 class _MirrorDef {
-  /// 前缀代理：直接拼在原始 URL 前面
-  /// 例如 `https://ghp.ci/` → `https://ghp.ci/{rawUrl}`
   final String? prefix;
-
-  /// 域名替换：将原始 URL 中的 `github.com` 替换为此域名
-  /// 例如 `kkgithub.com` → `https://kkgithub.com/{...}`
   final String? replaceHost;
 
   const _MirrorDef({this.prefix, this.replaceHost});
 
-  /// 将原始 URL 转换为镜像 URL
   String apply(String rawUrl) {
     if (prefix != null) {
       return '$prefix$rawUrl';

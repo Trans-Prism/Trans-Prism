@@ -58,10 +58,6 @@ flutter:
     - assets/oyama_hrt/
     - assets/oyama_hrt/assets/
     - assets/wiki_data/
-    # ⚠️ 强烈建议将 Wiki 压缩为 zip 放入该目录，Flutter 会自动打包这个 zip
-    - assets/wiki_data/mtf-wiki-site.zip
-    - assets/wiki_data/ftm-wiki-site.zip
-    - assets/wiki_data/rle-wiki-site.zip
 
 # ─── 桌面图标生成配置 ──────────────────────────────────
 # 运行: flutter pub run flutter_launcher_icons
