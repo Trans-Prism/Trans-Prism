@@ -244,7 +244,7 @@ class OnboardingScreen extends StatelessWidget {
                   title: 'MtF (跨性别女性)',
                   subtitle: '展现女性特质 / 获取 MtF 实用指南',
                   icon: Icons.female,
-                  color: const Color(0xFF5BCEFA),
+                  color: const Color(0xFFF5A9B8),
                   onTap: () => onSelect(GenderIdentity.mtf),
                 ),
                 const SizedBox(height: 16),
@@ -253,7 +253,7 @@ class OnboardingScreen extends StatelessWidget {
                   title: 'FtM (跨性别男性)',
                   subtitle: '展现男性特质 / 获取 FtM 实用指南',
                   icon: Icons.male,
-                  color: const Color(0xFFF5A9B8),
+                  color: const Color(0xFF5BCEFA),
                   onTap: () => onSelect(GenderIdentity.ftm),
                 ),
                 const SizedBox(height: 16),
@@ -1403,19 +1403,19 @@ class _WikiListPageState extends State<WikiListPage> {
         children: [
           if (widget.identity == GenderIdentity.mtf) ...[
             _buildWikiTile(
-                'MtF.Wiki', '跨性别女性进阶指南 (推荐)', Icons.star, Colors.blue),
+                'MtF.Wiki', '跨性别女性进阶指南 (推荐)', Icons.star, Colors.pink),
             _buildWikiTile(
                 'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
           ],
           if (widget.identity == GenderIdentity.ftm) ...[
             _buildWikiTile(
-                'FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star, Colors.pink),
+                'FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star, Colors.blue),
             _buildWikiTile(
                 'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
           ],
           if (widget.identity == GenderIdentity.nb) ...[
-            _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南', Icons.star, Colors.blue),
-            _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南', Icons.star, Colors.pink),
+            _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南', Icons.star, Colors.pink),
+            _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南', Icons.star, Colors.blue),
             _buildWikiTile(
                 'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
           ],

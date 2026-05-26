@@ -118,6 +118,10 @@ class _OfflineWikiScreenState extends State<OfflineWikiScreen> {
 
   /// 初始化离线模式：启动本地 HTTP 服务器
   Future<void> _initOfflineMode(String sitePath) async {
+    // ── 自动探测站点中实际存在的首页路径 ──
+    final effectiveIndexPath = _detectIndexPath(sitePath);
+    debugPrint('[${widget.wikiType}] 探测到的首页路径: $effectiveIndexPath');
+
     final staticHandler =
         createStaticHandler(sitePath, defaultDocument: 'index.html');
 
@@ -194,8 +198,7 @@ class _OfflineWikiScreenState extends State<OfflineWikiScreen> {
 
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(
-          Uri.parse('http://localhost:$_port${widget.localIndexPath}'));
+      ..loadRequest(Uri.parse('http://localhost:$_port$effectiveIndexPath'));
 
     if (!mounted) return;
     setState(() {
@@ -203,6 +206,44 @@ class _OfflineWikiScreenState extends State<OfflineWikiScreen> {
       _isLoading = false;
       _isOfflineMode = true;
     });
+  }
+
+  /// 探测站点中实际存在的首页路径
+  ///
+  /// 先试配置路径，再试常见的备选路径，确保能找到可用的首页。
+  String _detectIndexPath(String sitePath) {
+    // 备选路径列表（按优先级）
+    final candidates = <String>[
+      widget.localIndexPath, // /zh-cn/docs/index.html
+      '/zh-cn/index.html', // 无 docs 层
+      '/index.html', // 根目录
+    ];
+
+    for (final path in candidates) {
+      if (File('$sitePath$path').existsSync()) {
+        debugPrint('[${widget.wikiType}] 探测到首页: $path');
+        return path;
+      }
+    }
+
+    // 兜底：在 zh-cn 下递归找任意 index.html
+    try {
+      final zhCnDir = Directory('$sitePath/zh-cn');
+      if (zhCnDir.existsSync()) {
+        final files = zhCnDir.listSync(recursive: true);
+        for (final f in files) {
+          if (f is File && f.path.endsWith('/index.html')) {
+            final relative = f.path.replaceFirst(sitePath, '');
+            final path = relative.startsWith('/') ? relative : '/$relative';
+            debugPrint('[${widget.wikiType}] zh-cn 下找到首页: $path');
+            return path;
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 最后兜底返回配置路径
+    return widget.localIndexPath;
   }
 
   /// 初始化在线模式：WebView 直接加载 URL

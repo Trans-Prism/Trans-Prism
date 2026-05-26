@@ -1,10 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// 关于页面
 ///
 /// 展示应用信息、Logo 及第三方开源许可声明。
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() => _appVersion = 'v${info.version}+${info.buildNumber}');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _appVersion = 'v1.1.1+1');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +87,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'v1.0.0+1',
+                    _appVersion,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade400,

@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'region_detector.dart';
+
 /// GitHub Releases 更新检测响应体（原始远端数据）
 class _GitHubRelease {
   final String tagName;
@@ -243,8 +245,20 @@ class UpdateService {
   /// 对原始 APK 下载链接进行多镜像站容错探测，
   /// 返回按优先级排列的可用 URL 列表（已通过连通性检查）。
   ///
+  /// ## IP 分流
+  ///
+  /// - **中国大陆用户**：走镜像站容错链探测，返回可达镜像 URL
+  /// - **非中国大陆用户**：跳过镜像探测，直连 GitHub
+  ///
   /// 如果 [rawUrl] 为空，降级返回 GitHub Releases 页面的镜像列表。
   Future<List<String>> _findWorkingDownloadUrls(String? rawUrl) async {
+    // ── IP 地理位置分流 ──
+    final inChina = await RegionDetector.instance.detect();
+    if (!inChina) {
+      debugPrint('🌐 非中国大陆地区，跳过镜像探测，直连 GitHub');
+      return [rawUrl ?? _releasesPageUrl];
+    }
+
     final baseUrls = <String>[];
 
     if (rawUrl != null && rawUrl.isNotEmpty) {

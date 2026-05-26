@@ -133,31 +133,67 @@ class WikiOfflineService {
         }
       }
 
-      // 自动探测实际内容目录（处理版本号子目录）
+      // ── 精准探测站点根目录 ──
+      // 已知 ZIP 内部可能有 `mtf-wiki-site-2026-05-26/` 这样的版本号外壳，
+      // 也可能直接裸露。我们需要找到真正的网站根目录。
       final rootDir = Directory(extractDir);
+
+      // 1. 先找直接包含 index.html 的子目录（处理版本号外壳）
       final entries = rootDir.listSync();
       for (final entry in entries) {
         if (entry is Directory &&
             File('${entry.path}/index.html').existsSync()) {
-          final contentDir = entry.path;
-          print('[$wikiType] 探测到内容目录: ${contentDir.split('/').last}');
-          return contentDir;
+          print('[$wikiType] 探测到内容目录: ${entry.path.split('/').last}');
+          return entry.path;
         }
       }
 
-      // 没有子目录，直接用根目录
+      // 2. 根目录直接有 index.html
       if (File('$extractDir/index.html').existsSync()) {
         return extractDir;
       }
 
-      // 递归查找 index.html（兜底）
+      // 3. 找包含 assets/ 目录的层级（这是 MkDocs 站点根目录的可靠标志）
+      //    用广度遍历逐层搜索，优先找最浅的 assets/
+      String? siteRoot;
+      int bestDepth = 99999;
+      final allEntities = rootDir.listSync(recursive: true);
+      for (final entity in allEntities) {
+        if (entity is Directory && entity.path.endsWith('/assets')) {
+          final parent = entity.parent;
+          final depth =
+              parent.path.replaceFirst(extractDir, '').split('/').length;
+          if (depth < bestDepth) {
+            bestDepth = depth;
+            siteRoot = parent.path;
+          }
+        }
+      }
+      if (siteRoot != null) {
+        print('[$wikiType] 通过 assets/ 探测到站点根目录: '
+            '${siteRoot.replaceFirst(extractDir, '')}');
+        return siteRoot;
+      }
+
+      // 4. 最后兜底：找任意 index.html 的父目录
       final allFiles = rootDir.listSync(recursive: true);
+      String? bestDir;
+      int bestDepth2 = 99999;
       for (final f in allFiles) {
         if (f is File && f.path.endsWith('/index.html')) {
-          final dir = f.parent.path;
-          print('[$wikiType] 递归探测到内容目录: $dir');
-          return dir;
+          final parentDir = f.parent.path;
+          final depth =
+              parentDir.replaceFirst(extractDir, '').split('/').length;
+          if (depth < bestDepth2) {
+            bestDepth2 = depth;
+            bestDir = parentDir;
+          }
         }
+      }
+      if (bestDir != null) {
+        print('[$wikiType] 递归探测到最浅内容目录: '
+            '${bestDir.replaceFirst(extractDir, '')}');
+        return bestDir;
       }
 
       return extractDir;

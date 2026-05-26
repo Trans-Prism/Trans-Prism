@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
 
+import 'region_detector.dart';
 import 'wiki_offline_service.dart';
 
 /// 防爆全能版 Wiki 热更新引擎（阅后即焚版）
@@ -242,6 +243,11 @@ class WikiUpdateManager {
   }
 
   /// 下载 ZIP → 写版本日志 → 删除旧 ZIP → 重命名
+  ///
+  /// ## IP 分流
+  ///
+  /// - **中国大陆用户**：走镜像站容错链下载
+  /// - **非中国大陆用户**：直连 GitHub 下载，跳过镜像探测
   Future<bool> _downloadAndSaveZip(
     String wikiType,
     String rawDownloadUrl,
@@ -259,41 +265,66 @@ class WikiUpdateManager {
       final tempFile = File(tempPath);
       if (tempFile.existsSync()) tempFile.deleteSync();
 
-      // ── 逐个镜像站尝试下载 ──
-      bool downloaded = false;
-      for (int i = 0; i < _mirrors.length; i++) {
-        final mirror = _mirrors[i];
-        final mirrorUrl = mirror.apply(rawDownloadUrl);
+      // ── IP 地理位置分流 ──
+      final inChina = await RegionDetector.instance.detect();
 
-        try {
-          onStatus?.call('正在连接镜像 ${i + 1}/${_mirrors.length}...');
-          debugPrint("[$wikiType] 尝试镜像[$i]: $mirrorUrl");
-          await _dio.download(mirrorUrl, tempPath,
-              options: Options(
-                connectTimeout: _mirrorConnectTimeout,
-                sendTimeout: _mirrorConnectTimeout,
-                receiveTimeout: const Duration(seconds: 120),
-              ),
-              onReceiveProgress: onProgress != null
-                  ? (count, total) {
-                      if (total > 0) {
-                        onProgress(count / total.clamp(1, total));
-                        onStatus?.call(
-                            '下载中 ${(count * 100 / total).toStringAsFixed(0)}%...');
-                      }
+      if (!inChina) {
+        // 非中国大陆地区：直连 GitHub 下载
+        onStatus?.call('正在直连下载...');
+        debugPrint("[$wikiType] 非中国大陆地区，直连 GitHub 下载");
+        await _dio.download(rawDownloadUrl, tempPath,
+            options: Options(
+              connectTimeout: _mirrorConnectTimeout,
+              sendTimeout: _mirrorConnectTimeout,
+              receiveTimeout: const Duration(seconds: 120),
+            ),
+            onReceiveProgress: onProgress != null
+                ? (count, total) {
+                    if (total > 0) {
+                      onProgress(count / total.clamp(1, total));
+                      onStatus?.call(
+                          '下载中 ${(count * 100 / total).toStringAsFixed(0)}%...');
                     }
-                  : null);
-          downloaded = true;
-          debugPrint("[$wikiType] 镜像[$i] 下载成功");
-          break;
-        } on DioException catch (e) {
-          debugPrint("[$wikiType] 镜像[$i] 不可用: ${e.type}");
-        }
-      }
+                  }
+                : null);
+        debugPrint("[$wikiType] 直连下载成功");
+      } else {
+        // 中国大陆地区：逐个镜像站尝试下载
+        bool downloaded = false;
+        for (int i = 0; i < _mirrors.length; i++) {
+          final mirror = _mirrors[i];
+          final mirrorUrl = mirror.apply(rawDownloadUrl);
 
-      if (!downloaded) {
-        debugPrint("[$wikiType] 所有镜像均不可用，放弃下载");
-        return false;
+          try {
+            onStatus?.call('正在连接镜像 ${i + 1}/${_mirrors.length}...');
+            debugPrint("[$wikiType] 尝试镜像[$i]: $mirrorUrl");
+            await _dio.download(mirrorUrl, tempPath,
+                options: Options(
+                  connectTimeout: _mirrorConnectTimeout,
+                  sendTimeout: _mirrorConnectTimeout,
+                  receiveTimeout: const Duration(seconds: 120),
+                ),
+                onReceiveProgress: onProgress != null
+                    ? (count, total) {
+                        if (total > 0) {
+                          onProgress(count / total.clamp(1, total));
+                          onStatus?.call(
+                              '下载中 ${(count * 100 / total).toStringAsFixed(0)}%...');
+                        }
+                      }
+                    : null);
+            downloaded = true;
+            debugPrint("[$wikiType] 镜像[$i] 下载成功");
+            break;
+          } on DioException catch (e) {
+            debugPrint("[$wikiType] 镜像[$i] 不可用: ${e.type}");
+          }
+        }
+
+        if (!downloaded) {
+          debugPrint("[$wikiType] 所有镜像均不可用，放弃下载");
+          return false;
+        }
       }
 
       if (onProgress != null) onProgress(1.0);
