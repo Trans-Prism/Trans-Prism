@@ -40,26 +40,34 @@
 * **全景追踪**：追踪 HRT 药物库存存量与安全续航天数，提供直观的量化面板。
 * **Chronos 智能调度引擎**：支持小时、天、周、月四种给药周期——从口服（12h）、外用凝胶到针剂（7天）、GnRHa（28天/84天）全覆盖。
 * **绝对锚点系统**：基于绝对时间戳精准注册本地 OS 级别通知，即便长效药物也永不错过。
-* **闭环推算**：点击“已服药”自动扣减库存、推算下一次给药时间并重设系统闹钟。数据采用纯本地 JSON 持久化，极致隐私。
+* **闭环推算**：点击“已服药”自动扣减库存、推算下一次给药时间并重设系统闹钟。数据采用纯本地 JSON持久化，极致隐私。
 
 ### 📈 药代动力学 (PK) 模拟器
-* 内置严谨的一室/多室指数衰减算法与多剂量叠加模型。
-* 支持模拟常见 HRT 药物（如雌二醇、CPA、螺内酯代谢物等）的稳态血药浓度曲线。
-* 帮助用户直观理解给药间隔、半衰期与体内浓度波动的数学关系。
+* **算法与模型引用**：内置严谨的一室/多室指数衰减算法与多剂量叠加模型，**核心算法与药代动力学数据模型源码衍生自开源项目 [Oyama-s-HRT-Recorder](https://github.com/KimoneOyama/Oyama-s-HRT-Recorder) (MIT License)**。
+* **浓度曲线可视化**：支持模拟常见 HRT 药物（如雌二醇、CPA、螺内酯代谢物等）的稳态血药浓度曲线。
+* **药理科普**：帮助用户直观理解给药间隔、半衰期与体内浓度波动的数学关系。
 
 ### 🔄 激素换算器
-* 数据直接衍生自 [MtF-wiki](https://github.com/project-trans/MtF-wiki) (CC BY-NC-SA 4.0)。
+* 数据直接衍生自 [MtF-wiki](https://github.com/project-trans/Next-MtF-wiki) (CC BY-SA 4.0)。
 * **6 项核心激素双向换算**：雌二醇（E2）、睾酮（T）、泌乳素（PRL）、孕酮（P4）、FSH、LH。
 * 支持质量浓度与摩尔浓度的智能单位切换，自动过滤无逻辑的等价单位。
 
-
 ### 🎙️ 声音训练辅助
-* 基于开源项目 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 集成优化。
-* 包含嗓音测试、音阶练习、88键钢琴、F0检测、主观量表与鼓励机制。
-* 生成本地音频分析报告与训练记录时间线。
+* **声音组件集成**：基于开源项目 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 进行适配、跨端渲染优化与体验集成。
+* **全套练习流**：包含嗓音测试、音阶练习、88键钢琴、F0检测、主观量表与鼓励机制。
+* **本地分析**：生成本地音频分析报告与训练记录时间线。
 
 ### 🏥 友善医疗名录（待开发）
 * 收录国内跨性别友善的内分泌科、精神科医生与就诊指南。
+
+---
+
+## 🏗️ 核心架构 (Architecture)
+
+本项目除了 Flutter 客户端，还包含一套高度自动化的云端流水线[Trans-Prism-Builder](https://github.com/daanser/Trans-Prism-Builder)：
+* **Mono-repo CI/CD**：通过 GitHub Actions 每日定时监听上游 Wiki 仓库。
+* **Python 语法清洗器**：自动拉取上游 Markdown 源码，拦截并洗稿 Hugo / VitePress 专属语法，重构为标准 MkDocs 格式。
+* **无头构建与分发**：云端全自动编译 HTML 静态站点，压缩打包并发布至 Release，为客户端提供源源不断的热更新数据流。
 
 ---
 
@@ -102,19 +110,28 @@ flutter build apk --split-per-abi --obfuscate --split-debug-info=./build/app/out
 
 本项目秉承“属于社群，回馈社群”的开源精神。特别致谢以下组织与项目：
 
-* 感谢 **[Project Trans](https://project-trans.org/)** 及其维护的 **MtF.wiki / FtM.wiki / RLE.wiki** 团队，为中文性别多元社群提供了极其宝贵的开源知识库。本项目的 Wiki 数据源及激素换算参考范围均离不开前人的卓越工作。
-* 感谢 **[TransFeminine Science](https://transfemscience.org/)** 等开源社区前辈在药代动力学算法领域的卓越贡献，为 PK 核心引擎提供了坚实的数学基础。
-* 感谢 **[VFS Tracker](https://github.com/Ethanlita/vfs-tracker)** 开源项目（CC BY-NC-SA 4.0），嗓音训练模块的音频分析流程参考自该项目。
+* 感谢 **[Project Trans](https://project-trans.org/)** 及其维护的 **MtF.wiki / FtM.wiki / RLE.wiki** 团队，为中文性别多元社群提供了极其宝贵的开源知识库。
+* 感谢 **[Oyama-s-HRT-Recorder](https://www.google.com/url?sa=E&source=gmail&q=https://github.com/KimoneOyama/Oyama-s-HRT-Recorder)** 开源项目作者，为 PK 模拟器的核心底层算法与多剂量叠加模型提供了坚实、优秀的数学及代码实现基础。
+* 感谢 **[TransFeminine Science](https://transfemscience.org/)** 等开源社区前辈在药代动力学算法领域的卓越贡献，为 PK 核心引擎提供了坚实的数学理论支持。
+* 感谢 **[VFS Tracker](https://github.com/Ethanlita/vfs-tracker)** 开源项目及作者，声音训练模块的音频分析与功能流程参考并继承自该项目。
 * 感谢所有为跨性别生存与医疗权益发声的勇敢者。
 
 ---
 
-## 📄 许可证 (License)
+## 📄 许可证 (License) & 版权声明
 
-本项目采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)（署名-非商业性使用-相同方式共享 4.0 国际）协议开源。
+本项目属于开源聚合体（Collection）。为了充分尊重上游开源社区的劳动成果，并确保本软件原创核心逻辑的安全，本项目针对不同模块采用**代码、算法与内容分离**的复合授权模式：
 
-你可以自由地共享、修改和分发本项目的代码与内容，但**绝对不允许用于任何商业盈利目的（禁止售卖）**，并且任何基于本项目的衍生作品都必须采用相同的开源协议发布。
+1. **📦 软件原创客户端代码 (App Original Source Code)：**
+本项目由原创开发完成的客户端框架、UI 交互界面、本地持久化逻辑及云端自动化流水线（脚本），严格采用 **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)**（署名-非商业性使用-相同方式共享 4.0 国际公共许可证）协议授权。**绝对严禁将本软件或衍生品用于任何商业盈利目的（禁止售卖）**。
+2. **📈 药代动力学计算引擎 (PK Core Engine)：**
+衍生及参考自 [Oyama-s-HRT-Recorder](https://www.google.com/url?sa=E&source=gmail&q=https://github.com/KimoneOyama/Oyama-s-HRT-Recorder) 的药代计算核心算法源码，其版权归原作者所有，严格遵循 **[MIT License](https://opensource.org/licenses/MIT)** 授权。
+3. **🎙️ 声音训练模块核心逻辑 (Voice Training Module)：**
+集成、适配及优化自 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 的嗓音训练相关逻辑，严格遵循 **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)**（署名-非商业性使用-相同方式共享 4.0 国际公共许可证）协议授权。
+4. **📚 内置知识库文本数据 (Wiki Content Data)：**
+本项目内嵌及在线拉取的各指南文本数据，其原始版权完全归属于 [Project Trans](https://project-trans.org/) 及其贡献者。该部分内容严格继承上游的 **[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh)** 协议，本项目不对该部分数据增加任何额外限制。
 
 ---
 
 *"May you find your steady state."*
+
