@@ -25,16 +25,27 @@ class F0Meter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasValidF0 = currentF0 > 0 && currentF0.isFinite;
     final displayF0 = hasValidF0 ? currentF0.toStringAsFixed(1) : '--';
     final noteName =
         hasValidF0 ? VoiceTrainingService.frequencyToNoteName(currentF0) : '--';
-    final color = hasValidF0 ? const Color(0xFF14B8A6) : Colors.grey;
+    final color = hasValidF0
+        ? const Color(0xFF14B8A6)
+        : isDark
+            ? const Color(0xFF8E8E93)
+            : Colors.grey;
+    final titleColor =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+    final noteColor =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
+    final helperColor =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -51,7 +62,7 @@ class F0Meter extends StatelessWidget {
             '当前基频',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: titleColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -67,14 +78,14 @@ class F0Meter extends StatelessWidget {
                   color: color,
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
                   ' Hz',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    color: titleColor,
                   ),
                 ),
               ),
@@ -86,7 +97,7 @@ class F0Meter extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontFamily: 'monospace',
-              color: Colors.grey[500],
+              color: noteColor,
             ),
           ),
           if (maxF0 != null || minF0 != null) ...[
@@ -119,7 +130,7 @@ class F0Meter extends StatelessWidget {
                 '正在监听麦克风...请发出声音',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[400],
+                  color: helperColor,
                 ),
               ),
             ),
@@ -180,13 +191,16 @@ class PitchHistoryChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final data = f0History;
+    final axisColor =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
 
     return Container(
       height: 180,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -212,11 +226,11 @@ class PitchHistoryChart extends StatelessWidget {
                 children: [
                   Text(
                     '${minDisplayF0.toInt()} Hz',
-                    style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+                    style: TextStyle(fontSize: 10, color: axisColor),
                   ),
                   Text(
                     '${maxDisplayF0.toInt()} Hz',
-                    style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+                    style: TextStyle(fontSize: 10, color: axisColor),
                   ),
                 ],
               ),
@@ -270,7 +284,7 @@ class _PitchChartPainter extends CustomPainter {
     final path = Path();
     final fillPath = Path();
 
-    final maxPoints = 200;
+    const maxPoints = 200;
     final step = data.length > maxPoints ? data.length / maxPoints : 1.0;
     final visibleData = <double>[];
     for (double i = 0; i < data.length; i += step) {

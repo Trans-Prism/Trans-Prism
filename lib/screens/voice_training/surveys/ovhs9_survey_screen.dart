@@ -50,6 +50,13 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final introTitle =
+        isDark ? const Color(0xFFE1BEE7) : const Color(0xFF7B1FA2);
+    final introText =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF616161);
+    final sectionText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
     return Scaffold(
       appBar: AppBar(
         title: const Text('OVHS-9 问卷'),
@@ -60,8 +67,8 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: const Color(0xFFF3E5F5),
-            child: const Column(
+            color: isDark ? const Color(0xFF352040) : const Color(0xFFF3E5F5),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -69,13 +76,13 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF7B1FA2),
+                    color: introTitle,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   '请根据您的情况，对以下各项进行 0-4 分评分。',
-                  style: TextStyle(fontSize: 13, color: Colors.black54),
+                  style: TextStyle(fontSize: 13, color: introText),
                 ),
               ],
             ),
@@ -92,7 +99,7 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[600])),
+                            color: sectionText)),
                   );
                 }
                 if (index == 4) {
@@ -102,7 +109,7 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[600])),
+                            color: sectionText)),
                   );
                 }
                 if (index == 7) {
@@ -112,7 +119,7 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[600])),
+                            color: sectionText)),
                   );
                 }
 
@@ -130,7 +137,7 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -171,15 +178,20 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
   }
 
   Widget _buildQuestionCard(int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final item = _items[index];
-    final score = _scores[index];
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
 
     return Card(
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
+        side: BorderSide(
+          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -210,7 +222,11 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                 Expanded(
                   child: Text(
                     item.text,
-                    style: const TextStyle(fontSize: 14, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: textColor,
+                    ),
                   ),
                 ),
               ],
@@ -236,7 +252,12 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
   }
 
   Widget _buildRatingChip(int index, int value, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = _scores[index] == value;
+    final inactiveValue =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
+    final inactiveLabel =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF8E8E93);
     return Expanded(
       child: InkWell(
         onTap: () => setState(() => _scores[index] = value),
@@ -246,7 +267,9 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? const Color(0xFF7B1FA2).withOpacity(0.15)
-                : Colors.grey[100],
+                : isDark
+                    ? const Color(0xFF2C2C2E)
+                    : Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? const Color(0xFF7B1FA2) : Colors.transparent,
@@ -260,16 +283,14 @@ class _OVHS9SurveyScreenState extends State<OVHS9SurveyScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color:
-                      isSelected ? const Color(0xFF7B1FA2) : Colors.grey[600],
+                  color: isSelected ? const Color(0xFF7B1FA2) : inactiveValue,
                 ),
               ),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 9,
-                  color:
-                      isSelected ? const Color(0xFF7B1FA2) : Colors.grey[500],
+                  color: isSelected ? const Color(0xFF7B1FA2) : inactiveLabel,
                 ),
                 textAlign: TextAlign.center,
               ),

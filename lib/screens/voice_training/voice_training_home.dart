@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/voice_training/voice_event.dart';
 import '../../services/ai_encouragement_service.dart';
 import '../../services/api_settings_service.dart';
-import '../../services/cloud_services.dart';
 import '../../services/voice_training_service.dart';
 import '../../widgets/vfs_license_notice.dart';
 import 'quick_f0_test_screen.dart';
@@ -29,6 +28,9 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final introTextColor =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF616161);
     return Scaffold(
       appBar: AppBar(
         title: const Text('声音训练辅助'),
@@ -79,7 +81,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                         '提供嗓音训练辅助工具，包括基频检测、主观评估、音高转换等功能。',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: introTextColor,
                           height: 1.4,
                         ),
                       ),
@@ -92,12 +94,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          const Text(
+          Text(
             '嗓音测试',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
           const SizedBox(height: 12),
@@ -141,12 +143,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             '主观评估',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
           const SizedBox(height: 12),
@@ -187,12 +189,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             '工具',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
           const SizedBox(height: 12),
@@ -222,12 +224,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'AI 与云端',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
           const SizedBox(height: 12),
@@ -263,12 +265,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             '记录',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
           const SizedBox(height: 12),
@@ -298,13 +300,18 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
     required List<Color> gradientColors,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+    final chevronColor =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -327,7 +334,9 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: Colors.white, size: 22),
+              child: Icon(icon,
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -336,10 +345,12 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1D1D1F),
+                      color: isDark
+                          ? const Color(0xFFF5F5F7)
+                          : const Color(0xFF1D1D1F),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -347,7 +358,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: secondaryText,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -355,7 +366,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(Icons.chevron_right, color: chevronColor),
           ],
         ),
       ),
@@ -452,6 +463,9 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
   }
 
   void _showCloudServices(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -473,8 +487,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                     _cloudTile('📄 PDF 报告', '生成包含图表和指标的嗓音分析 PDF 报告。'),
                     const SizedBox(height: 16),
                     Text('部署参考: github.com/Ethanlita/vfs-tracker',
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey[500])),
+                        style: TextStyle(fontSize: 11, color: secondaryText)),
                   ])),
               actions: [
                 TextButton(
@@ -489,8 +502,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
       Text(title,
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
       const SizedBox(height: 4),
-      Text(description,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.4)),
+      Text(description, style: const TextStyle(fontSize: 12, height: 1.4)),
     ]);
   }
 }

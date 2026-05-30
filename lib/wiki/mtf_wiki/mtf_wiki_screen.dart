@@ -8,7 +8,7 @@ import 'dart:io';
 import 'mtf_wiki_manager.dart';
 
 class MtfWikiScreen extends StatefulWidget {
-  const MtfWikiScreen({Key? key}) : super(key: key);
+  const MtfWikiScreen({super.key});
 
   @override
   State<MtfWikiScreen> createState() => _MtfWikiScreenState();
@@ -39,12 +39,13 @@ class _MtfWikiScreenState extends State<MtfWikiScreen> {
   Future<void> _initWikiWithHardcoreServer() async {
     await MtfWikiManager.initLocalWiki();
     final sitePath = await MtfWikiManager.effectiveSitePath;
+    if (sitePath == null || !mounted) return;
 
     final staticHandler =
         createStaticHandler(sitePath, defaultDocument: 'index.html');
 
     // 🚀 上帝视角拦截器 + 中文 URL 解码
-    final smartHandler = (Request request) async {
+    Future<Response> smartHandler(Request request) async {
       var response = await staticHandler(request);
 
       // 对文本类内容：剥离 https:// 引用，干掉 SSL 错误日志
@@ -108,10 +109,10 @@ class _MtfWikiScreenState extends State<MtfWikiScreen> {
             headers: {'content-type': 'text/html; charset=utf-8'});
       }
       return response;
-    };
+    }
 
     _localServer = await io.serve(smartHandler, 'localhost', 8080);
-    print('🚀 物理截胡版服务器已启动: http://localhost:${_localServer!.port}');
+    debugPrint('🚀 物理截胡版服务器已启动: http://localhost:${_localServer!.port}');
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

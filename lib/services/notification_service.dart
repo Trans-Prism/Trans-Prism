@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -24,9 +25,9 @@ class NotificationService {
   // ==================== 初始化 ====================
 
   Future<void> initialize() async {
-    print('🔍 [TP-Debug] NotificationService.initialize() 开始...');
+    debugPrint('🔍 [TP-Debug] NotificationService.initialize() 开始...');
     tz_data.initializeTimeZones();
-    print('⏰ [TP-Debug] 时区数据已加载。当前 tz.local 时区: ${tz.local}');
+    debugPrint('⏰ [TP-Debug] 时区数据已加载。当前 tz.local 时区: ${tz.local}');
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -44,27 +45,27 @@ class NotificationService {
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
     );
-    print('✅ [TP-Debug] 通知插件初始化完成。');
+    debugPrint('✅ [TP-Debug] 通知插件初始化完成。');
     await _requestExactAlarmPermission();
-    print('✅ [TP-Debug] 精确闹钟权限请求完毕。');
+    debugPrint('✅ [TP-Debug] 精确闹钟权限请求完毕。');
   }
 
   void _onNotificationResponse(NotificationResponse response) {
-    print(
+    debugPrint(
         '🔍 [TP-Debug] 通知响应: actionId="${response.actionId}", payload="${response.payload}"');
     final drugId = response.payload;
     if (drugId == null || drugId.isEmpty) return;
     switch (response.actionId) {
       case 'take_dose':
-        print('💊 [TP-Debug] 用户点击「已服药」, drugId=$drugId');
+        debugPrint('💊 [TP-Debug] 用户点击「已服药」, drugId=$drugId');
         onDoseRecorded?.call(drugId);
         break;
       case 'snooze_5min':
-        print('⏰ [TP-Debug] 用户点击「5分钟后提醒」, drugId=$drugId');
+        debugPrint('⏰ [TP-Debug] 用户点击「5分钟后提醒」, drugId=$drugId');
         onSnoozeRequested?.call(drugId);
         break;
       default:
-        print('💊 [TP-Debug] 用户点击通知主体, drugId=$drugId');
+        debugPrint('💊 [TP-Debug] 用户点击通知主体, drugId=$drugId');
         onDoseRecorded?.call(drugId);
         break;
     }
@@ -73,12 +74,12 @@ class NotificationService {
   // ==================== 权限 ====================
 
   Future<bool> requestPermission() async {
-    print('🔍 [TP-Debug] requestPermission() 开始...');
+    debugPrint('🔍 [TP-Debug] requestPermission() 开始...');
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin == null) return true;
     final granted = await androidPlugin.requestNotificationsPermission();
-    print('🔍 [TP-Debug] requestNotificationsPermission 结果: $granted');
+    debugPrint('🔍 [TP-Debug] requestNotificationsPermission 结果: $granted');
     await _requestExactAlarmPermission();
     return granted ?? false;
   }
@@ -89,9 +90,9 @@ class NotificationService {
     if (androidPlugin == null) return;
     try {
       await androidPlugin.requestExactAlarmsPermission();
-      print('✅ [TP-Debug] requestExactAlarmsPermission 成功');
+      debugPrint('✅ [TP-Debug] requestExactAlarmsPermission 成功');
     } catch (e) {
-      print('⚠️ [TP-Debug] requestExactAlarmsPermission 异常(非致命): $e');
+      debugPrint('⚠️ [TP-Debug] requestExactAlarmsPermission 异常(非致命): $e');
     }
   }
 
@@ -170,18 +171,18 @@ class NotificationService {
   // ==================== 调度引擎 ====================
 
   Future<void> scheduleMedicineReminder(Drug drug) async {
-    print('🔍 [TP-Debug] ==== scheduleMedicineReminder 开始 ====');
-    print('🔍 [TP-Debug] 药物: ${drug.name}, ID: ${drug.id}');
-    print('🔍 [TP-Debug] 模式: ${drug.isDiscreteMode ? "日内离散" : "固定间隔"}');
-    print('🔍 [TP-Debug] reminderEnabled: ${drug.reminderEnabled}');
-    print('🔍 [TP-Debug] nextDoseTime: ${drug.nextDoseTime}');
-    print('🔍 [TP-Debug] dailyReminderTimes: ${drug.dailyReminderTimes}');
-    print(
+    debugPrint('🔍 [TP-Debug] ==== scheduleMedicineReminder 开始 ====');
+    debugPrint('🔍 [TP-Debug] 药物: ${drug.name}, ID: ${drug.id}');
+    debugPrint('🔍 [TP-Debug] 模式: ${drug.isDiscreteMode ? "日内离散" : "固定间隔"}');
+    debugPrint('🔍 [TP-Debug] reminderEnabled: ${drug.reminderEnabled}');
+    debugPrint('🔍 [TP-Debug] nextDoseTime: ${drug.nextDoseTime}');
+    debugPrint('🔍 [TP-Debug] dailyReminderTimes: ${drug.dailyReminderTimes}');
+    debugPrint(
         '🔍 [TP-Debug] interval: ${drug.intervalValue} ${drug.intervalUnit.name}');
 
     if (!drug.reminderEnabled) {
       await cancelDrugReminders(drug.id);
-      print('⚠️ [TP-Debug] 提醒未启用，已清空');
+      debugPrint('⚠️ [TP-Debug] 提醒未启用，已清空');
       return;
     }
 
@@ -189,13 +190,13 @@ class NotificationService {
     // 否则不做任何事情（recordDose 时会调用 calculateNextDoseTime 设置 nextDoseTime）
     if (drug.nextDoseTime != null &&
         drug.nextDoseTime!.isAfter(DateTime.now())) {
-      print('🔍 [TP-Debug] 调度 nextDoseTime=${drug.nextDoseTime}');
+      debugPrint('🔍 [TP-Debug] 调度 nextDoseTime=${drug.nextDoseTime}');
       await _scheduleOneShot(drug);
     } else {
-      print('⚠️ [TP-Debug] nextDoseTime 为空或已过期，跳过调度');
+      debugPrint('⚠️ [TP-Debug] nextDoseTime 为空或已过期，跳过调度');
     }
 
-    print('✅ [TP-Debug] ==== scheduleMedicineReminder 完成 ====');
+    debugPrint('✅ [TP-Debug] ==== scheduleMedicineReminder 完成 ====');
   }
 
   /// 针对一个绝对时间注册一次性提醒（同时注册 Timer 兜底）
@@ -205,11 +206,11 @@ class NotificationService {
     final utcDose = doseTime.toUtc();
     final diff = utcDose.difference(utcNow);
 
-    print('⏰ [TP-Debug] 时间差: ${diff.inSeconds} 秒');
+    debugPrint('⏰ [TP-Debug] 时间差: ${diff.inSeconds} 秒');
 
     tz.TZDateTime scheduledDate;
     if (diff <= Duration.zero) {
-      print('❌ [TP-Debug] 时间已过去！保底 10 秒');
+      debugPrint('❌ [TP-Debug] 时间已过去！保底 10 秒');
       scheduledDate =
           tz.TZDateTime.from(utcNow.add(const Duration(seconds: 10)), tz.UTC);
     } else {
@@ -220,7 +221,7 @@ class NotificationService {
     final diffSeconds =
         scheduledDate.difference(tz.TZDateTime.now(tz.UTC)).inSeconds;
 
-    print('🚀 [TP-Debug] 距离触发 $diffSeconds 秒, ID=$safeId');
+    debugPrint('🚀 [TP-Debug] 距离触发 $diffSeconds 秒, ID=$safeId');
 
     final details = _buildDetails(
       channelId: 'drug_anchor_channel',
@@ -240,9 +241,9 @@ class NotificationService {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print('✅ [TP-Debug] zonedSchedule(alarmClock) 已挂载');
-    } catch (e, stack) {
-      print('💥 [TP-Debug] alarmClock 失败: $e');
+      debugPrint('✅ [TP-Debug] zonedSchedule(alarmClock) 已挂载');
+    } catch (e) {
+      debugPrint('💥 [TP-Debug] alarmClock 失败: $e');
       try {
         await _plugin.zonedSchedule(
           safeId,
@@ -255,9 +256,9 @@ class NotificationService {
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
         );
-        print('✅ [TP-Debug] 降级 exactAllowWhileIdle 成功');
+        debugPrint('✅ [TP-Debug] 降级 exactAllowWhileIdle 成功');
       } catch (e2) {
-        print('💥 [TP-Debug] 降级也失败: $e2');
+        debugPrint('💥 [TP-Debug] 降级也失败: $e2');
       }
     }
 
@@ -270,19 +271,19 @@ class NotificationService {
       drugId: drug.id,
     );
 
-    print('✅ [TP-Debug] _scheduleOneShot 完成');
+    debugPrint('✅ [TP-Debug] _scheduleOneShot 完成');
   }
 
   // ───────────────── Snooze ─────────────────
 
   Future<void> scheduleSnoozeReminder(String drugId, String drugName) async {
-    print('⏰ [TP-Debug] scheduleSnoozeReminder: drugId=$drugId');
+    debugPrint('⏰ [TP-Debug] scheduleSnoozeReminder: drugId=$drugId');
 
     final snoozeId = _safeNotifyId(drugId, offset: 99);
     const delay = Duration(minutes: 5);
     final target = DateTime.now().add(delay);
 
-    print('⏰ [TP-Debug] Snooze ID: $snoozeId, 延迟: ${delay.inSeconds}秒');
+    debugPrint('⏰ [TP-Debug] Snooze ID: $snoozeId, 延迟: ${delay.inSeconds}秒');
 
     // Timer 兜底（已验证可工作）
     _scheduleTimerFallback(
@@ -311,12 +312,12 @@ class NotificationService {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print('✅ [TP-Debug] Snooze alarmClock 已挂载');
+      debugPrint('✅ [TP-Debug] Snooze alarmClock 已挂载');
     } catch (e) {
-      print('💥 [TP-Debug] Snooze alarmClock 失败: $e');
+      debugPrint('💥 [TP-Debug] Snooze alarmClock 失败: $e');
     }
 
-    print('⏰ [TP-Debug] scheduleSnoozeReminder 完成');
+    debugPrint('⏰ [TP-Debug] scheduleSnoozeReminder 完成');
   }
 
   // ───────────────── Timer 兜底 ─────────────────
@@ -329,12 +330,12 @@ class NotificationService {
     required String drugId,
   }) {
     if (delay <= Duration.zero || delay > const Duration(days: 1)) {
-      print('⏱ [TP-Debug] Timer 兜底跳过: delay=${delay.inSeconds}s');
+      debugPrint('⏱ [TP-Debug] Timer 兜底跳过: delay=${delay.inSeconds}s');
       return null;
     }
-    print('⏱ [TP-Debug] Timer 兜底注册: id=$id, ${delay.inSeconds}秒后');
+    debugPrint('⏱ [TP-Debug] Timer 兜底注册: id=$id, ${delay.inSeconds}秒后');
     return Timer(delay, () async {
-      print('⏱ [TP-Debug] >>> Timer 兜底触发！id=$id <<<');
+      debugPrint('⏱ [TP-Debug] >>> Timer 兜底触发！id=$id <<<');
       try {
         final details = _buildDetails(
           channelId: 'drug_timer_fallback_channel',
@@ -342,9 +343,9 @@ class NotificationService {
           channelDesc: 'Dart Timer 兜底用药提醒',
         );
         await _plugin.show(id, title, body, details, payload: drugId);
-        print('✅ [TP-Debug] >>> Timer 兜底通知已弹出！id=$id <<<');
+        debugPrint('✅ [TP-Debug] >>> Timer 兜底通知已弹出！id=$id <<<');
       } catch (e) {
-        print('💥 [TP-Debug] Timer 兜底通知失败: $e');
+        debugPrint('💥 [TP-Debug] Timer 兜底通知失败: $e');
       }
     });
   }
@@ -352,7 +353,7 @@ class NotificationService {
   // ==================== 即时通知测试 ====================
 
   Future<void> showImmediately() async {
-    print('🔍 [TP-Debug] --- showImmediately ---');
+    debugPrint('🔍 [TP-Debug] --- showImmediately ---');
     final details = _buildDetails(
       channelId: 'test_channel',
       channelName: '测试通知',
@@ -360,11 +361,11 @@ class NotificationService {
     );
     await _plugin.show(8888, '🧪 即时测试', '基础通知通道正常！', details,
         payload: 'immediate_test');
-    print('✅ [TP-Debug] show() 已调用');
+    debugPrint('✅ [TP-Debug] show() 已调用');
   }
 
   Future<void> testFiveSecondsNotification() async {
-    print('🔍 [TP-Debug] --- testFiveSecondsNotification 开始 ---');
+    debugPrint('🔍 [TP-Debug] --- testFiveSecondsNotification 开始 ---');
     const testDelay = Duration(seconds: 5);
     const testId = 9999;
 
@@ -386,9 +387,9 @@ class NotificationService {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print('✅ [TP-Debug] 测试闹钟注册完毕！');
+      debugPrint('✅ [TP-Debug] 测试闹钟注册完毕！');
     } catch (e) {
-      print('💥 [TP-Debug] 测试闹钟失败: $e');
+      debugPrint('💥 [TP-Debug] 测试闹钟失败: $e');
     }
 
     _scheduleTimerFallback(
@@ -398,7 +399,7 @@ class NotificationService {
       body: 'Dart Timer 兜底触发的测试通知。',
       drugId: 'alarm_test',
     );
-    print('✅ [TP-Debug] --- testFiveSecondsNotification 完成 ---');
+    debugPrint('✅ [TP-Debug] --- testFiveSecondsNotification 完成 ---');
   }
 
   Future<void> cancelTestNotification() async {
@@ -408,23 +409,23 @@ class NotificationService {
   // ==================== 取消操作 ====================
 
   Future<void> cancelDrugReminders(String drugId) async {
-    print('🔍 [TP-Debug] cancelDrugReminders 开始, drugId: $drugId');
+    debugPrint('🔍 [TP-Debug] cancelDrugReminders 开始, drugId: $drugId');
     await _plugin.cancel(_safeNotifyId(drugId));
     for (int i = 0; i < 10; i++) {
       await _plugin.cancel(_safeNotifyId(drugId, offset: i));
     }
     await _plugin.cancel(_safeNotifyId(drugId, offset: 99));
-    print('✅ [TP-Debug] cancelDrugReminders 完成');
+    debugPrint('✅ [TP-Debug] cancelDrugReminders 完成');
   }
 
   Future<void> cancelAll() async {
-    print('🔍 [TP-Debug] cancelAll()');
+    debugPrint('🔍 [TP-Debug] cancelAll()');
     await _plugin.cancelAll();
   }
 
   Future<List<PendingNotificationRequest>> pendingNotifications() async {
     final pending = await _plugin.pendingNotificationRequests();
-    print('🔍 [TP-Debug] 待处理通知数量: ${pending.length}');
+    debugPrint('🔍 [TP-Debug] 待处理通知数量: ${pending.length}');
     return pending;
   }
 }

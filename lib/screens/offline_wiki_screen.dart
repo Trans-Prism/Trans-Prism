@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 
 import '../services/wiki_offline_service.dart';
-import '../services/wiki_update_manager.dart';
 
 /// 统一的在线/离线双模 Wiki 阅读器
 ///
@@ -191,8 +189,6 @@ class _OfflineWikiScreenState extends State<OfflineWikiScreen> {
       }
       return response;
     }
-
-    ;
 
     _localServer = await io.serve(smartHandler, 'localhost', _port);
 

@@ -51,6 +51,13 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final emptyIconColor =
+        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE0E0E0);
+    final emptyTitleColor =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
+    final emptyTextColor =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
     return Scaffold(
       appBar: AppBar(
         title: const Text('训练记录'),
@@ -98,14 +105,14 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                       Icon(
                         Icons.history,
                         size: 64,
-                        color: Colors.grey[300],
+                        color: emptyIconColor,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         '暂无训练记录',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[500],
+                          color: emptyTitleColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -113,7 +120,7 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                         '完成一次快速基频测试或评估问卷后，\n记录将出现在这里。',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[400],
+                          color: emptyTextColor,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -133,7 +140,15 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   }
 
   Widget _buildEventCard(VoiceEvent event) {
-    IconData icon;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+    final tertiaryText =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
+    final borderColor =
+        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
     Color color;
     String title;
     String subtitle;
@@ -142,7 +157,6 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
     switch (event.type) {
       case VoiceEventType.quickF0Test:
         final f0 = event.f0TestResult;
-        icon = Icons.mic;
         color = const Color(0xFF14B8A6);
         title = '快速基频测试';
         if (f0 != null) {
@@ -156,7 +170,6 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
         }
         break;
       case VoiceEventType.voiceTraining:
-        icon = Icons.fitness_center;
         color = const Color(0xFF7B1FA2);
         title = '嗓音训练';
         final parts = <String>[];
@@ -173,21 +186,18 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
         detail = null;
         break;
       case VoiceEventType.selfPractice:
-        icon = Icons.track_changes;
         color = const Color(0xFFFF9800);
         title = '自我练习';
         subtitle = event.notes ?? '';
         detail = null;
         break;
       case VoiceEventType.surgery:
-        icon = Icons.local_hospital;
         color = const Color(0xFFF44336);
         title = '嗓音手术';
         subtitle = event.notes ?? '';
         detail = null;
         break;
       case VoiceEventType.feelingLog:
-        icon = Icons.chat;
         color = const Color(0xFF2196F3);
         title = '感受记录';
         subtitle = event.notes ?? '';
@@ -214,13 +224,13 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                   Text(monthStr,
                       style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey[500],
+                          color: secondaryText,
                           fontWeight: FontWeight.w500)),
                   Text(dayStr,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1D1D1F))),
+                          color: primaryText)),
                   const SizedBox(height: 4),
                   Container(
                     width: 12,
@@ -228,14 +238,17 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: color,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(
+                          color:
+                              isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                          width: 2),
                       boxShadow: [
                         BoxShadow(color: color.withOpacity(0.3), blurRadius: 4)
                       ],
                     ),
                   ),
                   Expanded(
-                    child: Container(width: 2, color: Colors.grey[200]),
+                    child: Container(width: 2, color: borderColor),
                   ),
                 ],
               ),
@@ -246,9 +259,9 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: borderColor),
                   boxShadow: [
                     BoxShadow(
                         color: Colors.black.withOpacity(0.03),
@@ -264,23 +277,24 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                     children: [
                       Row(children: [
                         Text(title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: primaryText)),
                         const Spacer(),
                         Text(timeStr,
-                            style: TextStyle(
-                                fontSize: 11, color: Colors.grey[400])),
+                            style:
+                                TextStyle(fontSize: 11, color: tertiaryText)),
                       ]),
                       const SizedBox(height: 6),
                       Text(subtitle,
-                          style:
-                              TextStyle(fontSize: 13, color: Colors.grey[600])),
+                          style: TextStyle(fontSize: 13, color: secondaryText)),
                       if (detail != null && detail.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(detail,
                             style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey[400],
+                                color: tertiaryText,
                                 fontStyle: FontStyle.italic),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),

@@ -25,7 +25,6 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
   int? _highlightedMidi;
   String? _hzError;
   String? _noteError;
-  bool _pianoReady = false;
   bool _soundEnabled = true;
 
   @override
@@ -36,7 +35,7 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
 
   Future<void> _initPiano() async {
     await _pianoService.init();
-    if (mounted) setState(() => _pianoReady = true);
+    if (mounted) setState(() {});
   }
 
   @override
@@ -216,7 +215,7 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
         builder: (context, constraints) {
           const int startMidi = 21; // A0
           const int endMidi = 108; // C8
-          final totalKeys = endMidi - startMidi + 1;
+          const totalKeys = endMidi - startMidi + 1;
           final whiteKeyWidth = constraints.maxWidth / 52; // 52 white keys
           final blackKeyWidth = whiteKeyWidth * 0.6;
 
@@ -337,10 +336,16 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
     required VoidCallback onConvert,
     required String hint,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final resultBg = isDark ? const Color(0xFF1E4D4F) : const Color(0xFFE0F7FA);
+    final resultFg = isDark ? const Color(0xFF80DEEA) : const Color(0xFF00838F);
+    final errorFg = isDark ? const Color(0xFFFF8A80) : const Color(0xFFC62828);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -359,9 +364,10 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
               ),
             ],
@@ -375,7 +381,9 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(
-                      color: Colors.grey[400],
+                      color: isDark
+                          ? const Color(0xFF8E8E93)
+                          : const Color(0xFFBDBDBD),
                       fontSize: 14,
                     ),
                     border: OutlineInputBorder(
@@ -414,15 +422,15 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0F7FA),
+                  color: resultBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   result,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF00838F),
+                    color: resultFg,
                   ),
                 ),
               ),
@@ -432,9 +440,9 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 error,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFFC62828),
+                  color: errorFg,
                 ),
               ),
             ),
@@ -444,6 +452,11 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
   }
 
   Widget _buildReferenceTable() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF616161);
     const references = [
       {'range': '男性说话嗓音', 'min': '85', 'max': '180'},
       {'range': '女性说话嗓音', 'min': '165', 'max': '255'},
@@ -456,7 +469,7 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -469,15 +482,16 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.info_outline, size: 18, color: Colors.grey),
-              SizedBox(width: 8),
+              Icon(Icons.info_outline, size: 18, color: secondaryText),
+              const SizedBox(width: 8),
               Text(
                 '嗓音频率参考',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
               ),
             ],
@@ -505,7 +519,7 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
                       range,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[700],
+                        color: secondaryText,
                       ),
                     ),
                   ),
@@ -514,9 +528,10 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
                       max.isEmpty
                           ? '$freqStr ($noteMin)'
                           : '$freqStr ($noteMin-$noteMax)',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
+                        color: textColor,
                       ),
                       textAlign: TextAlign.right,
                     ),

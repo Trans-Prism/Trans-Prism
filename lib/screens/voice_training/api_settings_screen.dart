@@ -148,6 +148,7 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
           .timeout(const Duration(seconds: 10));
 
       if (context.mounted) Navigator.pop(context);
+      if (!context.mounted) return;
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -161,17 +162,18 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('❌ 连接失败 (${response.statusCode}): ${response.body}'),
-            backgroundColor: Color(0xFFC62828),
+            backgroundColor: const Color(0xFFC62828),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
       if (context.mounted) Navigator.pop(context);
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ 连接错误: $e'),
-          backgroundColor: Color(0xFFC62828),
+          backgroundColor: const Color(0xFFC62828),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -195,6 +197,14 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final aiBg = isDark ? const Color(0xFF17324A) : const Color(0xFFE3F2FD);
+    final aiTitle = isDark ? const Color(0xFF90CAF9) : const Color(0xFF1565C0);
+    final aiText = isDark ? const Color(0xFFBBDEFB) : const Color(0xFF1565C0);
+    final awsBg = isDark ? const Color(0xFF3A2D12) : const Color(0xFFFFF8E1);
+    final awsTitle = isDark ? const Color(0xFFFFCC80) : const Color(0xFFE65100);
+    final awsText = isDark ? const Color(0xFFFFE0B2) : const Color(0xFFBF360C);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('API 配置'),
@@ -208,10 +218,10 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
+                color: aiBg,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -219,17 +229,17 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1565C0),
+                      color: aiTitle,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     '配置 OpenAI 兼容 API 后可获得 AI 生成的个性化嗓音训练鼓励消息。'
                     '支持任何兼容 OpenAI Chat Completions 格式的 API（如 OpenAI、'
                     'Azure OpenAI、Together AI、vLLM 等）。',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF1565C0),
+                      color: aiText,
                       height: 1.4,
                     ),
                   ),
@@ -299,25 +309,25 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF8E1),
+                color: awsBg,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    Icon(Icons.cloud, size: 18, color: Color(0xFFF57C00)),
-                    SizedBox(width: 8),
+                    Icon(Icons.cloud, size: 18, color: awsTitle),
+                    const SizedBox(width: 8),
                     Text('AWS 后端配置（可选）',
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFE65100))),
+                            color: awsTitle)),
                   ]),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text('配置后端后，嗓音测试向导等将优先使用云端 API 进行专业声学分析。\n不配置则使用本地分析模式。',
-                      style: TextStyle(
-                          fontSize: 12, color: Color(0xFFBF360C), height: 1.4)),
+                      style:
+                          TextStyle(fontSize: 12, color: awsText, height: 1.4)),
                 ],
               ),
             ),
@@ -432,6 +442,7 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
                       endpoint: beEp, region: _beRegionController.text.trim());
                   final ok = await _backend.testConnection();
                   if (context.mounted) Navigator.pop(context);
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(ok ? '✅ 后端连接成功' : '❌ 后端连接失败，请检查地址和部署状态'),

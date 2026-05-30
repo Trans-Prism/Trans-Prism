@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -56,6 +55,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
   RecorderState _state = RecorderState.idle;
   double _elapsedSec = 0;
   double _amplitude = 0;
+  // ignore: unused_field
   String? _filePath;
   Timer? _timer;
 
@@ -166,6 +166,15 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF616161);
+    final helperTextColor =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFF757575);
+    final completedBg =
+        isDark ? const Color(0xFF173522) : const Color(0xFFE8F5E9);
+    final completedFg =
+        isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
     final progress = _elapsedSec / widget.maxDurationSec;
     final remaining = widget.maxDurationSec - _elapsedSec;
 
@@ -180,7 +189,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
               widget.label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[700],
+                color: labelColor,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
@@ -194,7 +203,8 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.grey[200],
+              backgroundColor:
+                  isDark ? const Color(0xFF2C2C2E) : Colors.grey[200],
               valueColor:
                   const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
             ),
@@ -205,11 +215,11 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
             children: [
               Text(
                 '已录制 ${_elapsedSec.toStringAsFixed(1)}s',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12, color: helperTextColor),
               ),
               Text(
                 '剩余 ${remaining.toStringAsFixed(1)}s',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12, color: helperTextColor),
               ),
             ],
           ),
@@ -261,20 +271,19 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9),
+              color: completedBg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle,
-                    size: 18, color: Color(0xFF2E7D32)),
+                Icon(Icons.check_circle, size: 18, color: completedFg),
                 const SizedBox(width: 8),
                 Text(
                   '录音完成（${_elapsedSec.toStringAsFixed(1)}s）',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF2E7D32),
+                    color: completedFg,
                   ),
                 ),
               ],
@@ -340,6 +349,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
     return Material(
       borderRadius: BorderRadius.circular(30),
       elevation: outlined ? 0 : 2,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(30),

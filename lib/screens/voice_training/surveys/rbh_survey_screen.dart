@@ -41,6 +41,12 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final introBg = isDark ? const Color(0xFF352040) : const Color(0xFFF3E5F5);
+    final introTitle =
+        isDark ? const Color(0xFFE1BEE7) : const Color(0xFF7B1FA2);
+    final introText =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF616161);
     return Scaffold(
       appBar: AppBar(
         title: const Text('RBH 量表'),
@@ -55,18 +61,18 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3E5F5),
+                color: introBg,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'RBH 量表',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF7B1FA2),
+                      color: introTitle,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -75,7 +81,7 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
                     '0 = 无，1 = 轻度，2 = 中度，3 = 重度',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[700],
+                      color: introText,
                       height: 1.5,
                     ),
                   ),
@@ -129,6 +135,13 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
     int value,
     ValueChanged<int> onChanged,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final inactiveValue =
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
+    final inactiveLabel =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF8E8E93);
     const ratings = [
       {'value': 0, 'label': '无', 'color': Color(0xFF4CAF50)},
       {'value': 1, 'label': '轻度', 'color': Color(0xFFFFC107)},
@@ -139,18 +152,21 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 12),
@@ -169,7 +185,9 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? color.withOpacity(0.15)
-                            : Colors.grey[100],
+                            : isDark
+                                ? const Color(0xFF2C2C2E)
+                                : Colors.grey[100],
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isSelected ? color : Colors.transparent,
@@ -183,7 +201,7 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? color : Colors.grey[600],
+                              color: isSelected ? color : inactiveValue,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -191,7 +209,7 @@ class _RBHSurveyScreenState extends State<RBHSurveyScreen> {
                             r['label'] as String,
                             style: TextStyle(
                               fontSize: 11,
-                              color: isSelected ? color : Colors.grey[500],
+                              color: isSelected ? color : inactiveLabel,
                             ),
                           ),
                         ],

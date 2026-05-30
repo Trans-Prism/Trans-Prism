@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:archive/archive_io.dart';
 
 import 'region_detector.dart';
 import 'wiki_offline_service.dart';
@@ -233,7 +232,7 @@ class WikiUpdateManager {
         (a) => (a['name'] as String? ?? '').endsWith('.zip'),
       );
       final downloadUrl = zip['browser_download_url'] as String;
-      final fileName = zip['name'] as String? ?? '${tag}.zip';
+      final fileName = zip['name'] as String? ?? '$tag.zip';
 
       return (tag, downloadUrl, fileName);
     } catch (e) {

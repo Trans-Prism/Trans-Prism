@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../models/voice_training/f0_result.dart';
 import '../../services/pitch_detection_service.dart';
 import '../../services/voice_training_service.dart';
-import '../../widgets/f0_meter.dart';
 
 /// 音阶难度模式
 class _ScaleMode {
@@ -244,6 +243,17 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   }
 
   Widget _buildSetupPage() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+    final infoTitle =
+        isDark ? const Color(0xFF80DEEA) : const Color(0xFF00838F);
+    final infoText = isDark ? const Color(0xFFB2EBF2) : const Color(0xFF006064);
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -251,10 +261,10 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFE0F7FA),
+            color: isDark ? const Color(0xFF1E4D4F) : const Color(0xFFE0F7FA),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -262,24 +272,24 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF00838F),
+                  color: infoTitle,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 '选择一个练习模式和起始音，然后跟随目标音提示进行发声。\n'
                 '系统会实时检测您的音高并给出评分。\n'
                 '每个目标音有4秒的尝试时间。',
-                style: TextStyle(
-                    fontSize: 13, height: 1.5, color: Color(0xFF006064)),
+                style: TextStyle(fontSize: 13, height: 1.5, color: infoText),
               ),
             ],
           ),
         ),
         const SizedBox(height: 24),
 
-        const Text('选择练习模式',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+        Text('选择练习模式',
+            style: TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 15, color: primaryText)),
         const SizedBox(height: 12),
         ...List.generate(_modes.length, (index) {
           final mode = _modes[index];
@@ -294,12 +304,10 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF14B8A6).withOpacity(0.1)
-                      : Colors.white,
+                      : cardColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF14B8A6)
-                        : Colors.grey[200]!,
+                    color: isSelected ? const Color(0xFF14B8A6) : borderColor,
                     width: isSelected ? 2 : 1,
                   ),
                 ),
@@ -312,7 +320,9 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                         shape: BoxShape.circle,
                         color: isSelected
                             ? const Color(0xFF14B8A6)
-                            : Colors.grey[300],
+                            : isDark
+                                ? const Color(0xFF3A3A3C)
+                                : Colors.grey[300],
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -323,9 +333,10 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                           Row(
                             children: [
                               Text(mode.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14)),
+                                      fontSize: 14,
+                                      color: primaryText)),
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -349,7 +360,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                           const SizedBox(height: 2),
                           Text(mode.description,
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[500])),
+                                  fontSize: 12, color: secondaryText)),
                         ],
                       ),
                     ),
@@ -363,8 +374,9 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
         const SizedBox(height: 24),
 
         // 起始音选择
-        const Text('选择起始音',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+        Text('选择起始音',
+            style: TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 15, color: primaryText)),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -389,7 +401,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                     ),
                     Text(
                       '${_getTargetFrequency(0).toStringAsFixed(1)} Hz',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: secondaryText),
                     ),
                   ],
                 ),
@@ -432,6 +444,11 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   }
 
   Widget _buildPracticePage() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+    final mutedText =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     final progress = _currentTargetIndex / _mode.patternOffsets.length;
 
     return Column(
@@ -442,7 +459,8 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 6,
-            backgroundColor: Colors.grey[200],
+            backgroundColor:
+                isDark ? const Color(0xFF2C2C2E) : Colors.grey[200],
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
           ),
         ),
@@ -451,7 +469,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('进度: $_currentTargetIndex/${_mode.patternOffsets.length}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                style: TextStyle(fontSize: 12, color: secondaryText)),
             Text('得分: $_score',
                 style: const TextStyle(
                     fontSize: 12,
@@ -467,7 +485,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -479,8 +497,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           ),
           child: Column(
             children: [
-              const Text('目标音',
-                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text('目标音', style: TextStyle(fontSize: 14, color: secondaryText)),
               const SizedBox(height: 8),
               Text(
                 _targetNote,
@@ -494,7 +511,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
               ),
               Text(
                 '${_targetFrequency.toStringAsFixed(1)} Hz',
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 14, color: secondaryText),
               ),
             ],
           ),
@@ -507,7 +524,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -520,7 +537,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           child: Column(
             children: [
               Text('您的声音',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                  style: TextStyle(fontSize: 13, color: secondaryText)),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -535,13 +552,13 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                           ? const Color(0xFF4CAF50)
                           : _currentF0 > 0
                               ? const Color(0xFF14B8A6)
-                              : Colors.grey,
+                              : mutedText,
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
                     child: Text(' Hz',
-                        style: TextStyle(fontSize: 16, color: Colors.grey)),
+                        style: TextStyle(fontSize: 16, color: secondaryText)),
                   ),
                 ],
               ),
@@ -549,7 +566,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                 _currentF0 > 0
                     ? VoiceTrainingService.frequencyToNoteName(_currentF0)
                     : '请发声',
-                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+                style: TextStyle(fontSize: 16, color: mutedText),
               ),
             ],
           ),
@@ -562,13 +579,13 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
-                const Text('音高偏差',
-                    style: TextStyle(fontSize: 13, color: Colors.grey)),
+                Text('音高偏差',
+                    style: TextStyle(fontSize: 13, color: secondaryText)),
                 const SizedBox(height: 12),
                 _buildPitchIndicator(),
               ],
@@ -594,7 +611,9 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                     ? const Color(0xFF4CAF50)
                     : isCurrent
                         ? const Color(0xFF14B8A6)
-                        : Colors.grey[200],
+                        : isDark
+                            ? const Color(0xFF2C2C2E)
+                            : Colors.grey[200],
               ),
               child: Center(
                 child: isDone
@@ -602,7 +621,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                     : Text('${index + 1}',
                         style: TextStyle(
                             fontSize: 10,
-                            color: isCurrent ? Colors.white : Colors.grey[500],
+                            color: isCurrent ? Colors.white : secondaryText,
                             fontWeight: FontWeight.bold)),
               ),
             );
@@ -634,6 +653,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   }
 
   Widget _buildPitchIndicator() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cents = 1200 * log(_currentF0 / _targetFrequency) / log(2);
     final clampedCents = cents.clamp(-100.0, 100.0);
     final position = (clampedCents + 100) / 200; // 0..1
@@ -646,13 +666,13 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
             Container(
               height: 8,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [
-                    const Color(0xFF3F51B5), // 低
-                    const Color(0xFF4CAF50), // 准
-                    const Color(0xFF3F51B5), // 高
+                    Color(0xFF3F51B5), // 低
+                    Color(0xFF4CAF50), // 准
+                    Color(0xFF3F51B5), // 高
                   ],
-                  stops: const [0.0, 0.5, 1.0],
+                  stops: [0.0, 0.5, 1.0],
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -669,7 +689,9 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                   color: cents.abs() <= 50
                       ? const Color(0xFF4CAF50)
                       : const Color(0xFFF44336),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(
+                      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                      width: 2),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.15),
@@ -698,6 +720,11 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   }
 
   Widget _buildResultPage() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
     final accuracy = _totalAttempts > 0
         ? (_successfulHits / _totalAttempts * 100).round()
         : 0;
@@ -723,8 +750,11 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
               const Icon(Icons.emoji_events,
                   size: 48, color: Color(0xFF14B8A6)),
               const SizedBox(height: 12),
-              const Text('练习完成！',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text('练习完成！',
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: primaryText)),
               const SizedBox(height: 24),
               _buildStatRow('总得分', '$_score', const Color(0xFF14B8A6)),
               const SizedBox(height: 8),
@@ -751,10 +781,20 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
               width: 56,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: hit ? const Color(0xFFE8F5E9) : Colors.grey[100],
+                color: hit
+                    ? isDark
+                        ? const Color(0xFF173522)
+                        : const Color(0xFFE8F5E9)
+                    : isDark
+                        ? const Color(0xFF2C2C2E)
+                        : Colors.grey[100],
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: hit ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+                  color: hit
+                      ? const Color(0xFF4CAF50)
+                      : isDark
+                          ? const Color(0xFF3A3A3C)
+                          : Colors.grey[300]!,
                 ),
               ),
               child: Column(
@@ -763,14 +803,13 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
-                          color: hit
-                              ? const Color(0xFF2E7D32)
-                              : Colors.grey[500])),
+                          color:
+                              hit ? const Color(0xFF2E7D32) : secondaryText)),
                   const SizedBox(height: 2),
                   Icon(
                     hit ? Icons.check_circle : Icons.cancel,
                     size: 14,
-                    color: hit ? const Color(0xFF4CAF50) : Colors.grey[400],
+                    color: hit ? const Color(0xFF4CAF50) : secondaryText,
                   ),
                 ],
               ),
@@ -797,10 +836,16 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   }
 
   Widget _buildStatRow(String label, String value, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+        Text(label,
+            style: TextStyle(
+                fontSize: 14,
+                color: isDark
+                    ? const Color(0xFFAEAEB2)
+                    : const Color(0xFF616161))),
         Text(value,
             style: TextStyle(
                 fontSize: 18, fontWeight: FontWeight.bold, color: color)),

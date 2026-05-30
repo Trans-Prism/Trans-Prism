@@ -72,14 +72,16 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
     if (!_initialised) return const SizedBox.shrink();
     if (!_visible) return const SizedBox.shrink();
 
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.only(top: 8, bottom: 24),
       elevation: 0,
-      color: Colors.grey.shade50,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade50,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -88,7 +90,10 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
           children: [
             Row(
               children: [
-                Icon(Icons.balance, size: 20, color: Colors.grey.shade700),
+                Icon(Icons.balance,
+                    size: 20,
+                    color:
+                        isDark ? Colors.grey.shade400 : Colors.grey.shade700),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -96,7 +101,9 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800),
+                        color: isDark
+                            ? const Color(0xFFF5F5F7)
+                            : Colors.grey.shade800),
                   ),
                 ),
                 IconButton(
@@ -114,7 +121,9 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
               'Attribution-NonCommercial-ShareAlike 4.0 International Public License '
               '(CC BY-NC-SA 4.0) 进行许可。',
               style: TextStyle(
-                  fontSize: 13, height: 1.55, color: Colors.grey.shade700),
+                  fontSize: 13,
+                  height: 1.55,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
             ),
             const SizedBox(height: 8),
             GestureDetector(
@@ -128,11 +137,11 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
                   ),
                 );
               },
-              child: Row(
+              child: const Row(
                 children: [
-                  const Icon(Icons.open_in_new, size: 12, color: Colors.blue),
-                  const SizedBox(width: 4),
-                  const Flexible(
+                  Icon(Icons.open_in_new, size: 12, color: Colors.blue),
+                  SizedBox(width: 4),
+                  Flexible(
                     child: Text('https://github.com/Ethanlita/vfs-tracker',
                         style: TextStyle(fontSize: 12, color: Colors.blue),
                         overflow: TextOverflow.ellipsis),
@@ -145,7 +154,9 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
               '您在分享、修改或二次发布相关内容时，须遵守 CC BY-NC-SA 4.0 协议要求，'
               '包括署名原作者、注明许可协议、非商业使用，并以相同方式共享衍生作品。',
               style: TextStyle(
-                  fontSize: 12, height: 1.5, color: Colors.grey.shade600),
+                  fontSize: 12,
+                  height: 1.5,
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade600),
             ),
           ],
         ),

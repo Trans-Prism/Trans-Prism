@@ -31,10 +31,10 @@ Future<BackendStatus> checkBackendAndProceed(
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Row(children: [
-            const Icon(Icons.cloud_off, color: Color(0xFFF44336)),
-            const SizedBox(width: 8),
-            const Text('后端连接失败'),
+          title: const Row(children: [
+            Icon(Icons.cloud_off, color: Color(0xFFF44336)),
+            SizedBox(width: 8),
+            Text('后端连接失败'),
           ]),
           content: const Text(
             '已检测到 AWS 后端配置，但无法连接到服务器。\n\n'

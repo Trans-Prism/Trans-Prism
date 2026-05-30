@@ -48,21 +48,21 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   Future<void> _checkNotificationPermission() async {
     final hasPerm = await _notificationService.hasPermission();
     if (hasPerm) {
-      print('🔔 [TP-Perm] 通知权限已授予');
+      debugPrint('🔔 [TP-Perm] 通知权限已授予');
       return;
     }
     if (!mounted) return;
-    print('🔔 [TP-Perm] 通知权限未授予，弹出说明对话框');
+    debugPrint('🔔 [TP-Perm] 通知权限未授予，弹出说明对话框');
     final granted = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.notifications_active_rounded,
+            Icon(Icons.notifications_active_rounded,
                 color: Color(0xFF5BCEFA), size: 28),
-            const SizedBox(width: 10),
-            const Expanded(
+            SizedBox(width: 10),
+            Expanded(
               child: Text(
                 '开启用药提醒',
                 style: TextStyle(fontWeight: FontWeight.w800),
@@ -137,50 +137,50 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
 
   void _setupNotificationCallback() {
     _notificationService.onDoseRecorded = (drugId) async {
-      print('💊 [TP-Dash] ========== onDoseRecorded ==========');
-      print('💊 [TP-Dash] drugId=$drugId');
+      debugPrint('💊 [TP-Dash] ========== onDoseRecorded ==========');
+      debugPrint('💊 [TP-Dash] drugId=$drugId');
 
       // 直接从 SharedPreferences 重新加载，避开状态同步问题
       final prefs = await SharedPreferences.getInstance();
       final jsonStr = prefs.getString(_storageKey);
       if (jsonStr == null || jsonStr.isEmpty) {
-        print('💊 [TP-Dash] ❌ 无持久化数据');
+        debugPrint('💊 [TP-Dash] ❌ 无持久化数据');
         return;
       }
       final drugs = Drug.listFromJson(jsonStr);
       final index = drugs.indexWhere((d) => d.id == drugId);
       if (index == -1) {
-        print('💊 [TP-Dash] ❌ 未找到药物');
+        debugPrint('💊 [TP-Dash] ❌ 未找到药物');
         return;
       }
 
       final drug = drugs[index];
-      print('💊 [TP-Dash] 药物: ${drug.name}');
-      print('💊 [TP-Dash] isDiscreteMode=${drug.isDiscreteMode}');
-      print('💊 [TP-Dash] dailyReminderTimes=${drug.dailyReminderTimes}');
-      print(
+      debugPrint('💊 [TP-Dash] 药物: ${drug.name}');
+      debugPrint('💊 [TP-Dash] isDiscreteMode=${drug.isDiscreteMode}');
+      debugPrint('💊 [TP-Dash] dailyReminderTimes=${drug.dailyReminderTimes}');
+      debugPrint(
           '💊 [TP-Dash] intervalValue=${drug.intervalValue}, intervalUnit=${drug.intervalUnit}');
 
       // 记录用药
       drug.recordDose();
-      print('💊 [TP-Dash] recordDose 完成!');
-      print('💊 [TP-Dash] 新 nextDoseTime=${drug.nextDoseTime}');
+      debugPrint('💊 [TP-Dash] recordDose 完成!');
+      debugPrint('💊 [TP-Dash] 新 nextDoseTime=${drug.nextDoseTime}');
 
       // 持久化
       await prefs.setString(_storageKey, Drug.listToJson(drugs));
-      print('💊 [TP-Dash] 已保存');
+      debugPrint('💊 [TP-Dash] 已保存');
 
       // 更新内存状态 + UI
       if (mounted) {
         setState(() {
           _drugs = drugs;
         });
-        print('💊 [TP-Dash] UI 已更新 (setState)');
+        debugPrint('💊 [TP-Dash] UI 已更新 (setState)');
       }
 
       // 调度下次提醒
       await _notificationService.scheduleMedicineReminder(drug);
-      print('💊 [TP-Dash] ========== 完成 ==========');
+      debugPrint('💊 [TP-Dash] ========== 完成 ==========');
     };
 
     _notificationService.onSnoozeRequested = (drugId) async {
@@ -193,10 +193,11 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
       final drug = drugs[index];
       drug.setNextDoseTime(DateTime.now().add(const Duration(minutes: 5)));
       await prefs.setString(_storageKey, Drug.listToJson(drugs));
-      if (mounted)
+      if (mounted) {
         setState(() {
           _drugs = drugs;
         });
+      }
       await _notificationService.scheduleMedicineReminder(drug);
       if (mounted) {
         BrandedToast.success(context, '已设置5分钟后提醒 💊');
@@ -339,6 +340,10 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     if (_isLoading) {
       return const Scaffold(
         body: LoadingIndicator(),
@@ -347,11 +352,11 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '💊 药物存量仪表盘',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1D1D1F),
+            color: textColor,
           ),
         ),
       ),
@@ -367,6 +372,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -376,7 +382,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
             Icon(
               Icons.medication_liquid_outlined,
               size: 72,
-              color: Colors.grey.shade300,
+              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
             ),
             const SizedBox(height: 16),
             Text(
@@ -384,7 +390,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
             ),
             const SizedBox(height: 8),
@@ -393,7 +399,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade400,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
               ),
             ),
             const SizedBox(height: 24),
@@ -409,6 +415,10 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   Widget _buildContent() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     double totalStockPercentage = 0;
     int minRunwayDays = 999;
 
@@ -444,10 +454,10 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               '药物清单 (${_drugs.length})',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1D1D1F),
+                color: textColor,
               ),
             ),
           ),
@@ -458,14 +468,18 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   Widget _buildSummaryCard(double percentage, int runwayDays) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -493,10 +507,10 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
                 ),
                 Text(
                   '${(percentage * 100).toInt()}%',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D1D1F),
+                    color: textColor,
                   ),
                 ),
               ],
@@ -524,9 +538,8 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
                       style: TextStyle(
                         fontSize: 44,
                         fontWeight: FontWeight.w900,
-                        color: runwayDays <= 3
-                            ? Colors.red.shade400
-                            : const Color(0xFF1D1D1F),
+                        color:
+                            runwayDays <= 3 ? Colors.red.shade400 : textColor,
                         height: 1.0,
                       ),
                     ),
@@ -563,6 +576,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   Widget _buildDrugCard(int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final drug = _drugs[index];
     final drugPercentage = drug.stockPercentage;
 
@@ -570,12 +584,13 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.03),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -591,10 +606,12 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
                   children: [
                     Text(
                       drug.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1D1D1F),
+                        color: isDark
+                            ? const Color(0xFFF5F5F7)
+                            : const Color(0xFF1D1D1F),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -888,6 +905,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -919,10 +940,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
               children: [
                 Text(
                   _isEditing ? '编辑药物' : '添加药物',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D1D1F),
+                    color: textColor,
                   ),
                 ),
               ],
@@ -941,6 +962,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                     controller: _nameController,
                     label: '药物名称',
                     hint: '如：雌二醇片',
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 14),
 
@@ -954,6 +976,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                           hint: '如：60',
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
+                          isDark: isDark,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -964,6 +987,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                           hint: '如：2',
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
+                          isDark: isDark,
                         ),
                       ),
                     ],
@@ -971,19 +995,19 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                   const SizedBox(height: 16),
 
                   // ── 模式切换 ──
-                  _buildModeSwitch(),
+                  _buildModeSwitch(isDark: isDark),
                   const SizedBox(height: 16),
 
                   // ── 周期选择（仅固定间隔模式） ──
-                  if (!_isDiscreteMode) _buildCycleSection(),
+                  if (!_isDiscreteMode) _buildCycleSection(isDark: isDark),
                   if (!_isDiscreteMode) const SizedBox(height: 14),
 
                   // ── 下次给药时间 ──
-                  _buildNextDoseSection(),
+                  _buildNextDoseSection(isDark: isDark),
                   const SizedBox(height: 14),
 
                   // ── 每日提醒时间（仅日内离散模式） ──
-                  if (_isDiscreteMode) _buildTimeSection(),
+                  if (_isDiscreteMode) _buildTimeSection(isDark: isDark),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -1019,7 +1043,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   }
 
   // ── 模式切换 ──
-  Widget _buildModeSwitch() {
+  Widget _buildModeSwitch({required bool isDark}) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1034,10 +1058,12 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
               children: [
                 Text(
                   _isDiscreteMode ? '日内离散模式' : '固定间隔模式',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D1D1F),
+                    color: isDark
+                        ? const Color(0xFFF5F5F7)
+                        : const Color(0xFF1D1D1F),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1064,7 +1090,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   }
 
   // ── 周期选择 ──
-  Widget _buildCycleSection() {
+  Widget _buildCycleSection({required bool isDark}) {
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -1084,7 +1113,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1095,12 +1124,12 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     '每',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1D1D1F),
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1110,10 +1139,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                       controller: _intervalValueController,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1D1D1F),
+                        color: textColor,
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -1141,12 +1170,16 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFF5BCEFA)
-                            : Colors.white.withOpacity(0.7),
+                            : (isDark
+                                ? const Color(0xFF3A3A3C)
+                                : Colors.white.withOpacity(0.7)),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF5BCEFA)
-                              : Colors.grey.shade200,
+                              : (isDark
+                                  ? Colors.grey.shade700
+                                  : Colors.grey.shade200),
                         ),
                       ),
                       child: Text(
@@ -1155,9 +1188,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                           fontSize: 14,
                           fontWeight:
                               isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF1D1D1F),
+                          color: isSelected ? Colors.white : textColor,
                         ),
                       ),
                     ),
@@ -1172,7 +1203,9 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   }
 
   // ── 下次给药时间 ──
-  Widget _buildNextDoseSection() {
+  Widget _buildNextDoseSection({required bool isDark}) {
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     final displayText = _nextDoseTime != null
         ? '${_nextDoseTime!.year}/${_nextDoseTime!.month}/${_nextDoseTime!.day}  '
             '${_nextDoseTime!.hour.toString().padLeft(2, '0')}:${_nextDoseTime!.minute.toString().padLeft(2, '0')}'
@@ -1194,7 +1227,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           ),
         ),
         Material(
-          color: Colors.grey.shade100,
+          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
@@ -1222,10 +1255,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                 initialTime: _nextDoseTime != null
                     ? TimeOfDay.fromDateTime(_nextDoseTime!)
                     : TimeOfDay.now(),
-                builder: (context, child) {
+                builder: (ctx, child) {
                   return Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: Theme.of(context).colorScheme.copyWith(
+                    data: Theme.of(ctx).copyWith(
+                      colorScheme: Theme.of(ctx).colorScheme.copyWith(
                             primary: const Color(0xFF5BCEFA),
                           ),
                     ),
@@ -1233,6 +1266,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                   );
                 },
               );
+              if (!context.mounted) return;
               if (time == null) return;
               setState(() {
                 _nextDoseTime = DateTime(
@@ -1263,7 +1297,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: _nextDoseTime != null
-                            ? const Color(0xFF1D1D1F)
+                            ? textColor
                             : Colors.grey.shade400,
                       ),
                     ),
@@ -1287,7 +1321,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   }
 
   // ── 每日提醒时间 ──
-  Widget _buildTimeSection() {
+  Widget _buildTimeSection({required bool isDark}) {
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -1307,7 +1344,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1322,10 +1359,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                     return Chip(
                       label: Text(
                         time,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1D1D1F),
+                          color: textColor,
                         ),
                       ),
                       deleteIcon: Icon(
@@ -1421,12 +1458,14 @@ class _FilledField extends StatelessWidget {
   final String label;
   final String hint;
   final TextInputType? keyboardType;
+  final bool isDark;
 
   const _FilledField({
     required this.controller,
     required this.label,
     required this.hint,
     this.keyboardType,
+    required this.isDark,
   });
 
   @override
@@ -1434,10 +1473,10 @@ class _FilledField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
-        color: Color(0xFF1D1D1F),
+        color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
       ),
       decoration: InputDecoration(
         labelText: label,
@@ -1452,7 +1491,7 @@ class _FilledField extends StatelessWidget {
           color: Colors.grey.shade300,
         ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,

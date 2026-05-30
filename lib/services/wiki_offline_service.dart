@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,13 +42,13 @@ class WikiOfflineService {
   /// ZIP 文件路径
   static Future<String> zipPath(String wikiType) async {
     final dir = await offlineWikiDir;
-    return '${dir.path}/${wikiType}-wiki-site.zip';
+    return '${dir.path}/$wikiType-wiki-site.zip';
   }
 
   /// 版本日志路径
   static Future<String> versionLogPath(String wikiType) async {
     final dir = await offlineWikiDir;
-    return '${dir.path}/.${wikiType}-wiki-site.version';
+    return '${dir.path}/.$wikiType-wiki-site.version';
   }
 
   /// 临时解压目录
@@ -143,7 +144,7 @@ class WikiOfflineService {
       for (final entry in entries) {
         if (entry is Directory &&
             File('${entry.path}/index.html').existsSync()) {
-          print('[$wikiType] 探测到内容目录: ${entry.path.split('/').last}');
+          debugPrint('[$wikiType] 探测到内容目录: ${entry.path.split('/').last}');
           return entry.path;
         }
       }
@@ -170,7 +171,7 @@ class WikiOfflineService {
         }
       }
       if (siteRoot != null) {
-        print('[$wikiType] 通过 assets/ 探测到站点根目录: '
+        debugPrint('[$wikiType] 通过 assets/ 探测到站点根目录: '
             '${siteRoot.replaceFirst(extractDir, '')}');
         return siteRoot;
       }
@@ -191,14 +192,14 @@ class WikiOfflineService {
         }
       }
       if (bestDir != null) {
-        print('[$wikiType] 递归探测到最浅内容目录: '
+        debugPrint('[$wikiType] 递归探测到最浅内容目录: '
             '${bestDir.replaceFirst(extractDir, '')}');
         return bestDir;
       }
 
       return extractDir;
     } catch (e) {
-      print('[$wikiType] 解压失败: $e');
+      debugPrint('[$wikiType] 解压失败: $e');
       return null;
     }
   }

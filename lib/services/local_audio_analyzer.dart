@@ -135,7 +135,7 @@ class LocalAudioAnalyzer {
     final bitsPerSample =
         ByteData.sublistView(wavBytes, 34).getUint16(0, Endian.little);
 
-    final dataStart = 44;
+    const dataStart = 44;
     final bytesPerSample = bitsPerSample ~/ 8;
     final sampleCount = dataSize ~/ (bytesPerSample * numChannels);
     final samples = List<double>.filled(sampleCount, 0.0);

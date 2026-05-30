@@ -35,13 +35,22 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryTextColor =
+        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final cardBorderColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '关于',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1D1D1F),
+            color: textColor,
           ),
         ),
       ),
@@ -51,9 +60,10 @@ class _AboutScreenState extends State<AboutScreen> {
           // Logo 与标题区域
           Card(
             elevation: 0,
+            color: cardBg,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: Colors.grey.shade200),
+              side: BorderSide(color: cardBorderColor),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
@@ -68,13 +78,13 @@ class _AboutScreenState extends State<AboutScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Trans Prism (TP) 🌈',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1,
-                      color: Color(0xFF1D1D1F),
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -82,7 +92,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     '为跨性别社群打造的全能工具箱',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade600,
+                      color: secondaryTextColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -90,7 +100,8 @@ class _AboutScreenState extends State<AboutScreen> {
                     _appVersion,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade400,
+                      color:
+                          isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -133,14 +144,15 @@ class _AboutScreenState extends State<AboutScreen> {
           Row(
             children: [
               Icon(Icons.article_outlined,
-                  size: 20, color: Colors.grey.shade700),
+                  size: 20,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
               const SizedBox(width: 8),
               Text(
                 '第三方开源许可',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
                 ),
               ),
             ],
@@ -154,6 +166,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'BSD 3-Clause License',
             copyright: 'Copyright 2014 Flutter\nCopyright 2012 Dart',
             url: 'https://github.com/flutter/flutter',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -163,6 +180,11 @@ class _AboutScreenState extends State<AboutScreen> {
             copyright:
                 'Copyright 2013 Flutter\nCopyright 2022 shared_preferences contributors',
             url: 'https://pub.dev/packages/shared_preferences',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -171,6 +193,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2019-present flutterchina.club',
             url: 'https://pub.dev/packages/dio',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -179,6 +206,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'BSD 3-Clause License',
             copyright: 'Copyright 2013 Flutter',
             url: 'https://pub.dev/packages/path_provider',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -187,6 +219,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'BSD 3-Clause License',
             copyright: 'Copyright 2013 Flutter',
             url: 'https://pub.dev/packages/webview_flutter',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -195,6 +232,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2018-2024 Iman Khoshabi',
             url: 'https://pub.dev/packages/fl_chart',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -203,6 +245,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2021 Albert Yu (talent-jiang)',
             url: 'https://pub.dev/packages/record',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -211,6 +258,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2024 sss-m5',
             url: 'https://pub.dev/packages/pitch_detector_dart',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -219,6 +271,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2021 luanpotter',
             url: 'https://pub.dev/packages/audioplayers',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -227,6 +284,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2019 Yulio',
             url: 'https://pub.dev/packages/uuid',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -235,6 +297,11 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'BSD 3-Clause License',
             copyright: 'Copyright 2014 Dart',
             url: 'https://pub.dev/packages/http',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -243,10 +310,15 @@ class _AboutScreenState extends State<AboutScreen> {
             license: 'MIT License',
             copyright: 'Copyright 2016 Flutter',
             url: 'https://pub.dev/packages/cupertino_icons',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           const SizedBox(height: 12),
           // VFS Tracker / 嗓音训练 许可声明
-          const _SectionHeader(title: '内容与数据许可'),
+          _SectionHeader(title: '内容与数据许可', isDark: isDark),
           _buildLicenseCard(
             context,
             icon: Icons.voice_chat,
@@ -256,6 +328,11 @@ class _AboutScreenState extends State<AboutScreen> {
             url: 'https://github.com/Ethanlita/vfs-tracker',
             description:
                 '嗓音训练模块基于 VFS Tracker 项目开发，遵循 Attribution-NonCommercial-ShareAlike 4.0 International 许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -266,6 +343,11 @@ class _AboutScreenState extends State<AboutScreen> {
             url: 'https://github.com/project-trans',
             description:
                 '内置 Wiki 内容（MtF.Wiki、FtM.Wiki、RLE.Wiki 等）采用「署名—相同方式共享 4.0 协议国际版」许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -275,6 +357,11 @@ class _AboutScreenState extends State<AboutScreen> {
             copyright: 'Project Trans',
             url: 'https://github.com/project-trans/2345.LGBT',
             description: '跨性别友好资源导航页，源代码采用 LGPL-3.0 许可证。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -284,6 +371,11 @@ class _AboutScreenState extends State<AboutScreen> {
             copyright: 'Project Trans',
             url: 'https://github.com/project-trans/Next-MtF-wiki',
             description: 'MtF.Wiki 基于的前端框架，采用 AGPL-3.0 许可证。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -293,6 +385,11 @@ class _AboutScreenState extends State<AboutScreen> {
             copyright: 'Project Trans',
             url: 'https://github.com/project-trans/FtM-wiki',
             description: 'FtM.Wiki 的源代码采用 LGPLv3 许可，网站内容采用 CC BY-SA 4.0 许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -303,6 +400,11 @@ class _AboutScreenState extends State<AboutScreen> {
             url: 'https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker',
             description:
                 '血药浓度模拟的 Web 交互界面，基于 React + TypeScript + Vite 构建，以 WebView 方式嵌入应用。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           _buildLicenseCard(
             context,
@@ -314,6 +416,11 @@ class _AboutScreenState extends State<AboutScreen> {
                 'https://github.com/LaoZhong-Mihari/HRT-Recorder-PKcomponent-Test',
             description:
                 '血药浓度模拟的药代动力学算法来源，包含：三室模型解析解、两库注射动力学、Bateman 口服模型、舌下双通路模型、贴片零阶/一阶输入模型。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
           ),
           const SizedBox(height: 32),
           // 版权声明
@@ -324,7 +431,7 @@ class _AboutScreenState extends State<AboutScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade400,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
                 height: 1.6,
               ),
             ),
@@ -343,14 +450,19 @@ class _AboutScreenState extends State<AboutScreen> {
     required String copyright,
     required String url,
     String? description,
+    required bool isDark,
+    required Color cardBg,
+    required Color cardBorderColor,
+    required Color textColor,
+    required Color secondaryTextColor,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
-      color: Colors.white,
+      color: cardBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(color: cardBorderColor),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -359,15 +471,15 @@ class _AboutScreenState extends State<AboutScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, size: 18, color: Colors.grey.shade600),
+                Icon(icon, size: 18, color: secondaryTextColor),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1D1D1F),
+                      color: textColor,
                     ),
                   ),
                 ),
@@ -375,7 +487,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -383,7 +495,8 @@ class _AboutScreenState extends State<AboutScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
+                      color:
+                          isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                     ),
                   ),
                 ),
@@ -396,7 +509,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.5,
-                  color: Colors.grey.shade600,
+                  color: secondaryTextColor,
                 ),
               ),
             ],
@@ -405,7 +518,7 @@ class _AboutScreenState extends State<AboutScreen> {
               copyright,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade500,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
               ),
             ),
             const SizedBox(height: 4),
@@ -450,8 +563,9 @@ class _AboutScreenState extends State<AboutScreen> {
 /// 段落小标题
 class _SectionHeader extends StatelessWidget {
   final String title;
+  final bool isDark;
 
-  const _SectionHeader({required this.title});
+  const _SectionHeader({required this.title, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -470,10 +584,10 @@ class _SectionHeader extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
         ],

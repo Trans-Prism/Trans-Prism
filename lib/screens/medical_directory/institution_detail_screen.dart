@@ -37,13 +37,17 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '机构详情',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1D1D1F),
+            color: textColor,
           ),
         ),
         actions: [
@@ -91,12 +95,16 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildInfoCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -106,10 +114,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
             // 名称
             Text(
               _institution.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF1D1D1F),
+                color: textColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -136,10 +144,15 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildInfoRow(IconData icon, String primary, String? secondary) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: Colors.grey.shade500),
+        Icon(icon,
+            size: 18,
+            color: isDark ? Colors.grey.shade400 : Colors.grey.shade500),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -147,9 +160,9 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
             children: [
               Text(
                 primary,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF1D1D1F),
+                  color: textColor,
                 ),
               ),
               if (secondary != null && secondary.isNotEmpty) ...[
@@ -158,7 +171,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                   secondary,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade500,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                   ),
                 ),
               ],
@@ -170,12 +183,16 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildDepartmentAndTags() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -183,12 +200,12 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 科室
-            const Text(
+            Text(
               '科室',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF86868B),
+                color: secondaryText,
               ),
             ),
             const SizedBox(height: 8),
@@ -217,12 +234,12 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
             // 标签
             if (_institution.tags.isNotEmpty) ...[
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 '标签',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF86868B),
+                  color: secondaryText,
                 ),
               ),
               const SizedBox(height: 8),
@@ -258,12 +275,16 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildDoctorsSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -273,21 +294,24 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
             Row(
               children: [
                 Icon(Icons.medical_services_outlined,
-                    size: 18, color: Colors.grey.shade600),
+                    size: 18,
+                    color:
+                        isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   '相关医生',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D1D1F),
+                    color: textColor,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             for (int i = 0; i < _institution.doctors.length; i++) ...[
-              if (i > 0) const Divider(height: 1),
+              if (i > 0)
+                Divider(height: 1, color: isDark ? Colors.grey.shade800 : null),
               _buildDoctorTile(_institution.doctors[i]),
             ],
           ],
@@ -297,6 +321,9 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildDoctorTile(MedicalDoctor doctor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -314,10 +341,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
               children: [
                 Text(
                   doctor.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1D1D1F),
+                    color: textColor,
                   ),
                 ),
                 if (doctor.title != null) ...[
@@ -326,7 +353,8 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                     doctor.title!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade500,
+                      color:
+                          isDark ? Colors.grey.shade400 : Colors.grey.shade500,
                     ),
                   ),
                 ],
@@ -336,7 +364,8 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                     doctor.notes!,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color:
+                          isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                       height: 1.4,
                     ),
                   ),
@@ -350,12 +379,16 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildNotesSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -364,14 +397,17 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline, size: 18, color: Colors.grey.shade600),
+                Icon(Icons.info_outline,
+                    size: 18,
+                    color:
+                        isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   '备注',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D1D1F),
+                    color: textColor,
                   ),
                 ),
               ],
@@ -381,7 +417,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
               _institution.notes!,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                 height: 1.5,
               ),
             ),
@@ -392,12 +428,16 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildSourceLink() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -423,12 +463,12 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       '信息来源',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF86868B),
+                        color: secondaryText,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -444,7 +484,8 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+              Icon(Icons.chevron_right,
+                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
             ],
           ),
         ),
@@ -453,30 +494,34 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   }
 
   Widget _buildMapPlaceholder() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: Container(
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.grey.shade50,
+          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.map_outlined, size: 36, color: Colors.grey.shade300),
+              Icon(Icons.map_outlined,
+                  size: 36,
+                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade300),
               const SizedBox(height: 8),
               Text(
                 '地图功能即将上线',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade400,
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
                 ),
               ),
               if (_institution.latitude != null &&
@@ -487,7 +532,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                   '${_institution.longitude!.toStringAsFixed(4)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey.shade300,
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
                   ),
                 ),
               ],

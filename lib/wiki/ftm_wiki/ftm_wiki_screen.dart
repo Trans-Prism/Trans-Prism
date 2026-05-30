@@ -8,7 +8,7 @@ import 'dart:io';
 import 'ftm_wiki_manager.dart';
 
 class FtmWikiScreen extends StatefulWidget {
-  const FtmWikiScreen({Key? key}) : super(key: key);
+  const FtmWikiScreen({super.key});
 
   @override
   State<FtmWikiScreen> createState() => _FtmWikiScreenState();
@@ -40,12 +40,13 @@ class _FtmWikiScreenState extends State<FtmWikiScreen> {
   Future<void> _initWikiWithHardcoreServer() async {
     await FtmWikiManager.initLocalWiki();
     final sitePath = await FtmWikiManager.effectiveSitePath;
+    if (sitePath == null || !mounted) return;
 
     final staticHandler =
         createStaticHandler(sitePath, defaultDocument: 'index.html');
 
     // 🚀 上帝视角拦截器 + 中文 URL 解码
-    final smartHandler = (Request request) async {
+    Future<Response> smartHandler(Request request) async {
       var response = await staticHandler(request);
 
       // 对文本类内容：剥离 https:// 引用，干掉 SSL 错误日志
@@ -109,10 +110,10 @@ class _FtmWikiScreenState extends State<FtmWikiScreen> {
             headers: {'content-type': 'text/html; charset=utf-8'});
       }
       return response;
-    };
+    }
 
     _localServer = await io.serve(smartHandler, 'localhost', 8081);
-    print('🚀 物理截胡版服务器已启动: http://localhost:${_localServer!.port}');
+    debugPrint('🚀 物理截胡版服务器已启动: http://localhost:${_localServer!.port}');
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

@@ -24,7 +24,6 @@ class _PianoScreenState extends State<PianoScreen> {
   int? _pressedKey;
 
   static const int _startMidi = 21; // A0
-  static const int _endMidi = 108; // C8
 
   @override
   void initState() {
@@ -78,7 +77,6 @@ class _PianoScreenState extends State<PianoScreen> {
         final blackKeyWidth = whiteKeyWidth * 0.6;
         final whiteKeyHeight = isLandscape ? constraints.maxHeight - 80 : 280.0;
         final blackKeyHeight = whiteKeyHeight * 0.62;
-        final visibleRange = _getVisibleRange(isLandscape);
 
         return SingleChildScrollView(
           scrollDirection: isLandscape ? Axis.horizontal : Axis.vertical,
@@ -232,10 +230,6 @@ class _PianoScreenState extends State<PianoScreen> {
       if (_isBlack(m)) return m;
     }
     return null;
-  }
-
-  int? _getVisibleRange(bool landscape) {
-    return null; // 全部显示
   }
 
   double midiToHz(int midi) {

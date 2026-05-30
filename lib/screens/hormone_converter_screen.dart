@@ -223,13 +223,17 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   // -----------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
+      backgroundColor:
+          isDark ? const Color(0xFF0F0F12) : const Color(0xFFF2F2F7),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '激素换算器',
-          style:
-              TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF1D1D1F)),
+          style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color:
+                  isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F)),
         ),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -269,14 +273,18 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           final hormone = hormones[index];
           final isSelected = hormone.id == _selectedHormone.id;
 
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return GestureDetector(
             onTap: () => _selectHormone(hormone),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color:
-                    isSelected ? const Color(0xFF1D1D1F) : Colors.transparent,
+                color: isSelected
+                    ? (isDark
+                        ? const Color(0xFFF5F5F7)
+                        : const Color(0xFF1D1D1F))
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
@@ -284,7 +292,9 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : const Color(0xFF8E8E93),
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF1D1D1F) : Colors.white)
+                      : const Color(0xFF8E8E93),
                 ),
               ),
             ),
@@ -351,12 +361,17 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     required ValueChanged<String> onChanged,
     required ValueChanged<String> onUnitChanged,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
       decoration: BoxDecoration(
-        color: isFocused ? const Color(0xFFEBEBED) : const Color(0xFFF5F5F7),
+        color: isFocused
+            ? (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEBEBED))
+            : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7)),
         borderRadius: BorderRadius.circular(20),
         boxShadow: isFocused
             ? [
@@ -373,10 +388,10 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF8E8E93),
+              color: isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93),
               letterSpacing: 0.5,
             ),
           ),
@@ -394,11 +409,11 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                   ],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D1D1F),
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    color: textColor,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                     height: 1.15,
                   ),
                   decoration: const InputDecoration(
@@ -433,6 +448,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     required String currentUnit,
     required ValueChanged<String> onChanged,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final units = _selectedHormone.units;
 
     return PopupMenuButton<String>(
@@ -440,7 +456,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           ? currentUnit
           : units.first.symbol,
       offset: const Offset(0, 44),
-      color: const Color(0xFFF5F5F7),
+      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       onSelected: onChanged,
       itemBuilder: (context) => units.map((u) {
@@ -451,10 +467,12 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
             children: [
               Text(
                 u.symbol,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1D1D1F),
+                  color: isDark
+                      ? const Color(0xFFF5F5F7)
+                      : const Color(0xFF1D1D1F),
                 ),
               ),
               if (u.isCommon) ...[
@@ -475,7 +493,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFE8E8ED),
+          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE8E8ED),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -483,15 +501,18 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           children: [
             Text(
               currentUnit,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF636366),
+                color:
+                    isDark ? const Color(0xFFC7C7CC) : const Color(0xFF636366),
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                size: 16, color: Color(0xFF8E8E93)),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                size: 16,
+                color:
+                    isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93)),
           ],
         ),
       ),
@@ -546,6 +567,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     required bool hasAnyMatch,
     required ({double min, double max})? convertedRange,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = _resolveTransFlagPalette(range.iconType);
 
     // ---- 图标 ----
@@ -583,19 +605,22 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final Color cardBg = isMatched
         ? palette.tintBg
         : dimmed
-            ? const Color(0xFFEBEBED)
-            : palette.bgNormal;
-    final Color contentColor =
-        isMatched ? palette.accent : const Color(0xFF8E8E93);
+            ? (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEBEBED))
+            : (isDark ? const Color(0xFF1C1C1E) : palette.bgNormal);
+    final Color contentColor = isMatched
+        ? palette.accent
+        : (isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93));
     final Color labelColor = isMatched
         ? palette.onAccent
         : dimmed
-            ? const Color(0xFF999999)
-            : const Color(0xFF1D1D1F);
-    final Color badgeBg =
-        isMatched ? palette.accent.withOpacity(0.12) : const Color(0xFFE5E5EA);
-    final Color badgeTextColor =
-        isMatched ? palette.accent : const Color(0xFF999999);
+            ? (isDark ? const Color(0xFF636366) : const Color(0xFF999999))
+            : (isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F));
+    final Color badgeBg = isMatched
+        ? palette.accent.withOpacity(0.12)
+        : (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA));
+    final Color badgeTextColor = isMatched
+        ? palette.accent
+        : (isDark ? const Color(0xFFAEAEB2) : const Color(0xFF999999));
 
     return AnimatedScale(
       duration: const Duration(milliseconds: 350),
@@ -631,13 +656,19 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
               decoration: BoxDecoration(
                 color: isMatched
                     ? palette.accent.withOpacity(0.18)
-                    : const Color(0xFFE5E5EA),
+                    : (isDark
+                        ? const Color(0xFF3A3A3C)
+                        : const Color(0xFFE5E5EA)),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
                 size: 22,
-                color: isMatched ? palette.accent : const Color(0xFFB0B0B8),
+                color: isMatched
+                    ? palette.accent
+                    : (isDark
+                        ? const Color(0xFF636366)
+                        : const Color(0xFFB0B0B8)),
               ),
             ),
             const SizedBox(width: 14),
@@ -696,7 +727,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   // 开源致谢
   // =======================================================================
   Widget _buildAttribution() {
-    return const Center(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
       child: Opacity(
         opacity: 0.30,
         child: Text(
@@ -704,7 +736,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1D1D1F),
+            color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
           ),
           textAlign: TextAlign.center,
         ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 // =============================================================================
 // 间隔单位枚举（替代旧的 CycleUnit）
@@ -224,14 +225,14 @@ class Drug {
     currentStock = (currentStock - dosage).clamp(0.0, double.infinity);
     final now = DateTime.now();
     final newTime = calculateNextDoseTime(now);
-    print('💊 [TP-Drug] recordDose: isDiscreteMode=$isDiscreteMode');
-    print(
+    debugPrint('💊 [TP-Drug] recordDose: isDiscreteMode=$isDiscreteMode');
+    debugPrint(
         '💊 [TP-Drug]   intervalValue=$intervalValue, intervalUnit=$intervalUnit');
-    print('💊 [TP-Drug]   dailyReminderTimes=$dailyReminderTimes');
-    print('💊 [TP-Drug]   now=$now');
-    print('💊 [TP-Drug]   newTime=$newTime');
+    debugPrint('💊 [TP-Drug]   dailyReminderTimes=$dailyReminderTimes');
+    debugPrint('💊 [TP-Drug]   now=$now');
+    debugPrint('💊 [TP-Drug]   newTime=$newTime');
     nextDoseTime = newTime;
-    print('💊 [TP-Drug]   nextDoseTime已设置为: $nextDoseTime');
+    debugPrint('💊 [TP-Drug]   nextDoseTime已设置为: $nextDoseTime');
   }
 
   /// 手动设置下次给药时间

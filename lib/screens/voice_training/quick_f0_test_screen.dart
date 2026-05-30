@@ -140,6 +140,11 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final secondaryText =
+        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
     final effectiveMinF0 = _minF0 == double.infinity ? null : _minF0;
 
     return Scaffold(
@@ -165,7 +170,7 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -183,7 +188,7 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -203,34 +208,43 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0F7FA),
+                  color: isDark
+                      ? const Color(0xFF1E4D4F)
+                      : const Color(0xFFE0F7FA),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFB2EBF2)),
+                  border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF2AA7B0)
+                          : const Color(0xFFB2EBF2)),
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       '测试完成',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF00838F),
+                        color: isDark
+                            ? const Color(0xFF80DEEA)
+                            : const Color(0xFF00838F),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${_averageF0.toStringAsFixed(2)} Hz',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF00838F),
+                        color: isDark
+                            ? const Color(0xFF80DEEA)
+                            : const Color(0xFF00838F),
                       ),
                     ),
                     Text(
                       '平均基频',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: secondaryText,
                       ),
                     ),
                   ],
@@ -245,14 +259,18 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
+                    color: isDark
+                        ? const Color(0xFF173522)
+                        : const Color(0xFFE8F5E9),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _successMessage!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF2E7D32),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFF81C784)
+                          : const Color(0xFF2E7D32),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -266,14 +284,18 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFEBEE),
+                    color: isDark
+                        ? const Color(0xFF3A1D1D)
+                        : const Color(0xFFFFEBEE),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _errorMessage!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFFC62828),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFFFF8A80)
+                          : const Color(0xFFC62828),
                       fontSize: 13,
                     ),
                   ),
@@ -325,10 +347,16 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
     VoidCallback? onPressed,
   }) {
     final isDisabled = onPressed == null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final disabledBg =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEEE);
+    final disabledFg =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     return Material(
       borderRadius: BorderRadius.circular(14),
       elevation: isDisabled ? 0 : 2,
       shadowColor: color.withOpacity(0.3),
+      color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(14),
@@ -345,7 +373,7 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-            color: isDisabled ? Colors.grey[200] : null,
+            color: isDisabled ? disabledBg : null,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -354,13 +382,13 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
               Icon(
                 icon,
                 size: 18,
-                color: isDisabled ? Colors.grey[400] : Colors.white,
+                color: isDisabled ? disabledFg : Colors.white,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  color: isDisabled ? Colors.grey[400] : Colors.white,
+                  color: isDisabled ? disabledFg : Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),

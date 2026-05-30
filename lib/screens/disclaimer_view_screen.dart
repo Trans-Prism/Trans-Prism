@@ -10,13 +10,17 @@ class DisclaimerViewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '免责声明',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1D1D1F),
+            color: textColor,
           ),
         ),
       ),
@@ -29,13 +33,13 @@ class DisclaimerViewScreen extends StatelessWidget {
           Text(
             '免责与使用声明',
             style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+                ?.copyWith(fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 8),
           Text(
             '在使用本应用前，请您仔细阅读以下全部声明。',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: Colors.grey.shade700),
+            style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
           ),
           const SizedBox(height: 24),
 
@@ -44,9 +48,13 @@ class DisclaimerViewScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.shade50,
+              color: isDark
+                  ? const Color(0xFF3E2723).withOpacity(0.6)
+                  : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.shade300, width: 1.5),
+              border: Border.all(
+                  color: isDark ? Colors.red.shade800 : Colors.red.shade300,
+                  width: 1.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +62,9 @@ class DisclaimerViewScreen extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.warning_amber_rounded,
-                        color: Colors.red.shade800, size: 22),
+                        color:
+                            isDark ? Colors.red.shade300 : Colors.red.shade800,
+                        size: 22),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -62,7 +72,9 @@ class DisclaimerViewScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.red.shade900,
+                          color: isDark
+                              ? Colors.red.shade200
+                              : Colors.red.shade900,
                         ),
                       ),
                     ),
@@ -75,7 +87,7 @@ class DisclaimerViewScreen extends StatelessWidget {
                     fontSize: 15,
                     height: 1.6,
                     fontWeight: FontWeight.w600,
-                    color: Colors.red.shade900,
+                    color: isDark ? Colors.red.shade200 : Colors.red.shade900,
                   ),
                 ),
               ],
@@ -87,15 +99,16 @@ class DisclaimerViewScreen extends StatelessWidget {
           Text(
             '网络声明补充说明',
             style: theme.textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+                ?.copyWith(fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 8),
           Text(
             '• 本应用不会在后台建立任何隐蔽网络通道。\n'
             '• 您可随时在系统设置中撤销本应用的网络权限。\n'
             '• 继续使用即表示您理解并接受上述限制。',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(height: 1.6, color: Colors.grey.shade800),
+            style: theme.textTheme.bodyMedium?.copyWith(
+                height: 1.6,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade800),
           ),
           const SizedBox(height: 28),
 
@@ -104,9 +117,14 @@ class DisclaimerViewScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: isDark
+                  ? const Color(0xFF3E2723).withOpacity(0.4)
+                  : Colors.orange.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade300, width: 1.5),
+              border: Border.all(
+                  color:
+                      isDark ? Colors.orange.shade800 : Colors.orange.shade300,
+                  width: 1.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +132,10 @@ class DisclaimerViewScreen extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.healing,
-                        color: Colors.orange.shade800, size: 22),
+                        color: isDark
+                            ? Colors.orange.shade300
+                            : Colors.orange.shade800,
+                        size: 22),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -122,7 +143,9 @@ class DisclaimerViewScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade900,
+                          color: isDark
+                              ? Colors.orange.shade200
+                              : Colors.orange.shade900,
                         ),
                       ),
                     ),
@@ -135,7 +158,9 @@ class DisclaimerViewScreen extends StatelessWidget {
                     fontSize: 15,
                     height: 1.6,
                     fontWeight: FontWeight.w600,
-                    color: Colors.orange.shade900,
+                    color: isDark
+                        ? Colors.orange.shade200
+                        : Colors.orange.shade900,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -145,7 +170,9 @@ class DisclaimerViewScreen extends StatelessWidget {
                     fontSize: 14,
                     height: 1.6,
                     fontWeight: FontWeight.w500,
-                    color: Colors.orange.shade900,
+                    color: isDark
+                        ? Colors.orange.shade200
+                        : Colors.orange.shade900,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -155,7 +182,7 @@ class DisclaimerViewScreen extends StatelessWidget {
                     fontSize: 14,
                     height: 1.6,
                     fontWeight: FontWeight.w600,
-                    color: Colors.red.shade700,
+                    color: isDark ? Colors.red.shade300 : Colors.red.shade700,
                   ),
                 ),
               ],
@@ -167,7 +194,7 @@ class DisclaimerViewScreen extends StatelessWidget {
           Text(
             '血药浓度模拟补充说明',
             style: theme.textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+                ?.copyWith(fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 8),
           Text(
@@ -175,8 +202,9 @@ class DisclaimerViewScreen extends StatelessWidget {
             '• 请定期进行血液检测，以实际检测结果为准。\n'
             '• 如果您正经历任何不适或副作用，请立即咨询医生。\n'
             '• 18 岁以下用户请在监护人及医生指导下使用。',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(height: 1.6, color: Colors.grey.shade800),
+            style: theme.textTheme.bodyMedium?.copyWith(
+                height: 1.6,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade800),
           ),
           const SizedBox(height: 28),
 
@@ -186,7 +214,7 @@ class DisclaimerViewScreen extends StatelessWidget {
               '— 声明结束 —',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade400,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                 fontWeight: FontWeight.w500,
               ),
             ),

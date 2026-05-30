@@ -6,13 +6,6 @@ import '../../widgets/loading_indicator.dart';
 import 'institution_detail_screen.dart';
 
 /// 友善医疗名录 — 主列表页面
-///
-/// 功能：
-/// - 搜索框（按名称、城市、标签、医生搜索）
-/// - 科室筛选芯片
-/// - 按省份分组列表
-/// - 收藏切换
-/// - 检查 GitHub 更新（启动时静默 + 手动触发）
 class MedicalDirectoryListScreen extends StatefulWidget {
   const MedicalDirectoryListScreen({super.key});
 
@@ -48,14 +41,12 @@ class _MedicalDirectoryListScreenState
   Future<void> _loadData() async {
     try {
       await _service.init();
-      // 同步结果可能已被后台 checkAndSync 填充
       if (mounted) {
         setState(() {
           _isLoading = false;
           _syncResult = _service.lastSyncResult;
         });
       }
-      // 数据加载完成后检查免责提示
       _checkDisclaimer();
     } catch (e) {
       if (mounted) {
@@ -75,7 +66,6 @@ class _MedicalDirectoryListScreenState
 
   List<FriendlyInstitution> get _displayList {
     var list = _service.allInstitutions;
-
     if (_favoritesOnly) {
       list = list.where((i) => i.isFavorite).toList();
     }
@@ -103,19 +93,14 @@ class _MedicalDirectoryListScreenState
     setState(() {});
   }
 
-  /// 手动触发 GitHub 同步
   Future<void> _manualSync() async {
     setState(() => _isSyncing = true);
-
     final result = await _service.checkAndSync();
-
     if (!mounted) return;
     setState(() {
       _isSyncing = false;
       _syncResult = result;
     });
-
-    // 显示简要通知
     final icon = switch (result.status) {
       SyncStatus.upToDate => Icons.check_circle,
       SyncStatus.updated => Icons.cloud_done,
@@ -126,7 +111,6 @@ class _MedicalDirectoryListScreenState
       SyncStatus.updated => const Color(0xFF5BCEFA),
       SyncStatus.githubUnreachable => Colors.orange,
     };
-
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -144,14 +128,11 @@ class _MedicalDirectoryListScreenState
     );
   }
 
-  /// 进入名录页时弹出免责提示，可选「本次关闭」或「以后关闭」
   Future<void> _checkDisclaimer() async {
     if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
     final dismissed = prefs.getBool(_disclaimerKey) ?? false;
     if (dismissed) return;
-
     if (!mounted) return;
     await showDialog(
       context: context,
@@ -189,19 +170,21 @@ class _MedicalDirectoryListScreenState
     );
   }
 
+  // ==================== BUILD ====================
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '友善医疗名录',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1D1D1F),
+            color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
           ),
         ),
         actions: [
-          // 同步按钮
           Stack(
             children: [
               IconButton(
@@ -215,7 +198,6 @@ class _MedicalDirectoryListScreenState
                 tooltip: '检查更新',
                 onPressed: _isSyncing ? null : _manualSync,
               ),
-              // 同步状态小圆点
               if (_syncResult != null && !_isSyncing)
                 Positioned(
                   right: 8,
@@ -247,18 +229,22 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildErrorView() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+            Icon(Icons.error_outline,
+                size: 48,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
             FilledButton.tonal(
@@ -279,38 +265,37 @@ class _MedicalDirectoryListScreenState
 
   Widget _buildContent() {
     final list = _displayList;
-
     return Column(
       children: [
-        // 同步状态提示条
         if (_syncResult != null &&
             _syncResult!.status == SyncStatus.githubUnreachable)
           _buildOfflineBanner(),
-        // 搜索栏
         _buildSearchBar(),
-        // 筛选栏
         _buildFilterBar(),
-        // 结果计数与收藏切换
         _buildResultInfo(list.length),
-        // 列表
         Expanded(child: _buildGroupedList(list)),
       ],
     );
   }
 
-  /// GitHub 不可达时的提示横幅
   Widget _buildOfflineBanner() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: Colors.orange.shade50,
+      color: isDark
+          ? const Color(0xFF3E2723).withOpacity(0.6)
+          : Colors.orange.shade50,
       child: Row(
         children: [
           Icon(Icons.cloud_off, size: 14, color: Colors.orange.shade400),
           const SizedBox(width: 6),
           Text(
             '无法连接 GitHub，使用本地缓存数据',
-            style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+            style: TextStyle(
+                fontSize: 12,
+                color:
+                    isDark ? Colors.orange.shade300 : Colors.orange.shade700),
           ),
         ],
       ),
@@ -318,6 +303,7 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildSearchBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: TextField(
@@ -325,8 +311,10 @@ class _MedicalDirectoryListScreenState
         onChanged: _onSearch,
         decoration: InputDecoration(
           hintText: '搜索机构、城市、医生、标签...',
-          hintStyle: TextStyle(color: Colors.grey.shade400),
-          prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+          hintStyle: TextStyle(
+              color: isDark ? Colors.grey.shade500 : Colors.grey.shade400),
+          prefixIcon: Icon(Icons.search,
+              color: isDark ? Colors.grey.shade500 : Colors.grey.shade400),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 18),
@@ -337,7 +325,7 @@ class _MedicalDirectoryListScreenState
                 )
               : null,
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           border: OutlineInputBorder(
@@ -351,7 +339,6 @@ class _MedicalDirectoryListScreenState
 
   Widget _buildFilterBar() {
     final departments = _service.availableDepartments;
-
     return SizedBox(
       height: 44,
       child: ListView(
@@ -366,6 +353,7 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildFilterChip(String label, String id, bool isOnly) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected = _selectedDepartment == id;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -375,18 +363,22 @@ class _MedicalDirectoryListScreenState
           style: TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            color: selected ? Colors.white : const Color(0xFF86868B),
+            color: selected
+                ? Colors.white
+                : (isDark ? const Color(0xFF98989E) : const Color(0xFF86868B)),
           ),
         ),
         selected: selected,
         onSelected: (_) {
           setState(() => _selectedDepartment = selected ? '' : id);
         },
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
         selectedColor: const Color(0xFF5BCEFA),
         checkmarkColor: Colors.white,
         side: BorderSide(
-          color: selected ? const Color(0xFF5BCEFA) : Colors.grey.shade200,
+          color: selected
+              ? const Color(0xFF5BCEFA)
+              : (isDark ? Colors.grey.shade700 : Colors.grey.shade200),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -397,13 +389,16 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildResultInfo(int count) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Row(
         children: [
           Text(
             '共 $count 家机构',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey.shade500 : Colors.grey.shade500),
           ),
           const Spacer(),
           GestureDetector(
@@ -439,24 +434,26 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildGroupedList(List<FriendlyInstitution> list) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final grouped = MedicalDirectoryService.groupByProvince(list);
-
     if (list.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 48, color: Colors.grey.shade300),
+            Icon(Icons.search_off,
+                size: 48,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
             const SizedBox(height: 12),
             Text(
               _favoritesOnly ? '还没有收藏的机构' : '没有找到匹配的机构',
-              style: TextStyle(color: Colors.grey.shade500),
+              style: TextStyle(
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade500),
             ),
           ],
         ),
       );
     }
-
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
@@ -471,6 +468,7 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildProvinceHeader(String province) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(left: 4, top: 12, bottom: 6),
       child: Row(
@@ -486,10 +484,10 @@ class _MedicalDirectoryListScreenState
           const SizedBox(width: 10),
           Text(
             province,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
             ),
           ),
         ],
@@ -498,13 +496,15 @@ class _MedicalDirectoryListScreenState
   }
 
   Widget _buildInstitutionCard(FriendlyInstitution institution) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color: Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+            color: isDark ? const Color(0xFF3A3A3C) : Colors.grey.shade200),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -520,10 +520,12 @@ class _MedicalDirectoryListScreenState
                   Expanded(
                     child: Text(
                       institution.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1D1D1F),
+                        color: isDark
+                            ? const Color(0xFFF5F5F7)
+                            : const Color(0xFF1D1D1F),
                       ),
                     ),
                   ),
@@ -536,7 +538,9 @@ class _MedicalDirectoryListScreenState
                       size: 20,
                       color: institution.isFavorite
                           ? const Color(0xFFF5A9B8)
-                          : Colors.grey.shade300,
+                          : (isDark
+                              ? const Color(0xFF636366)
+                              : Colors.grey.shade300),
                     ),
                   ),
                 ],
@@ -545,13 +549,18 @@ class _MedicalDirectoryListScreenState
               Row(
                 children: [
                   Icon(Icons.location_on_outlined,
-                      size: 13, color: Colors.grey.shade400),
+                      size: 13,
+                      color: isDark
+                          ? const Color(0xFF636366)
+                          : Colors.grey.shade400),
                   const SizedBox(width: 4),
                   Text(
                     '${institution.city}${institution.address != null ? ' · ${institution.address}' : ''}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade500,
+                      color: isDark
+                          ? const Color(0xFF98989E)
+                          : Colors.grey.shade500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -590,7 +599,9 @@ class _MedicalDirectoryListScreenState
                       '#$tag',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? const Color(0xFF636366)
+                            : Colors.grey.shade400,
                       ),
                     );
                   }).toList(),

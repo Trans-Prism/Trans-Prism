@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// AI 鼓励消息服务
 ///
@@ -12,8 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 请求体：{"model": "...", "messages": [...], "temperature": 0.7}
 /// 响应体：{"choices": [{"message": {"content": "..."}}]}
 class AiEncouragementService {
-  static const String _cacheKey = 'ai_encouragement_cache';
-
   static final AiEncouragementService _instance =
       AiEncouragementService._internal();
   factory AiEncouragementService() => _instance;
@@ -124,7 +121,7 @@ class AiEncouragementService {
   /// 离线备用鼓励消息
   String _getFallbackMessage(Map<String, dynamic> context) {
     final f0 = context['averageF0'];
-    final messages = _defaultMessages;
+    const messages = _defaultMessages;
 
     if (f0 != null) {
       final f0Num = (f0 as num).toDouble();
