@@ -170,9 +170,11 @@ class NotificationService {
 
   // ==================== 调度引擎 ====================
 
-  Future<void> scheduleMedicineReminder(Drug drug) async {
+  Future<void> scheduleMedicineReminder(Drug drug,
+      {String? recommendedSite}) async {
     debugPrint('🔍 [TP-Debug] ==== scheduleMedicineReminder 开始 ====');
     debugPrint('🔍 [TP-Debug] 药物: ${drug.name}, ID: ${drug.id}');
+    debugPrint('🔍 [TP-Debug] 推荐部位: $recommendedSite');
     debugPrint('🔍 [TP-Debug] 模式: ${drug.isDiscreteMode ? "日内离散" : "固定间隔"}');
     debugPrint('🔍 [TP-Debug] reminderEnabled: ${drug.reminderEnabled}');
     debugPrint('🔍 [TP-Debug] nextDoseTime: ${drug.nextDoseTime}');
@@ -191,7 +193,7 @@ class NotificationService {
     if (drug.nextDoseTime != null &&
         drug.nextDoseTime!.isAfter(DateTime.now())) {
       debugPrint('🔍 [TP-Debug] 调度 nextDoseTime=${drug.nextDoseTime}');
-      await _scheduleOneShot(drug);
+      await _scheduleOneShot(drug, recommendedSite: recommendedSite);
     } else {
       debugPrint('⚠️ [TP-Debug] nextDoseTime 为空或已过期，跳过调度');
     }
@@ -199,12 +201,23 @@ class NotificationService {
     debugPrint('✅ [TP-Debug] ==== scheduleMedicineReminder 完成 ====');
   }
 
+  /// 构建通知正文（含推荐注射部位）
+  String _buildNotificationBody(String drugName, {String? recommendedSite}) {
+    if (recommendedSite != null && recommendedSite.isNotEmpty) {
+      return '伙伴，该使用 $drugName 了。建议注射部位: $recommendedSite';
+    }
+    return '伙伴，该使用 $drugName 了。';
+  }
+
   /// 针对一个绝对时间注册一次性提醒（同时注册 Timer 兜底）
-  Future<void> _scheduleOneShot(Drug drug) async {
+  Future<void> _scheduleOneShot(Drug drug, {String? recommendedSite}) async {
     final doseTime = drug.nextDoseTime!;
     final utcNow = DateTime.now().toUtc();
     final utcDose = doseTime.toUtc();
     final diff = utcDose.difference(utcNow);
+
+    final body =
+        _buildNotificationBody(drug.name, recommendedSite: recommendedSite);
 
     debugPrint('⏰ [TP-Debug] 时间差: ${diff.inSeconds} 秒');
 
@@ -233,7 +246,7 @@ class NotificationService {
       await _plugin.zonedSchedule(
         safeId,
         '💊 用药时间到',
-        '伙伴，该使用 ${drug.name} 了。',
+        body,
         scheduledDate,
         details,
         androidScheduleMode: AndroidScheduleMode.alarmClock,
@@ -248,7 +261,7 @@ class NotificationService {
         await _plugin.zonedSchedule(
           safeId,
           '💊 用药时间到',
-          '伙伴，该使用 ${drug.name} 了。',
+          body,
           scheduledDate,
           details,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -267,7 +280,7 @@ class NotificationService {
       id: safeId,
       delay: Duration(seconds: diffSeconds),
       title: '💊 用药时间到',
-      body: '伙伴，该使用 ${drug.name} 了。',
+      body: body,
       drugId: drug.id,
     );
 

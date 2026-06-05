@@ -3,9 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/drug_model.dart';
+import '../services/medication_service.dart';
 import '../services/notification_service.dart';
+import '../services/permission_manager.dart';
+import '../widgets/battery_optimization_dialog.dart';
 import '../widgets/branded_toast.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/medication_card.dart';
 
 /// 药物存量仪表盘与本地用药提醒系统
 class InventoryDashboardScreen extends StatefulWidget {
@@ -37,6 +41,15 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
     if (jsonStr != null && jsonStr.isNotEmpty) {
       _drugs = Drug.listFromJson(jsonStr);
     }
+    // 按下次服药时间升序排列（最紧急的在前，未设置的在最后）
+    _drugs.sort((a, b) {
+      final aTime = a.nextDoseTime;
+      final bTime = b.nextDoseTime;
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return aTime.compareTo(bTime);
+    });
     if (!mounted) return;
     setState(() => _isLoading = false);
     _rescheduleAllReminders();
@@ -136,51 +149,17 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   void _setupNotificationCallback() {
+    // 通知回调：用户从通知栏点击"已服药"
+    // 此处无 UI，直接通过 MedicationService 执行纯数据操作
     _notificationService.onDoseRecorded = (drugId) async {
-      debugPrint('💊 [TP-Dash] ========== onDoseRecorded ==========');
+      debugPrint('💊 [TP-Dash] ========== onDoseRecorded(通知) ==========');
       debugPrint('💊 [TP-Dash] drugId=$drugId');
 
-      // 直接从 SharedPreferences 重新加载，避开状态同步问题
-      final prefs = await SharedPreferences.getInstance();
-      final jsonStr = prefs.getString(_storageKey);
-      if (jsonStr == null || jsonStr.isEmpty) {
-        debugPrint('💊 [TP-Dash] ❌ 无持久化数据');
-        return;
-      }
-      final drugs = Drug.listFromJson(jsonStr);
-      final index = drugs.indexWhere((d) => d.id == drugId);
-      if (index == -1) {
-        debugPrint('💊 [TP-Dash] ❌ 未找到药物');
-        return;
-      }
+      await MedicationService.executeMedicationDose(drugId);
 
-      final drug = drugs[index];
-      debugPrint('💊 [TP-Dash] 药物: ${drug.name}');
-      debugPrint('💊 [TP-Dash] isDiscreteMode=${drug.isDiscreteMode}');
-      debugPrint('💊 [TP-Dash] dailyReminderTimes=${drug.dailyReminderTimes}');
-      debugPrint(
-          '💊 [TP-Dash] intervalValue=${drug.intervalValue}, intervalUnit=${drug.intervalUnit}');
-
-      // 记录用药
-      drug.recordDose();
-      debugPrint('💊 [TP-Dash] recordDose 完成!');
-      debugPrint('💊 [TP-Dash] 新 nextDoseTime=${drug.nextDoseTime}');
-
-      // 持久化
-      await prefs.setString(_storageKey, Drug.listToJson(drugs));
-      debugPrint('💊 [TP-Dash] 已保存');
-
-      // 更新内存状态 + UI
-      if (mounted) {
-        setState(() {
-          _drugs = drugs;
-        });
-        debugPrint('💊 [TP-Dash] UI 已更新 (setState)');
-      }
-
-      // 调度下次提醒
-      await _notificationService.scheduleMedicineReminder(drug);
-      debugPrint('💊 [TP-Dash] ========== 完成 ==========');
+      // 重新加载最新数据更新 UI
+      await _loadDrugs();
+      debugPrint('💊 [TP-Dash] ========== onDoseRecorded 完成 ==========');
     };
 
     _notificationService.onSnoozeRequested = (drugId) async {
@@ -260,31 +239,33 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   }
 
   Future<void> _toggleReminder(int index, bool enabled) async {
+    final drug = _drugs[index];
     setState(() {
       _drugs[index].reminderEnabled = enabled;
     });
     await _saveDrugs();
     if (enabled) {
-      // 如果无权限则弹出说明对话框
+      // 1. 检查通知权限
       final hasPerm = await _notificationService.hasPermission();
       if (!hasPerm && mounted) {
         await _checkNotificationPermission();
       }
-      await _notificationService.scheduleMedicineReminder(_drugs[index]);
-    } else {
-      await _notificationService.cancelDrugReminders(_drugs[index].id);
-    }
-  }
 
-  Future<void> _recordDose(int index) async {
-    final drug = _drugs[index];
-    setState(() {
-      drug.recordDose();
-    });
-    await _saveDrugs();
-    await _notificationService.scheduleMedicineReminder(drug);
-    if (!mounted) return;
-    BrandedToast.doseRecorded(context, drug.name);
+      // 2. 检查电池优化状态，未授权时弹出醒目保活引导
+      if (mounted) {
+        final permStatuses =
+            await PermissionManager().checkPermissionStatuses();
+        final batteryOptGranted = permStatuses['battery_optimization'] ?? false;
+        if (!batteryOptGranted && mounted) {
+          await BatteryOptimizationDialog.show(context);
+        }
+      }
+
+      // 3. 调度提醒
+      await _notificationService.scheduleMedicineReminder(drug);
+    } else {
+      await _notificationService.cancelDrugReminders(drug.id);
+    }
   }
 
   Future<void> _addStock(int index) async {
@@ -461,7 +442,29 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
               ),
             ),
           ),
-          ...List.generate(_drugs.length, (i) => _buildDrugCard(i)),
+          ...List.generate(_drugs.length, (i) {
+            final drug = _drugs[i];
+            return MedicationCard(
+              key: ValueKey(drug.id),
+              drug: drug,
+              onDoseRecorded: () {
+                // 服药成功后重新加载数据
+                _loadDrugs();
+              },
+              onToggleReminder: (enabled) {
+                _toggleReminder(i, enabled);
+              },
+              onEdit: () {
+                _editDrug(i);
+              },
+              onDelete: () {
+                _deleteDrug(i);
+              },
+              onAddStock: () {
+                _addStock(i);
+              },
+            );
+          }),
         ],
       ),
     );
@@ -571,212 +574,6 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDrugCard(int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final drug = _drugs[index];
-    final drugPercentage = drug.stockPercentage;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      drug.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? const Color(0xFFF5F5F7)
-                            : const Color(0xFF1D1D1F),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '库存: ${drug.currentStock.toStringAsFixed(1)} · ${drug.cycleLabel}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '提醒',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  Switch(
-                    value: drug.reminderEnabled,
-                    onChanged: (val) => _toggleReminder(index, val),
-                    activeColor: const Color(0xFF5BCEFA),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (drug.nextDoseTime != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.schedule_rounded,
-                    size: 14,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '下次: ${drug.nextDoseLabel}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: drugPercentage,
-                        minHeight: 6,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          drug.runwayDays <= 3
-                              ? Colors.red.shade300
-                              : const Color(0xFF5BCEFA),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '续航 ${drug.runwayDays} 天 · 日消耗 ${drug.dailyBurnRate.toStringAsFixed(1)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              _buildSmallActionButton(
-                icon: Icons.remove_circle_outline,
-                label: '服药',
-                color: const Color(0xFF5BCEFA),
-                onTap: () => _recordDose(index),
-              ),
-              const SizedBox(width: 6),
-              _buildSmallActionButton(
-                icon: Icons.add_circle_outline,
-                label: '补仓',
-                color: const Color(0xFFF5A9B8),
-                onTap: () => _addStock(index),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GestureDetector(
-                onTap: () => _editDrug(index),
-                child: Text(
-                  '编辑',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade400,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              GestureDetector(
-                onTap: () => _deleteDrug(index),
-                child: Text(
-                  '删除',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.red.shade300,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

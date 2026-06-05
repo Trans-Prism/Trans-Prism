@@ -18,7 +18,9 @@ import 'screens/pk_simulation_screen.dart';
 import 'screens/inventory_dashboard_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
 import 'services/notification_service.dart';
+import 'services/permission_manager.dart';
 import 'services/update_service.dart';
+import 'widgets/battery_optimization_guide_card.dart';
 import 'services/wiki_sync_service.dart';
 import 'services/theme_service.dart';
 import 'widgets/update_dialog.dart';
@@ -26,6 +28,7 @@ import 'widgets/wiki_license_notice.dart';
 import 'widgets/loading_indicator.dart';
 import 'storage/disclaimer_repository.dart';
 import 'storage/gender_identity_repository.dart';
+import 'utils/data_migration_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -437,8 +440,16 @@ class _AppRootControllerState extends State<AppRootController> {
   }
 
   Future<void> _initNotifications() async {
+    // 1. 初始化 Chronos 通知引擎
     await NotificationService().initialize();
+
+    // 2. 请求基础通知权限（Android 13+）
     await NotificationService().requestPermission();
+
+    // 3. 批量请求所有关键保活权限（通知 + 精确闹钟 + 忽略电池优化）
+    final permResult =
+        await PermissionManager().requestAllCriticalPermissions();
+    debugPrint('📋 [main] 权限请求总览: $permResult');
   }
 
   Future<void> _loadAppState() async {
@@ -1162,540 +1173,792 @@ class _UserTabState extends State<UserTab> {
         isDark ? Colors.grey.shade800 : Colors.grey.shade200;
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
-    /// 根据当前主题模式返回对应的图标
-    IconData themeModeIcon(ThemeMode mode) {
-      switch (mode) {
-        case ThemeMode.light:
-          return Icons.light_mode;
-        case ThemeMode.dark:
-          return Icons.dark_mode;
-        case ThemeMode.system:
-          return Icons.settings_brightness;
-      }
-    }
-
-    /// 返回主题模式的副标题
-    String themeModeSubtitle(ThemeMode mode, bool effectiveDark) {
-      switch (mode) {
-        case ThemeMode.light:
-          return '始终使用浅色外观';
-        case ThemeMode.dark:
-          return '始终使用深色外观';
-        case ThemeMode.system:
-          return effectiveDark ? '当前跟随系统 → 深色' : '当前跟随系统 → 浅色';
-      }
-    }
-
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       children: [
-        // 性别认同卡片
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('性别认同',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: textColor)),
-                const SizedBox(height: 8),
-                Text('修改后将立即更新首页推荐内容，并保存在本机。',
-                    style: TextStyle(fontSize: 13, color: secondaryTextColor)),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: widget.genderIdentity,
-                  decoration: const InputDecoration(
-                      labelText: '选择您的认同方向', border: OutlineInputBorder()),
-                  items: GenderIdentity.values
-                      .map((id) => DropdownMenuItem(
-                          value: id, child: Text(GenderIdentity.label(id))))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null && value != widget.genderIdentity) {
-                      widget.onIdentityChanged(value);
-                    }
-                  },
-                ),
-              ],
+        // ═══════════════════════════════════════════════
+        //   个性化与身份
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('个性化与身份', isDark: isDark),
+        _buildGroupContainer(
+          isDark: isDark,
+          cardBg: cardBg,
+          cardBorderColor: cardBorderColor,
+          children: [
+            // ── 性别认同 ──
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.transgender,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '性别认同',
+              subtitle: GenderIdentity.label(widget.genderIdentity),
+              onTap: () => _showGenderBottomSheet(context),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 个人称呼设置卡片
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('个人称呼',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: textColor)),
-                const SizedBox(height: 8),
-                Text('设置首页问候语中显示的称呼和名字前缀，保存后立即生效。',
-                    style: TextStyle(fontSize: 13, color: secondaryTextColor)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    // 前缀在前，占用较小空间
-                    SizedBox(
-                      width: 110,
-                      child: DropdownButtonFormField<String>(
-                        value: _prefixOptions.containsKey(widget.namePrefix)
-                            ? widget.namePrefix
-                            : '__custom__',
-                        decoration: const InputDecoration(
-                            labelText: '前缀',
-                            border: OutlineInputBorder(),
-                            isDense: true),
-                        items: _prefixOptions.entries
-                            .map((e) => DropdownMenuItem(
-                                value: e.key,
-                                child: Text(e.value,
-                                    style: const TextStyle(fontSize: 13))))
-                            .toList(),
-                        onChanged: (v) {
-                          if (v == null) return;
-                          if (v == '__custom__') {
-                            setState(() => _customPrefix = true);
-                          } else {
-                            setState(() => _customPrefix = false);
-                            widget.onNamePrefixChanged(v);
-                          }
-                        },
-                      ),
-                    ),
-                    if (_customPrefix) ...[
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 110,
-                        child: TextField(
-                          controller: _customPrefixController,
-                          decoration: const InputDecoration(
-                              labelText: '自定义前缀',
-                              border: OutlineInputBorder(),
-                              isDense: true),
-                          onChanged: (v) {
-                            if (v.isNotEmpty) widget.onNamePrefixChanged(v);
-                          },
-                        ),
-                      ),
-                    ],
-                    const SizedBox(width: 8),
-                    // 昵称在后面
-                    Expanded(
-                      child: TextField(
-                        controller: _greetingController,
-                        decoration: const InputDecoration(
-                            labelText: '称呼（默认"伙伴"）',
-                            border: OutlineInputBorder(),
-                            isDense: true),
-                        onChanged: (v) {
-                          if (v.isNotEmpty) widget.onGreetingNameChanged(v);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            _buildDivider(isDark: isDark),
+            // ── 个人称呼（内嵌表单） ──
+            _buildGreetingSection(
+              isDark: isDark,
+              textColor: textColor,
+              secondaryTextColor: secondaryTextColor,
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // ── 主题模式切换卡片 ──
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF5BCEFA).withOpacity(0.15)
-                        : const Color(0xFF5BCEFA).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    themeModeIcon(widget.themeService.themeMode),
-                    color: const Color(0xFF5BCEFA),
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '主题模式',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        themeModeSubtitle(
-                          widget.themeService.themeMode,
-                          isDark,
-                        ),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFF2F2F7),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: cardBorderColor.withOpacity(0.6),
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<ThemeMode>(
-                            value: widget.themeService.themeMode,
-                            isExpanded: true,
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Color(0xFF5BCEFA),
-                              size: 22,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            dropdownColor:
-                                isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: textColor,
-                            ),
-                            items: [
-                              DropdownMenuItem(
-                                value: ThemeMode.light,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.light_mode,
-                                      size: 18,
-                                      color: Colors.amber.shade600,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Text('浅色模式'),
-                                    if (widget.themeService.themeMode ==
-                                        ThemeMode.light)
-                                      const Spacer(),
-                                  ],
-                                ),
-                              ),
-                              const DropdownMenuItem(
-                                value: ThemeMode.dark,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.dark_mode,
-                                      size: 18,
-                                      color: Color(0xFF5BCEFA),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Text('深色模式'),
-                                  ],
-                                ),
-                              ),
-                              const DropdownMenuItem(
-                                value: ThemeMode.system,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.settings_brightness,
-                                      size: 18,
-                                      color: Color(0xFF8E8E93),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Text('跟随系统'),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            onChanged: (ThemeMode? mode) {
-                              if (mode != null) {
-                                widget.themeService.setThemeMode(mode);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 关于按钮
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutScreen(),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+            _buildDivider(isDark: isDark),
+            // ── 主题模式 ──
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: _themeModeIcon(widget.themeService.themeMode),
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '主题模式',
+              subtitle: _themeModeLabel(widget.themeService.themeMode, isDark),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5BCEFA).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.info_outline,
-                      color: Color(0xFF5BCEFA),
-                      size: 22,
-                    ),
+                  Text(
+                    _themeModeName(widget.themeService.themeMode),
+                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '关于',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '应用信息与第三方开源许可',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right,
+                      size: 18,
+                      color:
+                          isDark ? Colors.grey.shade600 : Colors.grey.shade400),
                 ],
               ),
+              onTap: () => _showThemeBottomSheet(context),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 检查更新按钮
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _handleCheckUpdate(context),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5BCEFA).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.system_update_rounded,
-                      color: Color(0xFF5BCEFA),
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '检查更新',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '手动检测是否有新版本可用',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 免责声明按钮
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: cardBorderColor),
-          ),
-          color: cardBg,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DisclaimerViewScreen(),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5A9B8).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.description_outlined,
-                      color: Color(0xFFF5A9B8),
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '免责声明',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '医疗、数据与开源许可声明',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          ],
         ),
         const SizedBox(height: 24),
 
-        // ── 版本号 + 版权信息（居中靠底） ──
-        FutureBuilder<PackageInfo>(
-          future: PackageInfo.fromPlatform(),
-          builder: (context, snapshot) {
-            final version = snapshot.data?.version ?? '?.?.?';
-            return Column(
+        // ═══════════════════════════════════════════════
+        //   系统与提醒
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('系统与提醒', isDark: isDark),
+        const BatteryOptimizationGuideCard(),
+        const SizedBox(height: 24),
+
+        // ═══════════════════════════════════════════════
+        //   数据与备份
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('数据与备份', isDark: isDark),
+        _buildGroupContainer(
+          isDark: isDark,
+          cardBg: cardBg,
+          cardBorderColor: cardBorderColor,
+          children: [
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.backup_rounded,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '旧版数据导出（迁移专用）',
+              subtitle: '导出所有本地数据为 JSON 备份文件',
+              onTap: () => _handleExportData(context),
+            ),
+            _buildDivider(isDark: isDark),
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.unarchive_rounded,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '新版数据导入',
+              subtitle: '从备份 JSON 文件恢复数据到本机',
+              onTap: () => _handleImportData(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // ═══════════════════════════════════════════════
+        //   关于与支持
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('关于与支持', isDark: isDark),
+        _buildGroupContainer(
+          isDark: isDark,
+          cardBg: cardBg,
+          cardBorderColor: cardBorderColor,
+          children: [
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.info_outline,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '关于',
+              subtitle: '应用信息与第三方开源许可',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildDivider(isDark: isDark),
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.system_update_rounded,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '检查更新',
+              subtitle: '手动检测是否有新版本可用',
+              onTap: () => _handleCheckUpdate(context),
+            ),
+            _buildDivider(isDark: isDark),
+            _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.description_outlined,
+              leadingColor: const Color(0xFF5BCEFA),
+              title: '免责声明',
+              subtitle: '医疗、数据与开源许可声明',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DisclaimerViewScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // ── 版本号 + 版权信息 ──
+        _buildVersionFooter(isDark: isDark),
+      ],
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  分组标题
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildSectionHeader(String title, {required bool isDark}) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: isDark ? const Color(0xFF636366) : const Color(0xFF8E8E93),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  分组容器（一张大卡片包多个 ListTile）
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildGroupContainer({
+    required bool isDark,
+    required Color cardBg,
+    required Color cardBorderColor,
+    required List<Widget> children,
+  }) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: cardBorderColor),
+      ),
+      color: cardBg,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  通用设置列表项
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildSettingsTile({
+    required bool isDark,
+    required IconData leadingIcon,
+    required Color leadingColor,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: leadingColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(leadingIcon, color: leadingColor, size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 12,
+          color: isDark ? const Color(0xFF98989E) : const Color(0xFF86868B),
+        ),
+      ),
+      trailing: trailing ??
+          Icon(Icons.chevron_right,
+              size: 20,
+              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      shape: const RoundedRectangleBorder(),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  分隔线
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildDivider({required bool isDark}) {
+    return Divider(
+      height: 1,
+      thickness: 0.5,
+      indent: 16,
+      endIndent: 16,
+      color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  个人称呼内嵌编辑区
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildGreetingSection({
+    required bool isDark,
+    required Color textColor,
+    required Color secondaryTextColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '个人称呼',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '设置首页问候语中显示的称呼和名字前缀',
+            style: TextStyle(fontSize: 12, color: secondaryTextColor),
+          ),
+          const SizedBox(height: 12),
+          // 前缀 + 昵称行
+          Row(
+            children: [
+              // 前缀下拉
+              SizedBox(
+                width: 110,
+                child: DropdownButtonFormField<String>(
+                  value: _prefixOptions.containsKey(widget.namePrefix)
+                      ? widget.namePrefix
+                      : '__custom__',
+                  decoration: InputDecoration(
+                    labelText: '前缀',
+                    filled: true,
+                    fillColor:
+                        isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    isDense: true,
+                  ),
+                  items: _prefixOptions.entries
+                      .map((e) => DropdownMenuItem(
+                          value: e.key,
+                          child: Text(e.value,
+                              style: const TextStyle(fontSize: 13))))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    if (v == '__custom__') {
+                      setState(() => _customPrefix = true);
+                    } else {
+                      setState(() => _customPrefix = false);
+                      widget.onNamePrefixChanged(v);
+                    }
+                  },
+                ),
+              ),
+              if (_customPrefix) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 100,
+                  child: TextField(
+                    controller: _customPrefixController,
+                    decoration: InputDecoration(
+                      labelText: '自定义',
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : Colors.grey.shade50,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      isDense: true,
+                    ),
+                    onChanged: (v) {
+                      if (v.isNotEmpty) widget.onNamePrefixChanged(v);
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(width: 8),
+              // 昵称
+              Expanded(
+                child: TextField(
+                  controller: _greetingController,
+                  decoration: InputDecoration(
+                    labelText: '称呼（默认"伙伴"）',
+                    filled: true,
+                    fillColor:
+                        isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    isDense: true,
+                  ),
+                  onChanged: (v) {
+                    if (v.isNotEmpty) widget.onGreetingNameChanged(v);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  性别认同 BottomSheet
+  // ════════════════════════════════════════════════════════════
+
+  void _showGenderBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Text(
-                  '当前版本 v$version',
+                  '选择性别认同',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? const Color(0xFFF5F5F7)
+                        : const Color(0xFF1D1D1F),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'All Rights Reserved by TransPrism',
+                  '修改后将立即更新首页推荐内容',
                   style: TextStyle(
-                    fontSize: 11,
-                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                    fontSize: 13,
+                    color: isDark
+                        ? const Color(0xFF98989E)
+                        : const Color(0xFF86868B),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ...GenderIdentity.values.map((id) {
+                  final selected = id == widget.genderIdentity;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: selected
+                            ? const BorderSide(
+                                color: Color(0xFF5BCEFA), width: 1.5)
+                            : BorderSide.none,
+                      ),
+                      tileColor: selected
+                          ? const Color(0xFF5BCEFA).withOpacity(0.06)
+                          : (isDark
+                              ? const Color(0xFF2C2C2E)
+                              : Colors.grey.shade50),
+                      leading: Icon(
+                        id == GenderIdentity.mtf
+                            ? Icons.female
+                            : id == GenderIdentity.ftm
+                                ? Icons.male
+                                : Icons.transgender,
+                        color: selected
+                            ? const Color(0xFF5BCEFA)
+                            : (isDark
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade500),
+                      ),
+                      title: Text(
+                        GenderIdentity.label(id),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                          color: selected
+                              ? const Color(0xFF5BCEFA)
+                              : (isDark
+                                  ? const Color(0xFFF5F5F7)
+                                  : const Color(0xFF1D1D1F)),
+                        ),
+                      ),
+                      trailing: selected
+                          ? const Icon(Icons.check_circle,
+                              color: Color(0xFF5BCEFA), size: 22)
+                          : null,
+                      onTap: () {
+                        widget.onIdentityChanged(id);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  主题模式 BottomSheet
+  // ════════════════════════════════════════════════════════════
+
+  void _showThemeBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '选择主题模式',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? const Color(0xFFF5F5F7)
+                        : const Color(0xFF1D1D1F),
                   ),
                 ),
                 const SizedBox(height: 16),
+                _buildThemeOption(
+                  ctx: ctx,
+                  mode: ThemeMode.light,
+                  icon: Icons.light_mode,
+                  iconColor: Colors.amber.shade600,
+                  label: '浅色模式',
+                  desc: '始终使用浅色外观',
+                  selected: widget.themeService.themeMode == ThemeMode.light,
+                ),
+                const SizedBox(height: 8),
+                _buildThemeOption(
+                  ctx: ctx,
+                  mode: ThemeMode.dark,
+                  icon: Icons.dark_mode,
+                  iconColor: const Color(0xFF5BCEFA),
+                  label: '深色模式',
+                  desc: '始终使用深色外观',
+                  selected: widget.themeService.themeMode == ThemeMode.dark,
+                ),
+                const SizedBox(height: 8),
+                _buildThemeOption(
+                  ctx: ctx,
+                  mode: ThemeMode.system,
+                  icon: Icons.settings_brightness,
+                  iconColor: const Color(0xFF8E8E93),
+                  label: '跟随系统',
+                  desc: isDark ? '当前跟随系统 → 深色' : '当前跟随系统 → 浅色',
+                  selected: widget.themeService.themeMode == ThemeMode.system,
+                ),
               ],
-            );
-          },
-        ),
-      ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext ctx,
+    required ThemeMode mode,
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String desc,
+    required bool selected,
+  }) {
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: selected
+            ? const BorderSide(color: Color(0xFF5BCEFA), width: 1.5)
+            : BorderSide.none,
+      ),
+      tileColor: selected ? const Color(0xFF5BCEFA).withOpacity(0.06) : null,
+      leading: Icon(icon, color: iconColor, size: 24),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        desc,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+        ),
+      ),
+      trailing: selected
+          ? const Icon(Icons.check_circle, color: Color(0xFF5BCEFA), size: 22)
+          : null,
+      onTap: () {
+        widget.themeService.setThemeMode(mode);
+        Navigator.pop(ctx);
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  主题模式辅助
+  // ════════════════════════════════════════════════════════════
+
+  IconData _themeModeIcon(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return Icons.light_mode;
+      case ThemeMode.dark:
+        return Icons.dark_mode;
+      case ThemeMode.system:
+        return Icons.settings_brightness;
+    }
+  }
+
+  String _themeModeName(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return '浅色';
+      case ThemeMode.dark:
+        return '深色';
+      case ThemeMode.system:
+        return '跟随系统';
+    }
+  }
+
+  String _themeModeLabel(ThemeMode mode, bool isDark) {
+    switch (mode) {
+      case ThemeMode.light:
+        return '始终使用浅色外观';
+      case ThemeMode.dark:
+        return '始终使用深色外观';
+      case ThemeMode.system:
+        return isDark ? '当前 → 深色' : '当前 → 浅色';
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  版本页脚
+  // ════════════════════════════════════════════════════════════
+
+  Widget _buildVersionFooter({required bool isDark}) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final version = snapshot.data?.version ?? '?.?.?';
+        return Column(
+          children: [
+            Text(
+              '当前版本 v$version',
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'All Rights Reserved by TransPrism',
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  数据导出（迁移原有内联逻辑）
+  // ════════════════════════════════════════════════════════════
+
+  Future<void> _handleExportData(BuildContext context) async {
+    // 弹出 PK 血药浓度提示对话框
+    final acknowledged = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Color(0xFFE57373)),
+            SizedBox(width: 8),
+            Text('备份提示'),
+          ],
+        ),
+        content: const Text(
+          'PK 血药浓度模拟数据请在血药浓度板块内的设置进行单独导出，当前备份操作不包含血药浓度模拟数据。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('我已知晓'),
+          ),
+        ],
+      ),
+    );
+    if (acknowledged != true) return;
+    if (!context.mounted) return;
+
+    // 后台静默初始化 PK 模拟，确保 Oyama 数据可导出
+    if (!DataMigrationService.hasOyamaController) {
+      await PKSimulationScreen.ensureBackgroundInitialized();
+    }
+    final success = await DataMigrationService.exportData();
+    if (!context.mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ 数据已成功导出，请妥善保管备份文件'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('导出已取消或未找到可导出数据'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  数据导入（迁移原有内联逻辑）
+  // ════════════════════════════════════════════════════════════
+
+  Future<void> _handleImportData(BuildContext context) async {
+    // 后台静默初始化 PK 模拟，确保 Oyama 数据可导入
+    if (!DataMigrationService.hasOyamaController) {
+      await PKSimulationScreen.ensureBackgroundInitialized();
+    }
+    final success = await DataMigrationService.importData();
+    if (!context.mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ 数据已成功导入，建议重启 App 以完全生效'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('导入已取消或文件格式不正确'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }
 

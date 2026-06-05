@@ -18,6 +18,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../utils/data_migration_service.dart';
+
 /// Maps file extensions to MIME types for the static file server.
 const _mimeTypes = <String, String>{
   '.html': 'text/html; charset=utf-8',
@@ -192,6 +194,46 @@ class PKSimulationScreen extends StatefulWidget {
   final String genderIdentity;
   const PKSimulationScreen({super.key, required this.genderIdentity});
 
+  /// 在后台静默初始化 Oyama SPA（无需显示 WebView）。
+  ///
+  /// 供导出/导入功能调用，确保通过 JavaScript 访问 SPA 数据时
+  /// WebView 控制器已就绪。多次调用安全（内部会跳过已初始化的情况）。
+  static Future<void> ensureBackgroundInitialized() async {
+    // 如果已有控制器则跳过
+    if (DataMigrationService.hasOyamaController) return;
+
+    try {
+      final server = await _getSharedServer();
+      final baseUrl = await server.ensureStarted();
+
+      // 创建离屏 WebView 控制器（不附加到 Widget 树）
+      final ctrl = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(Colors.transparent);
+
+      // 等待页面加载完成
+      final pageLoaded = Completer<void>();
+      ctrl.setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (!pageLoaded.isCompleted) pageLoaded.complete();
+          },
+        ),
+      );
+
+      // 加载 SPA 首页
+      await ctrl.loadRequest(Uri.parse('$baseUrl/index.html'));
+
+      // 等待页面渲染完成（超时 15 秒）
+      await pageLoaded.future.timeout(const Duration(seconds: 15));
+
+      // 注册到数据迁移服务
+      DataMigrationService.registerOyamaController(ctrl);
+    } catch (e) {
+      debugPrint('[PKSim] background init error: $e');
+    }
+  }
+
   @override
   State<PKSimulationScreen> createState() => _PKSimulationScreenState();
 }
@@ -297,6 +339,10 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
         );
 
       await ctrl.loadRequest(Uri.parse('$baseUrl/index.html'));
+
+      // 注册 Oyama WebView 控制器到数据迁移服务，
+      // 以便导出时能同步 SPA 内的 localStorage 数据
+      DataMigrationService.registerOyamaController(ctrl);
 
       if (!mounted) return;
       setState(() {
