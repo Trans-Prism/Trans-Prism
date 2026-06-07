@@ -110,7 +110,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text(
-                              'https://github.com/daanser/Trans-Prism'),
+                              'https://github.com/Trans-Prism/Trans-Prism'),
                           duration: const Duration(seconds: 3),
                           action: SnackBarAction(label: '复制', onPressed: () {}),
                         ),
@@ -124,7 +124,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'https://github.com/daanser/Trans-Prism',
+                            'https://github.com/Trans-Prism/Trans-Prism',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.blue.shade400,
@@ -139,8 +139,228 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          // 第三方开源许可标题
+          const SizedBox(height: 16),
+          // ── 原创代码许可 ──
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: cardBorderColor),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.description_rounded,
+                          size: 18, color: secondaryTextColor),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Trans Prism 原创代码许可',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'CC BY-NC-SA 4.0',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '本应用原创代码（含 Flutter UI、业务逻辑、资产资源编排等）采用 '
+                    'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 '
+                    'International (CC BY-NC-SA 4.0) 协议进行许可，区别于第三方开源库的各自有许可证。\n'
+                    '详情参见：https://creativecommons.org/licenses/by-nc-sa/4.0/',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: secondaryTextColor,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // ── 内容与数据许可 ──
+          const SizedBox(height: 16),
+          _SectionHeader(title: '内容与数据许可', isDark: isDark),
+          _buildLicenseCard(
+            context,
+            icon: Icons.voice_chat,
+            title: 'VFS Tracker（嗓音训练模块）',
+            license: 'CC BY-NC-SA 4.0',
+            copyright: 'VFS Tracker — Ethanlita',
+            url: 'https://github.com/Ethanlita/vfs-tracker',
+            description:
+                '嗓音训练模块基于 VFS Tracker 项目开发，遵循 Attribution-NonCommercial-ShareAlike 4.0 International 许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.menu_book,
+            title: 'Project Trans Wiki 内容',
+            license: 'CC BY-SA 4.0',
+            copyright: 'Project Trans',
+            url: 'https://github.com/project-trans',
+            description:
+                '内置 Wiki 内容（MtF.Wiki、FtM.Wiki、RLE.Wiki 等）采用「署名—相同方式共享 4.0 协议国际版」许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.language,
+            title: '2345.lgbt（跨性别友好资源导航站）',
+            license: 'LGPL-3.0',
+            copyright: 'Project Trans',
+            url: 'https://github.com/project-trans/2345.LGBT',
+            description: '跨性别友好资源导航页，源代码采用 LGPL-3.0 许可证。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.web,
+            title: 'Next-MtF-wiki（MtF.Wiki 前端框架）',
+            license: 'AGPL-3.0',
+            copyright: 'Project Trans',
+            url: 'https://github.com/project-trans/Next-MtF-wiki',
+            description: 'MtF.Wiki 基于的前端框架，采用 AGPL-3.0 许可证。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.menu_book,
+            title: 'FtM-wiki（FtM.Wiki 内容仓库）',
+            license: 'LGPLv3 / CC BY-SA 4.0',
+            copyright: 'Project Trans',
+            url: 'https://github.com/project-trans/FtM-wiki',
+            description: 'FtM.Wiki 的源代码采用 LGPLv3 许可，网站内容采用 CC BY-SA 4.0 许可。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.web,
+            title: 'Oyama\'s HRT Tracker（血药浓度模拟前端）',
+            license: 'MIT License',
+            copyright: 'SmirnovaOyama',
+            url: 'https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker',
+            description:
+                '血药浓度模拟的 Web 交互界面，基于 React + TypeScript + Vite 构建，以 WebView 方式嵌入应用。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.biotech,
+            title: 'HRT-Recorder-PKcomponent-Test（PK 算法核心）',
+            license: 'MIT License',
+            copyright: 'LaoZhong-Mihari',
+            url:
+                'https://github.com/LaoZhong-Mihari/HRT-Recorder-PKcomponent-Test',
+            description:
+                '血药浓度模拟的药代动力学算法来源，包含：三室模型解析解、两库注射动力学、Bateman 口服模型、舌下双通路模型、贴片零阶/一阶输入模型。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          // ── 图解资源许可 ──
+          const SizedBox(height: 12),
+          _SectionHeader(title: '图解资源许可', isDark: isDark),
+          _buildLicenseCard(
+            context,
+            icon: Icons.emoji_emotions,
+            title: 'Twemoji（推特表情符号）',
+            license: 'CC-BY 4.0',
+            copyright: 'Copyright 2020 Twitter, Inc and other contributors',
+            url: 'https://github.com/twitter/twemoji',
+            description:
+                '部分 SVG 图标来源于 Twitter 的 Twemoji 项目。代码和图标采用 CC-BY 4.0 许可证发布。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.emoji_emotions,
+            title: 'OpenMoji（开源表情符号）',
+            license: 'CC BY-SA 4.0',
+            copyright: 'Copyright 2021 OpenMoji — 开源表情符号项目',
+            url: 'https://openmoji.org/',
+            description: '部分 SVG 图标来源于 OpenMoji 项目，采用 CC BY-SA 4.0 许可证发布。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
+            icon: Icons.emoji_emotions,
+            title: 'Google Noto Emoji（谷歌表情符号）',
+            license: 'Apache License 2.0',
+            copyright: 'Copyright 2024 Google LLC',
+            url: 'https://github.com/googlefonts/noto-emoji',
+            description:
+                '部分 SVG 图标来源于 Google 的 Noto Emoji 项目，采用 Apache License 2.0 许可证发布。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          // ── 第三方开源许可 ──
+          const SizedBox(height: 16),
           Row(
             children: [
               Icon(Icons.article_outlined,
@@ -316,118 +536,12 @@ class _AboutScreenState extends State<AboutScreen> {
             textColor: textColor,
             secondaryTextColor: secondaryTextColor,
           ),
-          const SizedBox(height: 12),
-          // VFS Tracker / 嗓音训练 许可声明
-          _SectionHeader(title: '内容与数据许可', isDark: isDark),
-          _buildLicenseCard(
-            context,
-            icon: Icons.voice_chat,
-            title: 'VFS Tracker（嗓音训练模块）',
-            license: 'CC BY-NC-SA 4.0',
-            copyright: 'VFS Tracker — Ethanlita',
-            url: 'https://github.com/Ethanlita/vfs-tracker',
-            description:
-                '嗓音训练模块基于 VFS Tracker 项目开发，遵循 Attribution-NonCommercial-ShareAlike 4.0 International 许可。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.menu_book,
-            title: 'Project Trans Wiki 内容',
-            license: 'CC BY-SA 4.0',
-            copyright: 'Project Trans',
-            url: 'https://github.com/project-trans',
-            description:
-                '内置 Wiki 内容（MtF.Wiki、FtM.Wiki、RLE.Wiki 等）采用「署名—相同方式共享 4.0 协议国际版」许可。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.language,
-            title: '2345.lgbt（跨性别友好资源导航站）',
-            license: 'LGPL-3.0',
-            copyright: 'Project Trans',
-            url: 'https://github.com/project-trans/2345.LGBT',
-            description: '跨性别友好资源导航页，源代码采用 LGPL-3.0 许可证。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.web,
-            title: 'Next-MtF-wiki（MtF.Wiki 前端框架）',
-            license: 'AGPL-3.0',
-            copyright: 'Project Trans',
-            url: 'https://github.com/project-trans/Next-MtF-wiki',
-            description: 'MtF.Wiki 基于的前端框架，采用 AGPL-3.0 许可证。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.menu_book,
-            title: 'FtM-wiki（FtM.Wiki 内容仓库）',
-            license: 'LGPLv3 / CC BY-SA 4.0',
-            copyright: 'Project Trans',
-            url: 'https://github.com/project-trans/FtM-wiki',
-            description: 'FtM.Wiki 的源代码采用 LGPLv3 许可，网站内容采用 CC BY-SA 4.0 许可。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.web,
-            title: 'Oyama\'s HRT Tracker（血药浓度模拟前端）',
-            license: 'MIT License',
-            copyright: 'SmirnovaOyama',
-            url: 'https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker',
-            description:
-                '血药浓度模拟的 Web 交互界面，基于 React + TypeScript + Vite 构建，以 WebView 方式嵌入应用。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
-          _buildLicenseCard(
-            context,
-            icon: Icons.biotech,
-            title: 'HRT-Recorder-PKcomponent-Test（PK 算法核心）',
-            license: 'MIT License',
-            copyright: 'LaoZhong-Mihari',
-            url:
-                'https://github.com/LaoZhong-Mihari/HRT-Recorder-PKcomponent-Test',
-            description:
-                '血药浓度模拟的药代动力学算法来源，包含：三室模型解析解、两库注射动力学、Bateman 口服模型、舌下双通路模型、贴片零阶/一阶输入模型。',
-            isDark: isDark,
-            cardBg: cardBg,
-            cardBorderColor: cardBorderColor,
-            textColor: textColor,
-            secondaryTextColor: secondaryTextColor,
-          ),
+          const SizedBox(height: 32),
           const SizedBox(height: 32),
           // 版权声明
           Center(
             child: Text(
-              'Copyright © 2025 Trans Prism\n'
-              'All rights reserved.',
+              'Copyright © 2026 Trans Prism',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,

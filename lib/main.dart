@@ -4,28 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 
 import 'models/gender_identity.dart';
-import 'models/wiki_config.dart';
 import 'screens/about_screen.dart';
 import 'screens/disclaimer_page.dart';
 import 'screens/disclaimer_view_screen.dart';
 import 'screens/hormone_converter_screen.dart';
+import 'screens/image_converter_screen.dart';
 import 'screens/medical_directory/medical_directory_list_screen.dart';
-import 'screens/offline_wiki_screen.dart';
-import 'screens/wiki_web_screen.dart';
-import 'services/wiki_offline_service.dart';
-import 'services/wiki_update_manager.dart';
 import 'screens/pk_simulation_screen.dart';
-import 'screens/inventory_dashboard_screen.dart';
+import 'screens/svg_resource_gallery_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
+import 'screens/wiki_tab.dart';
+import 'screens/workspace_tab.dart';
+import 'services/home_module_visibility.dart';
+import 'services/image_export_service.dart';
+import 'services/resource_service.dart';
 import 'services/notification_service.dart';
 import 'services/permission_manager.dart';
 import 'services/update_service.dart';
-import 'widgets/battery_optimization_guide_card.dart';
 import 'services/wiki_sync_service.dart';
 import 'services/theme_service.dart';
-import 'widgets/update_dialog.dart';
-import 'widgets/wiki_license_notice.dart';
+import 'widgets/gradient_icon.dart';
 import 'widgets/loading_indicator.dart';
+import 'widgets/medication_stock_summary.dart';
+import 'widgets/update_dialog.dart';
+import 'widgets/battery_optimization_guide_card.dart';
 import 'storage/disclaimer_repository.dart';
 import 'storage/gender_identity_repository.dart';
 import 'utils/data_migration_service.dart';
@@ -437,6 +439,7 @@ class _AppRootControllerState extends State<AppRootController> {
     _loadGreetingSettings();
     WikiSyncService.instance.syncAllInBackground();
     _initNotifications();
+    _initResourceService();
   }
 
   Future<void> _initNotifications() async {
@@ -450,6 +453,93 @@ class _AppRootControllerState extends State<AppRootController> {
     final permResult =
         await PermissionManager().requestAllCriticalPermissions();
     debugPrint('📋 [main] 权限请求总览: $permResult');
+  }
+
+  /// 初始化 JSON 驱动的资源服务并运行搜索测试
+  Future<void> _initResourceService() async {
+    await ResourceService().initialize();
+
+    // ── 控制台测试：验证数据解析与搜索逻辑 ──
+    final svc = ResourceService();
+    debugPrint('══════════════════════════════════════════');
+    debugPrint('🧪 [ResourceService] 搜索测试开始');
+    debugPrint('📊 总资源数: ${svc.allResources.length}');
+
+    // 测试 1：空查询 → 全量
+    final all = svc.searchResources('');
+    debugPrint('📋 空查询返回: ${all.length} 条');
+
+    // 测试 2：中文搜索
+    final cnResult = svc.searchResources('蝴蝶');
+    debugPrint('🔍 搜索"蝴蝶": ${cnResult.map((r) => r.displayName).toList()}');
+
+    // 测试 3：英文搜索
+    final enResult = svc.searchResources('pill');
+    debugPrint('🔍 搜索"pill": ${enResult.map((r) => r.displayName).toList()}');
+
+    // 测试 4：Emoji 搜索
+    final emojiResult = svc.searchResources('🦈');
+    debugPrint('🔍 搜索"🦈": ${emojiResult.map((r) => r.displayName).toList()}');
+
+    // 测试 5：getSvgPath fallback
+    final transSym = svc.searchResources('trans symbol').first;
+    debugPrint(
+        '📁 trans_symbol twemoji path: ${transSym.getSvgPath(preferredStyle: "twemoji")}');
+    debugPrint(
+        '📁 trans_symbol openmoji fallback: ${transSym.getSvgPath(preferredStyle: "openmoji")}');
+
+    // 测试 6：无结果
+    final noResult = svc.searchResources('zzzznotfound');
+    debugPrint('🔍 搜索"zzzznotfound": ${noResult.length} 条');
+    debugPrint('🧪 [ResourceService] 搜索测试完成');
+    debugPrint('══════════════════════════════════════════');
+
+    // ── 图像导出引擎测试 ──
+    _testImageExport();
+  }
+
+  /// 测试多格式图像导出引擎
+  Future<void> _testImageExport() async {
+    final svc = ResourceService();
+    if (!svc.isInitialized || svc.allResources.isEmpty) return;
+    final testRes = svc.allResources.first;
+    final svgPath = testRes.getSvgPath();
+
+    debugPrint('\n══════════════════════════════════════════');
+    debugPrint('🧪 [ImageExportService] 开始测试');
+
+    // 测试 PNG 导出
+    final pngResult = await ImageExportService.encodeSvgToBitmap(
+      assetPath: svgPath,
+      format: 'png',
+      targetWidth: 256,
+    );
+    if (pngResult != null) {
+      debugPrint('✅ PNG 导出成功: ${pngResult.length} bytes');
+    }
+
+    // 测试 JPEG 导出
+    final jpegResult = await ImageExportService.encodeSvgToBitmap(
+      assetPath: svgPath,
+      format: 'jpeg',
+      targetWidth: 256,
+    );
+    if (jpegResult != null) {
+      debugPrint('✅ JPEG 导出成功: ${jpegResult.length} bytes');
+    }
+
+    // 测试 WEBP 导出
+    final webpResult = await ImageExportService.encodeSvgToBitmap(
+      assetPath: svgPath,
+      format: 'webp',
+      targetWidth: 256,
+    );
+    if (webpResult != null) {
+      debugPrint('✅ WEBP 导出成功: ${webpResult.length} bytes');
+    }
+
+    debugPrint('🧪 [ImageExportService] 测试完成');
+    debugPrint('══════════════════════════════════════════\n');
   }
 
   Future<void> _loadAppState() async {
@@ -718,11 +808,22 @@ class _MainDashboardState extends State<MainDashboard> {
 
   bool _updateChecked = false;
 
+  /// 首页模块可见性状态（true=显示）
+  Map<String, bool> _moduleVisibility = {};
+
   @override
   void initState() {
     super.initState();
+    _loadModuleVisibility();
     // 首页渲染完成后静默检测更新
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
+
+  /// 从 SharedPreferences 加载模块可见性
+  Future<void> _loadModuleVisibility() async {
+    final visibility = await HomeModuleVisibility.loadAll();
+    if (!mounted) return;
+    setState(() => _moduleVisibility = visibility);
   }
 
   Future<void> _checkForUpdate() async {
@@ -743,6 +844,150 @@ class _MainDashboardState extends State<MainDashboard> {
     }
   }
 
+  /// 打开首页模块配置底部抽屉
+  ///
+  /// 交互流程：
+  ///   1. 快照：打开前深拷贝原始配置 → [originalConfig]
+  ///   2. 实时预览：拨动开关时直接触发首页 [setState]，背后主界面即时联动
+  ///   3. 提交：点击保存 → 持久化到 SharedPreferences → pop(true)
+  ///   4. 回滚：下滑/遮罩关闭（未点击保存）→ 恢复 [originalConfig] → 无痕回滚
+  Future<void> _showHomeModuleSettings() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
+    // ── 1. 快照：深拷贝当前配置 ──
+    final originalConfig = Map<String, bool>.from(_moduleVisibility);
+
+    // ── 2. 打开 BottomSheet ──
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── 拖拽指示条 ──
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '首页模块配置',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '选择在首页显示哪些模块',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // ── 可滚动列表：占据剩余空间，不遮住背后预览 ──
+                    Flexible(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: HomeModuleVisibility.allKeys.map((key) {
+                          final label =
+                              HomeModuleVisibility.moduleLabels[key] ?? key;
+                          final icon =
+                              HomeModuleVisibility.moduleIcons[key] ?? '';
+                          return SwitchListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 2),
+                            title: Text(
+                              '$icon  $label',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: textColor,
+                              ),
+                            ),
+                            value: _moduleVisibility[key] ?? true,
+                            activeColor: const Color(0xFF5BCEFA),
+                            onChanged: (value) {
+                              // ── 实时预览：直接更新首页 State ──
+                              setState(() {
+                                _moduleVisibility[key] = value;
+                              });
+                              setSheetState(() {});
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // ── 3. 保存按钮 ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: FilledButton(
+                          onPressed: () async {
+                            await HomeModuleVisibility.saveAll(
+                                _moduleVisibility);
+                            if (ctx.mounted) Navigator.pop(ctx, true);
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF5BCEFA),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          child: const Text('保存配置'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    // ── 4. 回滚：未保存退出则恢复原始配置 ──
+    if (saved != true && mounted) {
+      setState(() {
+        _moduleVisibility = Map<String, bool>.from(originalConfig);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -750,42 +995,23 @@ class _MainDashboardState extends State<MainDashboard> {
         isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
 
     return Scaffold(
-      appBar: AppBar(
-        title: _currentIndex == 0
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset('assets/logo_in.png', height: 28),
-                  const SizedBox(width: 8),
-                  Text(
-                    'TRANS PRISM',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              )
-            : Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Text(
-                  '用户',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                  ),
-                ),
-              ),
-      ),
+      // ── 根据当前 Tab 显示不同的 AppBar ──
+      appBar: _buildAppBar(textColor, isDark),
       body: IndexedStack(
         index: _currentIndex,
         children: [
+          // 0: 首页 (Home)
           HomeTab(
-              genderIdentity: widget.genderIdentity,
-              greetingDisplayName: widget.greetingDisplayName),
-          UserTab(
+            genderIdentity: widget.genderIdentity,
+            greetingDisplayName: widget.greetingDisplayName,
+            moduleVisibility: _moduleVisibility,
+          ),
+          // 1: 百科 (Wiki)
+          WikiTab(identity: widget.genderIdentity),
+          // 2: 工作台 (Workspace)
+          WorkspaceTab(genderIdentity: widget.genderIdentity),
+          // 3: 我的 (Profile)
+          ProfileTab(
             genderIdentity: widget.genderIdentity,
             onIdentityChanged: widget.onIdentityChanged,
             greetingName: widget.greetingName,
@@ -820,43 +1046,178 @@ class _MainDashboardState extends State<MainDashboard> {
               label: '首页',
             ),
             NavigationDestination(
+              icon: Icon(Icons.menu_book_outlined,
+                  color: isDark
+                      ? const Color(0xFF636366)
+                      : const Color(0xFFC7C7CC)),
+              selectedIcon:
+                  const Icon(Icons.menu_book_rounded, color: Color(0xFF5BCEFA)),
+              label: '百科',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.grid_view_outlined,
+                  color: isDark
+                      ? const Color(0xFF636366)
+                      : const Color(0xFFC7C7CC)),
+              selectedIcon:
+                  const Icon(Icons.grid_view_rounded, color: Color(0xFF5BCEFA)),
+              label: '工作台',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.person_outline,
                   color: isDark
                       ? const Color(0xFF636366)
                       : const Color(0xFFC7C7CC)),
-              selectedIcon: const Icon(Icons.person, color: Color(0xFF5BCEFA)),
-              label: '用户',
+              selectedIcon:
+                  const Icon(Icons.person_rounded, color: Color(0xFF5BCEFA)),
+              label: '我的',
             ),
           ],
         ),
       ),
     );
   }
+
+  /// 根据当前 Tab 构建不同的 AppBar
+  PreferredSizeWidget _buildAppBar(Color textColor, bool isDark) {
+    // Tab 标题配置
+    final tabTitles = ['TRANS PRISM', '百科', '工作台', '我的'];
+
+    return AppBar(
+      title: _currentIndex == 0
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/logo_in.png', height: 28),
+                const SizedBox(width: 8),
+                Text(
+                  tabTitles[_currentIndex],
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                    color: textColor,
+                  ),
+                ),
+              ],
+            )
+          : Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Text(
+                tabTitles[_currentIndex],
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
+              ),
+            ),
+      // 首页 AppBar 右侧：模块配置入口（药丸式组合按钮）
+      actions: _currentIndex == 0
+          ? [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: GestureDetector(
+                  onTap: _showHomeModuleSettings,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : const Color(0xFF5BCEFA).withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.dashboard_customize_rounded,
+                          size: 16,
+                          color: isDark
+                              ? const Color(0xFF98989E)
+                              : const Color(0xFF5BCEFA),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          '自定义',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFF98989E)
+                                : const Color(0xFF5BCEFA),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ]
+          : null,
+    );
+  }
 }
 
+/// =============================================================================
+/// HomeTab — 首页（纯净版）
+///
+/// 可定制模块：
+///   - 问候语（"你好，Mrs. 伙伴"）
+///   - HRT 追踪提醒（药物存量 + 血药浓度模拟）
+///   - 声音训练辅助
+///
+/// 用户可通过 AppBar 右侧配置按钮开关各模块的显示。
+/// =============================================================================
 class HomeTab extends StatelessWidget {
   final String genderIdentity;
   final String greetingDisplayName;
+  final Map<String, bool> moduleVisibility;
 
-  const HomeTab(
-      {super.key,
-      required this.genderIdentity,
-      required this.greetingDisplayName});
+  const HomeTab({
+    super.key,
+    required this.genderIdentity,
+    required this.greetingDisplayName,
+    required this.moduleVisibility,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final textColor =
+        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+
+    // 判断模块可见性
+    final showGreeting =
+        moduleVisibility[HomeModuleVisibility.keyGreeting] ?? true;
+    final showMedStock =
+        moduleVisibility[HomeModuleVisibility.keyMedStock] ?? true;
+    final showPkSim = moduleVisibility[HomeModuleVisibility.keyPkSim] ?? true;
+    final showVoiceTraining =
+        moduleVisibility[HomeModuleVisibility.keyVoiceTraining] ?? true;
+    final showMedicalDirectory =
+        moduleVisibility[HomeModuleVisibility.keyMedicalDirectory] ?? true;
+    final showSvgLibrary =
+        moduleVisibility[HomeModuleVisibility.keySvgLibrary] ?? true;
+    final showImageConverter =
+        moduleVisibility[HomeModuleVisibility.keyImageConverter] ?? true;
+    final showHormoneConverter =
+        moduleVisibility[HomeModuleVisibility.keyHormoneConverter] ?? true;
+
+    // HRT 标题：只要药物存量或血药浓度任一可见就显示
+    final showHrtSection = showMedStock || showPkSim;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+      children: [
+        // ── 问候区 ──
+        if (showGreeting) ...[
           Text(
             '你好，$greetingDisplayName 👋',
             style: TextStyle(
-              fontSize: 26,
+              fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: textColor,
             ),
           ),
           const SizedBox(height: 4),
@@ -867,181 +1228,229 @@ class HomeTab extends StatelessWidget {
               color: isDark ? Colors.grey.shade500 : Colors.grey[500],
             ),
           ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.9,
-              children: _buildFilteredFeatures(context),
-            ),
-          ),
+          const SizedBox(height: 28),
         ],
+
+        // ── HRT 追踪提醒 ──
+        if (showHrtSection) ...[
+          _buildSectionTitle('HRT 追踪', isDark: isDark),
+          const SizedBox(height: 12),
+
+          // 药物存量摘要 — 首页核心状态模块，实时显示续航信息
+          if (showMedStock) ...[
+            const MedicationStockSummary(),
+            const SizedBox(height: 12),
+          ],
+
+          if (showPkSim)
+            _buildPersonalCard(
+              context,
+              title: '血药浓度模拟',
+              subtitle: 'PK 药代动力学测算 · HRT 血药浓度预测',
+              icon: Icons.stacked_line_chart_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PKSimulationScreen(genderIdentity: genderIdentity),
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 28),
+        ],
+
+        // ── 工具模块区 ──
+        if (showMedicalDirectory ||
+            showSvgLibrary ||
+            showImageConverter ||
+            showHormoneConverter) ...[
+          _buildSectionTitle('工具箱', isDark: isDark),
+          const SizedBox(height: 12),
+          if (showMedicalDirectory)
+            _buildPersonalCard(
+              context,
+              title: '友善医疗名录',
+              subtitle: '全国跨性别友善医疗机构',
+              icon: Icons.local_hospital_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MedicalDirectoryListScreen(),
+                  ),
+                );
+              },
+            ),
+          if (showMedicalDirectory &&
+              (showSvgLibrary || showImageConverter || showHormoneConverter))
+            const SizedBox(height: 12),
+          if (showSvgLibrary)
+            _buildPersonalCard(
+              context,
+              title: '图解资源 (SVG库)',
+              subtitle: '浏览与导出跨性别主题 SVG 图标',
+              icon: Icons.photo_library_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SvgResourceGalleryScreen(),
+                  ),
+                );
+              },
+            ),
+          if (showSvgLibrary && (showImageConverter || showHormoneConverter))
+            const SizedBox(height: 12),
+          if (showImageConverter)
+            _buildPersonalCard(
+              context,
+              title: '图片格式转换',
+              subtitle: 'SVG/位图格式互转·分辨率调整',
+              icon: Icons.swap_horiz_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ImageConverterScreen(),
+                  ),
+                );
+              },
+            ),
+          if (showImageConverter && showHormoneConverter)
+            const SizedBox(height: 12),
+          if (showHormoneConverter)
+            _buildPersonalCard(
+              context,
+              title: '激素换算器',
+              subtitle: 'E2/T/PRL 等单位实时双向换算',
+              icon: Icons.balance_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HormoneConverterScreen(),
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 28),
+        ],
+
+        // ── 声音训练辅助 ──
+        if (showVoiceTraining) ...[
+          _buildSectionTitle('声音训练', isDark: isDark),
+          const SizedBox(height: 12),
+          _buildPersonalCard(
+            context,
+            title: '声音训练辅助',
+            subtitle: '基于 VFS Tracker 的嗓音训练工具集',
+            icon: Icons.mic_external_on_rounded,
+            isDark: isDark,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VoiceTrainingHomeScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 28),
+        ],
+
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title, {required bool isDark}) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93),
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
 
-  List<Widget> _buildFilteredFeatures(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return [
-      _buildMenuCard(
-        context,
-        title: '药物存量仪表盘',
-        subtitle: '追踪药物存量与本地用药提醒',
-        icon: Icons.medication_liquid_outlined,
-        gradientColors: [const Color(0xFFF5A9B8), const Color(0xFF5BCEFA)],
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const InventoryDashboardScreen()),
-          );
-        },
-        isDark: isDark,
-      ),
-      _buildMenuCard(
-        context,
-        title: '血药浓度模拟',
-        subtitle: 'Oyama\'s HRT Tracker · PK 药代动力学测算',
-        icon: Icons.stacked_line_chart_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    PKSimulationScreen(genderIdentity: genderIdentity)),
-          );
-        },
-        isDark: isDark,
-      ),
-      _buildMenuCard(
-        context,
-        title: '知识库 (Wiki)',
-        subtitle: genderIdentity == GenderIdentity.ftm
-            ? '包含 ftm.wiki 等'
-            : '包含 mtf.wiki 等',
-        icon: Icons.menu_book_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => WikiListPage(identity: genderIdentity)),
-          );
-        },
-        isDark: isDark,
-      ),
-      _buildMenuCard(
-        context,
-        title: '激素换算器',
-        subtitle: 'E2/T/PRL 等单位实时双向换算',
-        icon: Icons.balance_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const HormoneConverterScreen()),
-          );
-        },
-        isDark: isDark,
-      ),
-      _buildMenuCard(
-        context,
-        title: '声音训练辅助',
-        subtitle: '基于 VFS Tracker 的嗓音训练工具集',
-        icon: Icons.mic_external_on_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const VoiceTrainingHomeScreen()),
-          );
-        },
-        isDark: isDark,
-      ),
-      _buildMenuCard(
-        context,
-        title: '友善医疗名录',
-        subtitle: '全国跨性别友善医疗机构',
-        icon: Icons.local_hospital_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const MedicalDirectoryListScreen()),
-          );
-        },
-        isDark: isDark,
-      ),
-    ];
-  }
-
-  Widget _buildMenuCard(
+  Widget _buildPersonalCard(
     BuildContext context, {
     required String title,
     required String subtitle,
     required IconData icon,
-    List<Color> gradientColors = const [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
-    required VoidCallback onTap,
     required bool isDark,
+    required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.white,
-            width: 1.5,
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
-              blurRadius: 32,
-              offset: const Offset(0, 12),
+              color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            // 双色渐变图标 — Trans Prism 品牌色系
-            ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                colors: gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(icon, size: 44, color: Colors.white),
+            // 统一渐变图标（品牌色浅蓝→粉紫）
+            GradientIcon(icon, size: 40),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? const Color(0xFFF5F5F7)
+                          : const Color(0xFF1D1D1F),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? const Color(0xFF98989E)
+                          : const Color(0xFF999999),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color:
-                    isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color:
-                    isDark ? const Color(0xFF98989E) : const Color(0xFF999999),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            Icon(
+              Icons.chevron_right,
+              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              size: 22,
             ),
           ],
         ),
@@ -1050,7 +1459,7 @@ class HomeTab extends StatelessWidget {
   }
 }
 
-class UserTab extends StatefulWidget {
+class ProfileTab extends StatefulWidget {
   final String genderIdentity;
   final ValueChanged<String> onIdentityChanged;
   final String greetingName;
@@ -1059,7 +1468,7 @@ class UserTab extends StatefulWidget {
   final ValueChanged<String> onNamePrefixChanged;
   final ThemeService themeService;
 
-  const UserTab({
+  const ProfileTab({
     super.key,
     required this.genderIdentity,
     required this.onIdentityChanged,
@@ -1071,10 +1480,10 @@ class UserTab extends StatefulWidget {
   });
 
   @override
-  State<UserTab> createState() => _UserTabState();
+  State<ProfileTab> createState() => _ProfileTabState();
 }
 
-class _UserTabState extends State<UserTab> {
+class _ProfileTabState extends State<ProfileTab> {
   late TextEditingController _greetingController;
 
   bool _customPrefix = false;
@@ -1102,7 +1511,7 @@ class _UserTabState extends State<UserTab> {
   }
 
   @override
-  void didUpdateWidget(UserTab oldWidget) {
+  void didUpdateWidget(ProfileTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.greetingName != oldWidget.greetingName) {
       _greetingController.text = widget.greetingName;
@@ -1856,14 +2265,6 @@ class _UserTabState extends State<UserTab> {
                 color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'All Rights Reserved by TransPrism',
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-              ),
-            ),
             const SizedBox(height: 16),
           ],
         );
@@ -1959,496 +2360,5 @@ class _UserTabState extends State<UserTab> {
         ),
       );
     }
-  }
-}
-
-/// Wiki 列表页 — 支持离线模式开关
-///
-/// 对于 MtF.Wiki / FtM.Wiki / RLE.Wiki 三个可离线的 wiki，
-/// 在右侧添加 Switch 开关控制离线模式。
-class WikiListPage extends StatefulWidget {
-  final String identity;
-  const WikiListPage({super.key, required this.identity});
-
-  @override
-  State<WikiListPage> createState() => _WikiListPageState();
-}
-
-class _WikiListPageState extends State<WikiListPage> {
-  /// 离线开关状态缓存
-  final Map<String, bool> _offlineEnabled = {};
-
-  /// 当前离线版本日期缓存
-  final Map<String, String?> _offlineVersions = {};
-
-  /// 静默下载中标记
-  final Map<String, bool> _updating = {};
-
-  /// 下载进度状态：null = 不在下载，0.0~1.0 = 下载中
-  final Map<String, double?> _downloadProgress = {};
-
-  /// 下载状态文字
-  final Map<String, String> _downloadStatus = {};
-
-  /// Wiki 配置：显示标题 → (wikiType, localSiteDirName, localIndexPath, onlineUrl)
-  static const _wikiConfigs = {
-    'MtF.Wiki': (
-      'mtf',
-      'mtf-wiki-site',
-      '/zh-cn/docs/index.html',
-      'https://mtf.wiki/zh-cn/',
-    ),
-    'FtM.Wiki': (
-      'ftm',
-      'ftm-wiki-site',
-      '/index.html',
-      'https://ftm.wiki/zh-cn/',
-    ),
-    'RLE.Wiki': (
-      'rle',
-      'rle-wiki-site',
-      '/index.html',
-      'https://rle.wiki/',
-    ),
-  };
-
-  static const _prefsWikiHintDismissed = 'wiki_offline_hint_dismissed_forever';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadOfflineStates();
-  }
-
-  /// 异步加载每个 wiki 的离线开关状态 + 版本信息
-  Future<void> _loadOfflineStates() async {
-    for (final displayTitle in _wikiConfigs.keys) {
-      final (wikiType, _, _, _) = _wikiConfigs[displayTitle]!;
-      final enabled = await WikiOfflineService.isOfflineEnabled(wikiType);
-      final version =
-          enabled ? await WikiOfflineService.readVersion(wikiType) : null;
-      if (mounted) {
-        setState(() {
-          _offlineEnabled[wikiType] = enabled;
-          _offlineVersions[wikiType] = version;
-        });
-      }
-    }
-    // 加载完成后批量检查更新 + 首次引导
-    _checkAndUpdateAll();
-    _showOnboardingHint();
-  }
-
-  /// 首次进入 Wiki 列表页时的引导提示
-  Future<void> _showOnboardingHint() async {
-    if (!mounted) return;
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_prefsWikiHintDismissed) == true) return;
-
-    if (!context.mounted) return;
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.download_for_offline, color: Color(0xFF5BCEFA)),
-            SizedBox(width: 8),
-            Text('离线版下载'),
-          ],
-        ),
-        content: const Text(
-          '每个知识库右侧的「下载」开关可开启离线版。\n\n'
-          '开启后会自动下载最新离线包，之后即使没有网络也能正常阅读。\n\n'
-          '如需关闭，再次点击开关即可删除离线数据。',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('本次关闭'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              await prefs.setBool(_prefsWikiHintDismissed, true);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF5BCEFA),
-            ),
-            child: const Text('不再提示'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 批量检查所有已开启离线的 wiki 是否有更新
-  Future<void> _checkAndUpdateAll() async {
-    for (final displayTitle in _wikiConfigs.keys) {
-      final (wikiType, _, _, _) = _wikiConfigs[displayTitle]!;
-      if (!(_offlineEnabled[wikiType] ?? false)) continue;
-
-      final result = await WikiUpdateManager().checkForUpdate(wikiType);
-      if (result == null || !mounted) continue;
-
-      final (latestDate, downloadUrl) = result;
-      if (_updating[wikiType] == true) continue; // 已在更新中
-
-      setState(() => _updating[wikiType] = true);
-
-      final success = await WikiUpdateManager()
-          .downloadUpdateSilently(wikiType, downloadUrl, latestDate);
-
-      if (!mounted) return;
-
-      setState(() {
-        _updating[wikiType] = false;
-        if (success) {
-          _offlineVersions[wikiType] = latestDate;
-        }
-      });
-
-      if (success) {
-        _showSnackBar('$displayTitle 已更新至 $latestDate');
-      }
-    }
-  }
-
-  /// 获取 wiki 类型对应的显示标题
-  String? _displayTitleForType(String wikiType) {
-    for (final entry in _wikiConfigs.entries) {
-      final (wt, _, _, _) = entry.value;
-      if (wt == wikiType) return entry.key;
-    }
-    return null;
-  }
-
-  /// 处理离线开关切换
-  Future<void> _handleOfflineToggle(String wikiType, bool newValue) async {
-    if (newValue) {
-      // ── 开启离线模式：触发下载 ──
-      await _startDownload(wikiType);
-    } else {
-      // ── 关闭离线模式：确认弹窗 → 删除 ──
-      await _confirmDisableOffline(wikiType);
-    }
-  }
-
-  /// 开启离线：前台下载带进度
-  Future<void> _startDownload(String wikiType) async {
-    setState(() {
-      _downloadProgress[wikiType] = 0.0;
-      _downloadStatus[wikiType] = '准备中...';
-    });
-
-    final success = await WikiUpdateManager().downloadWithProgress(
-      wikiType,
-      onProgress: (progress) {
-        if (mounted) {
-          setState(() => _downloadProgress[wikiType] = progress);
-        }
-      },
-      onStatus: (status) {
-        if (mounted) {
-          setState(() => _downloadStatus[wikiType] = status);
-        }
-      },
-    );
-
-    if (!mounted) return;
-
-    if (success) {
-      await WikiOfflineService.setOfflineEnabled(wikiType, true);
-      setState(() {
-        _offlineEnabled[wikiType] = true;
-        _downloadProgress.remove(wikiType);
-        _downloadStatus.remove(wikiType);
-      });
-      _showSnackBar('${_displayTitleForType(wikiType) ?? wikiType} 离线版已就绪');
-    } else {
-      setState(() {
-        _downloadProgress.remove(wikiType);
-        _downloadStatus.remove(wikiType);
-      });
-      _showSnackBar('下载失败，请检查网络后重试');
-    }
-  }
-
-  /// 关闭离线：确认弹窗
-  Future<void> _confirmDisableOffline(String wikiType) async {
-    // 计算预计节省空间
-    final sizeStr =
-        await WikiOfflineService.getOfflineDiskSizeFormatted(wikiType);
-    final displayTitle = _displayTitleForType(wikiType) ?? wikiType;
-
-    if (!mounted) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('关闭离线版'),
-        content: Text(
-          '确定关闭 $displayTitle 离线版？\n\n'
-          '删除后将节省约 $sizeStr 空间，'
-          '但后续将无法离线访问该 Wiki。\n\n'
-          '确定要关闭吗？',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('确定删除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    // 删除离线数据
-    await WikiOfflineService.deleteAllOfflineData(wikiType);
-    await WikiOfflineService.setOfflineEnabled(wikiType, false);
-
-    setState(() {
-      _offlineEnabled[wikiType] = false;
-    });
-
-    _showSnackBar('已删除 $displayTitle 离线版，节省约 $sizeStr 空间');
-  }
-
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('选择知识库')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (widget.identity == GenderIdentity.mtf) ...[
-            _buildWikiTile(
-                'MtF.Wiki', '跨性别女性进阶指南 (推荐)', Icons.star, Colors.pink),
-            _buildWikiTile(
-                'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
-          ],
-          if (widget.identity == GenderIdentity.ftm) ...[
-            _buildWikiTile(
-                'FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star, Colors.blue),
-            _buildWikiTile(
-                'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
-          ],
-          if (widget.identity == GenderIdentity.nb) ...[
-            _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南', Icons.star, Colors.pink),
-            _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南', Icons.star, Colors.blue),
-            _buildWikiTile(
-                'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
-          ],
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
-            child: Text(
-              '其他参考资源',
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade500 : Colors.grey,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          if (widget.identity == GenderIdentity.ftm)
-            _buildWikiTile(
-                'MtF.Wiki (已折叠)', '跨性别女性指南', Icons.folder_open, Colors.grey),
-          if (widget.identity == GenderIdentity.mtf)
-            _buildWikiTile(
-                'FtM.Wiki (已折叠)', '跨性别男性指南', Icons.folder_open, Colors.grey),
-          _buildWikiTile('2345.lgbt', '跨性别友好资源导航页', Icons.explore, Colors.teal),
-          _buildWikiTile(
-              '维基百科 (Wikipedia)', '中文维基百科跨性别词条', Icons.language, Colors.grey),
-          const WikiLicenseNotice(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWikiTile(
-    String displayTitle,
-    String subtitle,
-    IconData icon,
-    Color color,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // 判断是否为可离线的 wiki
-    final hasOffline = _wikiConfigs.containsKey(displayTitle);
-    final wikiType = hasOffline ? _wikiConfigs[displayTitle]!.$1 : null;
-
-    // 下载进度
-    final downloading =
-        wikiType != null && _downloadProgress.containsKey(wikiType);
-    final progress = wikiType != null ? _downloadProgress[wikiType] : null;
-    final statusText = wikiType != null ? _downloadStatus[wikiType] : null;
-
-    // 静默更新中
-    final updating = wikiType != null && (_updating[wikiType] ?? false);
-
-    // 离线开关状态（仅对可离线 wiki 有效）
-    final switchValue =
-        wikiType != null ? (_offlineEnabled[wikiType] ?? false) : false;
-
-    // 版本信息
-    final version = wikiType != null ? _offlineVersions[wikiType] : null;
-
-    // 动态 subtitle
-    String effectiveSubtitle = subtitle;
-    if (updating) {
-      effectiveSubtitle = '正在更新...';
-    } else if (switchValue && version != null) {
-      effectiveSubtitle = '离线版 · $version';
-    }
-
-    Widget trailing;
-    if (downloading) {
-      // 下载中：显示进度条 + 状态文字
-      trailing = SizedBox(
-        width: 80,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (progress != null)
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  value: progress > 0 ? progress : null,
-                  strokeWidth: 3,
-                ),
-              ),
-            if (statusText != null)
-              Text(
-                statusText,
-                style: TextStyle(
-                    fontSize: 10,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-      );
-    } else if (updating) {
-      // 静默更新中：小进度圈
-      trailing = const SizedBox(
-        width: 40,
-        height: 40,
-        child: CircularProgressIndicator(strokeWidth: 3),
-      );
-    } else if (hasOffline) {
-      // 可离线的 wiki：显示 Switch + 提示文字
-      trailing = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            switchValue ? '当前模式：离线' : '当前模式：在线',
-            style: TextStyle(
-              fontSize: 11,
-              color: switchValue
-                  ? const Color(0xFF5BCEFA)
-                  : (isDark ? Colors.grey.shade500 : Colors.grey),
-            ),
-          ),
-          Tooltip(
-            message: switchValue ? '已开启离线版' : '点击开启离线版下载',
-            child: Switch(
-              value: switchValue,
-              onChanged: (v) => _handleOfflineToggle(wikiType!, v),
-              activeColor: const Color(0xFF5BCEFA),
-            ),
-          ),
-        ],
-      );
-    } else {
-      // 不可离线的 wiki：显示箭头
-      trailing = Icon(Icons.chevron_right,
-          color: isDark ? Colors.grey.shade600 : null);
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(displayTitle,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? const Color(0xFFF5F5F7) : null)),
-        subtitle: Text(effectiveSubtitle,
-            style: TextStyle(
-                fontSize: 12, color: isDark ? Colors.grey.shade400 : null)),
-        trailing: trailing,
-        onTap: () => _openWikiReader(context, displayTitle),
-      ),
-    );
-  }
-
-  void _openWikiReader(BuildContext context, String displayTitle) {
-    // 可离线的 wiki（MtF / FtM / RLE）→ 统一 OfflineWikiScreen
-    if (_wikiConfigs.containsKey(displayTitle)) {
-      final (wikiType, siteDir, indexPath, onlineUrl) =
-          _wikiConfigs[displayTitle]!;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OfflineWikiScreen(
-            wikiType: wikiType,
-            title: displayTitle,
-            onlineUrl: onlineUrl,
-            localSiteDirName: siteDir,
-            localIndexPath: indexPath,
-          ),
-        ),
-      );
-      return;
-    }
-
-    // 其他 wiki → WikiWebScreen
-    final config = WikiCatalog.fromDisplayTitle(displayTitle);
-    if (config == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('暂不支持该知识库')),
-      );
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WikiWebScreen(
-          wikiId: config.id,
-          title: displayTitle,
-        ),
-      ),
-    );
   }
 }

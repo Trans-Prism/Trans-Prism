@@ -1,0 +1,161 @@
+[
+  {
+    "id": "blahaj_shark",
+    "displayName": "Blåhaj 鲨鱼",
+    "searchKeywords": ["blahaj", "鲨鱼", "shark", "宜家鲨鱼", "ikea shark", "毛绒玩具", "🦈", "鲨鲨"],
+    "styles": {
+      "twemoji": "assets/svg_resources/blahaj_shark_twemoji.svg",
+      "openmoji": "assets/svg_resources/blahaj_shark_openmoji.svg",
+      "noto": "assets/svg_resources/blahaj_shark_noto.svg"
+    }
+  },
+  {
+    "id": "butterfly",
+    "displayName": "蝴蝶",
+    "searchKeywords": ["butterfly", "蝴蝶", "蜕变", "🦋", "鳞翅目", "破茧", "毛毛虫的变态产物"],
+    "styles": {
+      "twemoji": "assets/svg_resources/butterfly_twemoji.svg",
+      "openmoji": "assets/svg_resources/butterfly_openmoji.svg",
+      "noto": "assets/svg_resources/butterfly_noto.svg"
+    }
+  },
+  {
+    "id": "egg",
+    "displayName": "蛋",
+    "searchKeywords": ["egg", "鸡蛋", "蛋", "🥚", "孵化", "觉醒", "eggy", "壳中人", "蛋蛋", "鸭蛋"],
+    "styles": {
+      "twemoji": "assets/svg_resources/egg_twemoji.svg",
+      "openmoji": "assets/svg_resources/egg_openmoji.svg",
+      "noto": "assets/svg_resources/egg_noto.svg"
+    }
+  },
+  {
+    "id": "med_pill",
+    "displayName": "药丸",
+    "searchKeywords": ["pill", "药丸", "药物", "💊", "medicine", "激素", "hrt", "吃药", "雌二醇"],
+    "styles": {
+      "twemoji": "assets/svg_resources/med_pill_twemoji.svg",
+      "openmoji": "assets/svg_resources/med_pill_openmoji.svg",
+      "noto": "assets/svg_resources/med_pill_noto.svg"
+    }
+  },
+  {
+    "id": "med_syringe",
+    "displayName": "注射器",
+    "searchKeywords": ["syringe", "注射器", "针筒", "💉", "注射", "hormone", "hrt", "打针", "日雌"],
+    "styles": {
+      "twemoji": "assets/svg_resources/med_syringe_twemoji.svg",
+      "openmoji": "assets/svg_resources/med_syringe_openmoji.svg",
+      "noto": "assets/svg_resources/med_syringe_noto.svg"
+    }
+  },
+  {
+    "id": "naruto_maki",
+    "displayName": "鱼板",
+    "searchKeywords": ["鱼板", "鸣人卷", "naruto", "maki", "🍥", "拉面", "吃糖", "补佳乐"],
+    "styles": {
+      "twemoji": "assets/svg_resources/naruto_maki_twemoji.svg",
+      "openmoji": "assets/svg_resources/naruto_maki_openmoji.svg",
+      "noto": "assets/svg_resources/naruto_maki_noto.svg"
+    }
+  },
+  {
+    "id": "pride_flag",
+    "displayName": "彩虹旗",
+    "searchKeywords": ["pride", "旗", "彩虹", "🌈", "lgbtq", "骄傲", "多元", "同志", "彩虹旗"],
+    "styles": {
+      "twemoji": "assets/svg_resources/pride_flag_twemoji.svg",
+      "openmoji": "assets/svg_resources/pride_flag_openmoji.svg",
+      "noto": "assets/svg_resources/pride_flag_noto.svg"
+    }
+  },
+  {
+    "id": "trans_flag",
+    "displayName": "跨性别旗帜",
+    "searchKeywords": ["trans", "旗", "跨性别", "🏳️‍⚧️", "transgender", "骄傲", "跨旗", "mtf", "ftm"],
+    "styles": {
+      "twemoji": "assets/svg_resources/trans_flag_twemoji.svg",
+      "openmoji": "assets/svg_resources/trans_flag_openmoji.svg",
+      "noto": "assets/svg_resources/trans_flag_noto.svg"
+    }
+  },
+  {
+    "id": "trans_symbol",
+    "displayName": "跨性别符号",
+    "searchKeywords": ["trans", "symbol", "跨性别", "符号", "⚧", "标志", "gender", "性别符号"],
+    "styles": {
+      "twemoji": "assets/svg_resources/trans_symbol_twemoji.svg",
+      "noto": "assets/svg_resources/trans_symbol_noto.svg"
+    }
+  },
+  {
+    "id": "unicorn",
+    "displayName": "独角兽",
+    "searchKeywords": ["unicorn", "独角兽", "🦄", "幻想", "神奇", "彩虹"],
+    "styles": {
+      "twemoji": "assets/svg_resources/unicorn_twemoji.svg",
+      "openmoji": "assets/svg_resources/unicorn_openmoji.svg",
+      "noto": "assets/svg_resources/unicorn_noto.svg"
+    }
+  },
+  {
+    "id": "flag_trans_solid",
+    "display_name": "跨性别旗帜 (纯色)",
+    "search_keywords": ["跨性别", "旗帜", "纯色", "trans", "标志", "蓝粉白", "骄傲"],
+    "styles": {
+      "standard": "assets/svg_resources/flag_trans_solid.svg"
+    }
+  },
+  {
+    "id": "flag_pride_solid",
+    "display_name": "彩虹旗帜 (纯色)",
+    "search_keywords": ["彩虹旗", "旗帜", "纯色", "pride", "lgbtq", "骄傲", "多元", "六色"],
+    "styles": {
+      "standard": "assets/svg_resources/flag_pride_solid.svg"
+    }
+  },
+  {
+    "id": "chem_estradiol",
+    "display_name": "雌二醇 (E2)",
+    "search_keywords": ["化学", "结构式", "雌二醇", "e2", "estradiol", "雌激素", "糖"],
+    "styles": {
+      "minimal": "assets/svg_resources/Estradiol.svg",
+      "textbook": "assets/svg_resources/Estradiol_CH3.svg"
+    }
+  },
+  {
+    "id": "chem_estradiol_valerate",
+    "display_name": "戊酸雌二醇 (EV)",
+    "search_keywords": ["化学", "结构式", "戊酸雌二醇", "ev", "estradiol valerate", "补佳乐", "雌激素"],
+    "styles": {
+      "minimal": "assets/svg_resources/Estradiol_valerate.svg"
+    }
+  },
+  {
+    "id": "chem_testosterone",
+    "display_name": "睾酮 (T)",
+    "search_keywords": ["化学", "结构式", "睾酮", "t", "testosterone", "雄激素", "t酮"],
+    "styles": {
+      "minimal": "assets/svg_resources/Testosterone.svg",
+      "textbook": "assets/svg_resources/Testosterone_CH3.svg"
+    }
+  },
+  {
+    "id": "chem_cyproterone_acetate",
+    "display_name": "环丙孕酮 (CPA)",
+    "search_keywords": ["化学", "结构式", "环丙孕酮", "cpa", "cyproterone acetate", "色普龙", "抗雄"],
+    "styles": {
+      "minimal": "assets/svg_resources/Cyproterone_acetate.svg",
+      "textbook": "assets/svg_resources/Cyproterone_acetate_CH3.svg"
+    }
+  },
+  {
+    "id": "chem_spironolactone",
+    "display_name": "螺内酯 (Spiro)",
+    "search_keywords": ["化学", "结构式", "螺内酯", "spiro", "spironolactone", "安体舒通", "抗雄", "利尿剂"],
+    "styles": {
+      "minimal": "assets/svg_resources/Spironolacton.svg",
+      "textbook": "assets/svg_resources/Spironolacton_CH3.svg"
+    }
+  }
+]

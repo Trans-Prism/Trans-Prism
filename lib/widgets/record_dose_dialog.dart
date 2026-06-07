@@ -95,7 +95,11 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
       debugPrint('💊 [TP-RDD] 用药记录成功: id=${log.id}, site=$_selectedSite');
 
       if (mounted) {
-        BrandedToast.doseRecorded(context, widget.drug.name);
+        // ⚠️ 注意：不要在 Navigator.pop 之前或之后立即使用此 context
+        // 调用 BrandedToast。因为底部弹出层即将被移除，此时插入 OverlayEntry
+        // 会导致「Tried to build dirty widget in the wrong build scope」和
+        //「_dependents.isEmpty」断言失败。
+        // Toast 由调用方（MedicationCard._handleDoseTap）在对话框关闭后展示。
         Navigator.pop(context, true);
       }
     } catch (e) {

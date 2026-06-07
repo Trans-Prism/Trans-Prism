@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drug_model.dart';
 import '../services/medication_service.dart';
+import 'branded_toast.dart';
 import 'record_dose_dialog.dart';
 
 /// 药物卡片 — 支持基于周期的动态形态
@@ -146,6 +147,10 @@ class _MedicationCardState extends State<MedicationCard> {
   Future<void> _handleDoseTap() async {
     final recorded = await RecordDoseDialog.show(context, drug: widget.drug);
     if (recorded == true && mounted) {
+      // 在底部弹出层关闭后，使用 MedicationCard 的 context 展示 Toast。
+      // 此 context 在卡片生命周期内始终有效，避免在 OverlayEntry 插入
+      // 与 Navigator.pop 之间产生竞态条件。
+      BrandedToast.doseRecorded(context, widget.drug.name);
       widget.onDoseRecorded?.call();
     }
   }

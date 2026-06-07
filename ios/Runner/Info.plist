@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Trans Prism needs to save images to your photo library for exporting illustration resources to your album.</string>
 </dict>
 </plist>

@@ -67,7 +67,15 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
     super.didUpdateWidget(oldWidget);
     if (widget.drugName != oldWidget.drugName) {
       _selectedSite = null;
-      widget.onSiteSelected?.call(null);
+      // ⚠️ 不能在 didUpdateWidget（build 阶段）直接调用 widget.onSiteSelected，
+      //    该回调会触发父级 RecordDoseDialog.setState，导致
+      //    「Tried to build dirty widget in the wrong build scope」。
+      //    延迟到当前帧构建完成后再通知父级。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.onSiteSelected?.call(null);
+        }
+      });
       _loadBinding();
     }
   }
@@ -94,17 +102,24 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
       final recommended = await MedicationService.calculateNextSiteByName(name);
 
       if (mounted) {
+        // ⚠️ 关键：widget.onSiteSelected 会触发父级 RecordDoseDialog.setState，
+        //    必须在 setState 外部调用，否则会触发
+        //    「Tried to build dirty widget in the wrong build scope」错误。
+        String? siteToNotify;
         setState(() {
           _loading = false;
           _templateId = templateId;
           _sites = sites;
           _recommendedSite = recommended;
-          // 默认选中推荐部位
           if (_selectedSite == null && recommended != null) {
             _selectedSite = recommended;
-            widget.onSiteSelected?.call(recommended);
+            siteToNotify = recommended;
           }
         });
+        // 在 setState 回调之后、当前帧构建完成前通知父级
+        if (siteToNotify != null) {
+          widget.onSiteSelected?.call(siteToNotify);
+        }
       }
     } else {
       if (mounted) {

@@ -181,4 +181,94 @@ class PermissionManager {
   Future<bool> openAppSettings() async {
     return ph.openAppSettings();
   }
+
+  // ============================================================
+  //  8. 存储 / 相册权限（用于导出 SVG / PNG 到设备）
+  // ============================================================
+
+  /// 静默查询存储/相册权限状态（不弹系统对话框）
+  ///
+  /// 返回值：
+  ///   - true  → 已授权
+  ///   - false → 未授权（用户可能已拒绝或永久拒绝）
+  ///
+  /// 仅查询状态，不触发系统权限对话框。如需请求权限，请调用 [requestStoragePermission]。
+  Future<bool> checkStoragePermission() async {
+    debugPrint('🔐 [PermissionManager] checkStoragePermission()');
+
+    if (Platform.isAndroid) {
+      // 检查 Android 13+ 的图片权限
+      final photosStatus = await ph.Permission.photos.status;
+      debugPrint('🔐 [PermissionManager] check photos status → $photosStatus');
+      if (photosStatus.isGranted) return true;
+
+      // 检查传统存储权限（Android 9-）
+      final storageStatus = await ph.Permission.storage.status;
+      debugPrint(
+          '🔐 [PermissionManager] check storage status → $storageStatus');
+      if (storageStatus.isGranted) return true;
+
+      return false;
+    } else if (Platform.isIOS) {
+      final photosStatus = await ph.Permission.photos.status;
+      debugPrint(
+          '🔐 [PermissionManager] check photos (iOS) status → $photosStatus');
+      return photosStatus.isGranted;
+    }
+
+    // macOS / Linux / Windows / Web：无需权限
+    return true;
+  }
+
+  /// 请求存储/相册权限，用于保存导出的文件
+  ///
+  /// 内部流程：先 [checkStoragePermission] 静默查询，已授权则直接返回；
+  /// 未授权则弹出系统对话框向用户索要。
+  ///
+  /// - Android 13+ (API 33+)：使用 [Permission.photos]（图片权限）
+  /// - Android 10-12 (API 29-32)：使用 [Permission.storage]
+  /// - Android 9 及以下 (API ≤28)：使用 [Permission.storage]
+  /// - iOS：使用 [Permission.photos]
+  Future<bool> requestStoragePermission() async {
+    debugPrint('🔐 [PermissionManager] requestStoragePermission()');
+
+    // ── 1. 先静默查询 ──
+    final alreadyGranted = await checkStoragePermission();
+    if (alreadyGranted) return true;
+
+    // ── 2. 未授权，弹出系统对话框索要 ──
+    if (Platform.isAndroid) {
+      // 先尝试 Android 13+ 的图片权限
+      ph.Permission photosPerm = ph.Permission.photos;
+      var status = await photosPerm.status;
+      debugPrint('🔐 [PermissionManager] photos status → $status');
+      if (status.isGranted) return true;
+      if (status.isDenied && status.isPermanentlyDenied == false) {
+        status = await photosPerm.request();
+        debugPrint('🔐 [PermissionManager] photos request → $status');
+        if (status.isGranted) return true;
+      }
+
+      // 降级尝试传统存储权限（Android 9-）
+      ph.Permission storagePerm = ph.Permission.storage;
+      var storageStatus = await storagePerm.status;
+      debugPrint('🔐 [PermissionManager] storage status → $storageStatus');
+      if (storageStatus.isGranted) return true;
+      if (storageStatus.isDenied &&
+          storageStatus.isPermanentlyDenied == false) {
+        storageStatus = await storagePerm.request();
+        debugPrint('🔐 [PermissionManager] storage request → $storageStatus');
+        return storageStatus.isGranted;
+      }
+
+      return false;
+    } else if (Platform.isIOS) {
+      final status = await ph.Permission.photos.request();
+      debugPrint('🔐 [PermissionManager] photos → $status');
+      return status.isGranted;
+    }
+
+    // macOS / Linux / Windows / Web：无需权限
+    return true;
+  }
 }

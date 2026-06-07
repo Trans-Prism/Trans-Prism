@@ -248,7 +248,7 @@ class UpdateDialog extends StatelessWidget {
   Future<void> _handleUpdateNow(BuildContext context) async {
     if (apkDownloadUrls.isEmpty) {
       const fallbackUrl =
-          'https://github.com/daanser/Trans-Prism/releases/latest';
+          'https://github.com/Trans-Prism/Trans-Prism/releases/latest';
       await _launchUrl(fallbackUrl);
     } else {
       // 依次尝试每个镜像 URL，只要有一个成功打开就停止

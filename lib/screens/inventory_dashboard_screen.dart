@@ -678,6 +678,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
         dailyReminderTimes: List<String>.from(_dailyReminderTimes),
         reminderEnabled: widget.existingDrug?.reminderEnabled ?? true,
       );
+      // 用户未设置下次给药时间时，自动按当前时间推算首次提醒
+      if (drug.nextDoseTime == null) {
+        drug.setNextDoseTime(drug.calculateNextDoseTime(DateTime.now()));
+      }
       Navigator.pop(context, drug);
     } else {
       final intervalVal = int.tryParse(_intervalValueController.text.trim());
@@ -696,6 +700,10 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
         dailyReminderTimes: [],
         reminderEnabled: widget.existingDrug?.reminderEnabled ?? true,
       );
+      // 用户未设置下次给药时间时，自动按当前时间推算首次提醒
+      if (drug.nextDoseTime == null) {
+        drug.setNextDoseTime(drug.calculateNextDoseTime(DateTime.now()));
+      }
       Navigator.pop(context, drug);
     }
   }
@@ -1006,7 +1014,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
     final displayText = _nextDoseTime != null
         ? '${_nextDoseTime!.year}/${_nextDoseTime!.month}/${_nextDoseTime!.day}  '
             '${_nextDoseTime!.hour.toString().padLeft(2, '0')}:${_nextDoseTime!.minute.toString().padLeft(2, '0')}'
-        : '立即开始（不设置）';
+        : '立即开始';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 
 /// 跨性别蓝粉白配色的品牌 Toast，从顶部滑入，自动消失
 ///
-/// 替代默认的 ScaffoldMessenger SnackBar，提供更优雅的用药反馈体验。
+/// 通过 Overlay 实现全局 toast，不受 Scaffold 层级限制。
+///
+/// ⚠️ 安全使用规则：
+/// 1. 不要在 `Navigator.pop(context)` 之前或之后立即调用 —— 此时 context
+///    关联的 Overlay 正在移除路由条目，插入 OverlayEntry 会引发竞态条件：
+///    「Tried to build dirty widget in the wrong build scope」以及
+///    「_dependents.isEmpty」断言失败。
+/// 2. 优先在发起弹出层的「调用方」context 上调用，而非弹出层内部的 context。
 class BrandedToast {
   /// 显示一条品牌 Toast
   ///
@@ -77,21 +84,34 @@ class BrandedToast {
     Color? backgroundColor,
     required Duration duration,
   }) {
-    // 使用 Overlay 实现全局 toast，不受 Scaffold 层级限制
-    final overlay = Overlay.of(context);
+    // 🔐 使用 post-frame callback 确保 OverlayEntry 插入发生在当前帧构建阶段之后，
+    //    避免在 Overlay 正在处理路由变更时插入条目引发竞态。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
 
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (context) => _BrandedToastWidget(
-        message: message,
-        icon: icon,
-        backgroundColor: backgroundColor,
-        onDismiss: () => entry.remove(),
-        duration: duration,
-      ),
-    );
+      // 优先使用 rootOverlay（Navigator 根层 Overlay），它在路由切换时不会被销毁
+      final overlay = Overlay.of(context, rootOverlay: true);
 
-    overlay.insert(entry);
+      late OverlayEntry entry;
+      entry = OverlayEntry(
+        builder: (_) => _BrandedToastWidget(
+          message: message,
+          icon: icon,
+          backgroundColor: backgroundColor,
+          onDismiss: () {
+            // 安全移除：只有 entry 还挂载在 Overlay 中时才移除
+            try {
+              entry.remove();
+            } catch (_) {
+              // 忽略已卸载的 OverlayEntry 移除异常
+            }
+          },
+          duration: duration,
+        ),
+      );
+
+      overlay.insert(entry);
+    });
   }
 }
 

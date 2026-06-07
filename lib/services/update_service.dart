@@ -86,11 +86,11 @@ class _MirrorDef {
 class UpdateService {
   // ── GitHub API ──
   static const _apiUrl =
-      'https://api.github.com/repos/daanser/Trans-Prism/releases';
+      'https://api.github.com/repos/Trans-Prism/Trans-Prism/releases';
 
   // ── GitHub Releases 页面（无 APK 资产时的降级页）──
   static const _releasesPageUrl =
-      'https://github.com/daanser/Trans-Prism/releases/latest';
+      'https://github.com/Trans-Prism/Trans-Prism/releases/latest';
 
   // ── 镜像站容错链 ──
   static const List<_MirrorDef> _mirrors = [
