@@ -96,12 +96,23 @@ class WikiCatalog {
     contentBranch: 'main',
   );
 
+  /// MioMtFWiki — 小澪的跨性别知识库（在线版）
+  static const WikiConfig mioMtf = WikiConfig(
+    id: 'miomtf',
+    title: 'MioMtFWiki',
+    webUrl: 'https://kitsumio.github.io/MioMtFWiki/',
+    contentOwner: 'kitsumio',
+    contentRepo: 'MioMtFWiki',
+    contentBranch: 'main',
+  );
+
   static const Map<String, WikiConfig> _configs = {
     'mtf': mtf,
     'ftm': ftm,
     'rle': rle,
     'wikipedia': wikipedia,
     '2345lgbt': lgbt2345,
+    'miomtf': mioMtf,
   };
 
   static const List<String> syncableIds = ['mtf', 'ftm', 'rle', '2345lgbt'];
@@ -114,6 +125,7 @@ class WikiCatalog {
       return wikipedia;
     }
     if (displayTitle.startsWith('2345.lgbt')) return lgbt2345;
+    if (displayTitle.startsWith('MioMtFWiki')) return mioMtf;
     return null;
   }
 

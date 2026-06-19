@@ -215,6 +215,8 @@ class WikiUpdateManager {
 
       final releases = resp.data as List<dynamic>;
       Map<String, dynamic>? target;
+
+      // 1. 优先匹配 tag 前缀（标准模式：{wikiType}-{date}）
       for (final r in releases) {
         final tag = r['tag_name'] as String? ?? '';
         if (tag.startsWith('$wikiType-')) {
@@ -222,17 +224,46 @@ class WikiUpdateManager {
           break;
         }
       }
+
+      // 2. 降级匹配 asset 名称前缀（兼容非标准 tag，如 build-{date}）
+      if (target == null) {
+        for (final r in releases) {
+          final assets = r['assets'] as List<dynamic>? ?? [];
+          for (final a in assets) {
+            final name = a['name'] as String? ?? '';
+            if (name.startsWith('$wikiType-site-') && name.endsWith('.zip')) {
+              target = r;
+              break;
+            }
+          }
+          if (target != null) break;
+        }
+      }
+
       if (target == null) return null;
 
       final tag = target['tag_name'] as String? ?? '';
       final assets = target['assets'] as List<dynamic>? ?? [];
       if (assets.isEmpty) return null;
 
-      final zip = assets.firstWhere(
+      // 优先匹配与 wikiType 对应的 ZIP（asset 名以 {wikiType}-site- 开头）
+      Map<String, dynamic>? zipAsset;
+      for (final a in assets) {
+        final name = a['name'] as String? ?? '';
+        if (name.startsWith('$wikiType-site-') && name.endsWith('.zip')) {
+          zipAsset = a;
+          break;
+        }
+      }
+      // 兜底：任意 .zip
+      zipAsset ??= assets.firstWhere(
         (a) => (a['name'] as String? ?? '').endsWith('.zip'),
+        orElse: () => <String, dynamic>{},
       );
-      final downloadUrl = zip['browser_download_url'] as String;
-      final fileName = zip['name'] as String? ?? '$tag.zip';
+      if (zipAsset!.isEmpty) return null;
+
+      final downloadUrl = zipAsset['browser_download_url'] as String;
+      final fileName = zipAsset['name'] as String? ?? '$tag.zip';
 
       return (tag, downloadUrl, fileName);
     } catch (e) {

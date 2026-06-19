@@ -241,6 +241,24 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           _buildLicenseCard(
             context,
+            icon: Icons.auto_stories,
+            title: 'MioMtFWiki（小澪的跨性别知识库）',
+            license: 'CC BY-ND 4.0',
+            copyright: 'Mio',
+            url: 'https://kitsumio.github.io/MioMtFWiki/',
+            description: '内容采用「署名—禁止演绎 4.0 协议国际版（CC BY-ND 4.0）」进行许可。'
+                '允许转载、镜像、离线打包和重新分发；允许转换格式、建立索引、'
+                '全文搜索、响应式排版等技术性处理；允许在应用程序中集成和展示；允许商业传播。'
+                '但不得修改、删减、重写或翻译后再次发布项目内容。'
+                '使用时须保留来源信息、标明 MioMtFWiki 项目链接并保留协议声明。',
+            isDark: isDark,
+            cardBg: cardBg,
+            cardBorderColor: cardBorderColor,
+            textColor: textColor,
+            secondaryTextColor: secondaryTextColor,
+          ),
+          _buildLicenseCard(
+            context,
             icon: Icons.language,
             title: '2345.lgbt（跨性别友好资源导航站）',
             license: 'LGPL-3.0',

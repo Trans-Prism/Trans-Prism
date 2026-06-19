@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Wiki 页面底部的开源协议声明
 ///
@@ -134,6 +136,45 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
             const SizedBox(height: 4),
             Text(
               '• FtM.Wiki 的源代码采用 LGPLv3 许可证进行许可。',
+              style: TextStyle(
+                  fontSize: 13,
+                  height: 1.55,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+            ),
+            const SizedBox(height: 12),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                    fontSize: 13,
+                    height: 1.55,
+                    color:
+                        isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+                children: [
+                  const TextSpan(text: '• MioMtFWiki（'),
+                  TextSpan(
+                    text: 'kitsumio.github.io/MioMtFWiki',
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF5BCEFA) : Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        launchUrl(Uri.parse(
+                            'https://kitsumio.github.io/MioMtFWiki/'));
+                      },
+                  ),
+                  const TextSpan(
+                    text: '）内容采用「署名—禁止演绎 4.0 协议国际版（CC BY-ND 4.0）」进行许可。',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '允许转载、镜像、离线打包和重新分发；允许转换格式、建立索引、'
+              '全文搜索、响应式排版等技术性处理；允许在应用程序中集成和展示；允许商业传播。'
+              '但不得修改、删减、重写或翻译后再次发布项目内容。使用时须保留来源信息、'
+              '标明 MioMtFWiki 项目链接并保留协议声明。',
               style: TextStyle(
                   fontSize: 13,
                   height: 1.55,

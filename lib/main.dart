@@ -60,7 +60,7 @@ ThemeData _buildLightTheme() {
         fontSize: 20,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -134,7 +134,7 @@ ThemeData _buildDarkTheme() {
     iconTheme: const IconThemeData(color: Color(0xFFAEAEB2)),
     primaryIconTheme: const IconThemeData(color: Color(0xFF5BCEFA)),
     // ── 卡片 ──
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -169,11 +169,11 @@ ThemeData _buildDarkTheme() {
       }),
     ),
     // ── 底部应用栏 ──
-    bottomAppBarTheme: const BottomAppBarTheme(
+    bottomAppBarTheme: const BottomAppBarThemeData(
       color: Color(0xFF1C1C1E),
     ),
     // ── 对话框 ──
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: const Color(0xFF2C2C2E),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -366,7 +366,7 @@ ThemeData _buildDarkTheme() {
       ),
     ),
     // ── TabBar ──
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: Color(0xFF5BCEFA),
       unselectedLabelColor: Color(0xFF636366),
       indicatorColor: Color(0xFF5BCEFA),
