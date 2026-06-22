@@ -24,14 +24,14 @@
 
 **Trans Prism (稳态光盒)** 是一款致力于为跨性别群体提供安全、客观、无审查的日常辅助工具的开源 App。
 
-在信息获取日益困难、医疗资源分配不均的当下，TP 旨在成为一个“装在口袋里的庇护所”。它采用了独特的**在线/离线双擎架构**与**纯本地物理持久化**策略，确保你的核心知识库和极其隐私的生理数据不依赖于任何第三方服务器，永远牢牢掌握在自己手中。
+在信息获取日益困难、医疗资源分配不均的当下，TP 旨在成为一个"装在口袋里的庇护所"。它采用了独特的**在线/离线双擎架构**与**纯本地物理持久化**策略，确保你的核心知识库和极其隐私的生理数据不依赖于任何第三方服务器，永远牢牢掌握在自己手中。
 
 ---
 
 ## ✨ 核心功能 (Features)
 
 ### 📚 双擎动态知识库 (Dual-Engine Wiki)
-* **无缝集成三大开源指南**：MtF.wiki, FtM.wiki, RLE.wiki。
+* **无缝集成四大开源指南**：MtF.wiki, FtM.wiki, RLE.wiki, MioMtFWiki。
 * **默认轻量在线模式**：App 安装包极致精简（~15MB），默认采用零缓存直连加载，不占手机空间。
 * **硬核 OTA 离线引擎**：支持按需一键下载离线包。通过监听 GitHub Releases API 触发静默热更新，将云端编译的 `.zip` 静态站点拉取至本地沙盒，实现断网环境下的完美秒开。
 * **动态阅后即焚**：退出离线模式时提供可选的缓存清理机制，彻底告别数百 MB 的缓存爆炸，把空间选择权交还给用户。
@@ -40,7 +40,7 @@
 * **全景追踪**：追踪 HRT 药物库存存量与安全续航天数，提供直观的量化面板。
 * **Chronos 智能调度引擎**：支持小时、天、周、月四种给药周期——从口服（12h）、外用凝胶到针剂（7天）、GnRHa（28天/84天）全覆盖。
 * **绝对锚点系统**：基于绝对时间戳精准注册本地 OS 级别通知，即便长效药物也永不错过。
-* **闭环推算**：点击“已服药”自动扣减库存、推算下一次给药时间并重设系统闹钟。数据采用纯本地 JSON持久化，极致隐私。
+* **闭环推算**：点击"已服药"自动扣减库存、推算下一次给药时间并重设系统闹钟。数据采用纯本地 JSON持久化，极致隐私。
 
 ### 📈 药代动力学 (PK) 模拟器
 * **算法与模型引用**：内置严谨的一室/多室指数衰减算法与多剂量叠加模型，**核心算法与药代动力学数据模型源码衍生自开源项目 [Oyama-s-HRT-Recorder](https://github.com/KimoneOyama/Oyama-s-HRT-Recorder) (MIT License)**。
@@ -99,18 +99,19 @@ flutter build apk --split-per-abi --obfuscate --split-debug-info=./build/app/out
 
 **⚠️ 极度重要：使用本软件前请务必仔细阅读此声明。**
 
-1. **非医疗建议：** 本应用提供的所有功能、文本、图表及**尤其是“PK 血药浓度模拟器”得出的任何计算结果，均仅供学术交流与数据可视化参考。** 它**绝对不能**替代专业内分泌科医生的诊断、处方或临床医学检验。
+1. **非医疗建议：** 本应用提供的所有功能、文本、图表及**尤其是"PK 血药浓度模拟器"得出的任何计算结果，均仅供学术交流与数据可视化参考。** 它**绝对不能**替代专业内分泌科医生的诊断、处方或临床医学检验。
 2. **个体差异：** 药代动力学算法中的常量取自开源社区经验值与公开医学文献的平均水平。**每个人的肝肾代谢酶活性、体重、吸收率存在极其巨大的个体差异。** 模拟器画出的完美曲线，绝不代表您体内的真实浓度。
-3. **责任豁免：** 本项目的开发者、贡献者不对用户依据本应用提供的数据进行的任何“自我药疗（DIY HRT）”行为及其产生的任何生理、心理后果承担任何形式的法律和医疗责任。
+3. **责任豁免：** 本项目的开发者、贡献者不对用户依据本应用提供的数据进行的任何"自我药疗（DIY HRT）"行为及其产生的任何生理、心理后果承担任何形式的法律和医疗责任。
 4. **遵医嘱：** 调整激素剂量是一项严肃的医疗行为，请务必在正规医生的指导下并结合实际的血液化验化验单进行。
 
 ---
 
 ## 🤝 开源与致谢 (Acknowledgments)
 
-本项目秉承“属于社群，回馈社群”的开源精神。特别致谢以下组织与项目：
+本项目秉承"属于社群，回馈社群"的开源精神。特别致谢以下组织与项目：
 
 * 感谢 **[Project Trans](https://project-trans.org/)** 及其维护的 **MtF.wiki / FtM.wiki / RLE.wiki** 团队，为中文性别多元社群提供了极其宝贵的开源知识库。
+* 感谢 **[MioMtFWiki](https://github.com/KitsuMio/MioMtFWiki)** 项目及社区贡献者，为社群提供了贴近当下、实时滚动的跨性别参考站。
 * 感谢 **[Oyama-s-HRT-Recorder](https://www.google.com/url?sa=E&source=gmail&q=https://github.com/KimoneOyama/Oyama-s-HRT-Recorder)** 开源项目作者，为 PK 模拟器的核心底层算法与多剂量叠加模型提供了坚实、优秀的数学及代码实现基础。
 * 感谢 **[TransFeminine Science](https://transfemscience.org/)** 等开源社区前辈在药代动力学算法领域的卓越贡献，为 PK 核心引擎提供了坚实的数学理论支持。
 * 感谢 **[VFS Tracker](https://github.com/Ethanlita/vfs-tracker)** 开源项目及作者，声音训练模块的音频分析与功能流程参考并继承自该项目。
@@ -129,9 +130,8 @@ flutter build apk --split-per-abi --obfuscate --split-debug-info=./build/app/out
 3. **🎙️ 声音训练模块核心逻辑 (Voice Training Module)：**
 集成、适配及优化自 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 的嗓音训练相关逻辑，严格遵循 **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)**（署名-非商业性使用-相同方式共享 4.0 国际公共许可证）协议授权。
 4. **📚 内置知识库文本数据 (Wiki Content Data)：**
-本项目内嵌及在线拉取的各指南文本数据，其原始版权完全归属于 [Project Trans](https://project-trans.org/) 及其贡献者。该部分内容严格继承上游的 **[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh)** 协议，本项目不对该部分数据增加任何额外限制。
+本项目内嵌及在线拉取的各指南文本数据，其原始版权分别归属于 [Project Trans](https://project-trans.org/) 及其团队（采用 **[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh)** 协议）和 [MioMtFWiki](https://github.com/KitsuMio/MioMtFWiki) 及其社区贡献者（采用 **[CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)** 协议）。本项目严格遵循上述协议，不对该部分数据增加任何额外限制。
 
 ---
 
 *"May you find your steady state."*
-
