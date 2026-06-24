@@ -156,7 +156,7 @@ flutter build apk --split-per-abi --obfuscate --split-debug-info=./build/app/out
 
 * 感谢 **[Project Trans](https://project-trans.org/)** 及其维护的 **MtF.wiki / FtM.wiki / RLE.wiki** 团队，为中文性别多元社群提供了极其宝贵的开源知识库。
 * 感谢 **[MioMtFWiki](https://github.com/KitsuMio/MioMtFWiki)** 项目及社区贡献者，为社群提供了贴近当下、实时滚动的跨性别参考站。
-* 感谢 **[Oyama-s-HRT-Recorder](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) 及 [HRT-Recorder-online](https://github.com/LaoZhong-Mihari/HRT-Recorder-online) ** 开源项目作者，为 PK 模拟器的核心底层算法与多剂量叠加模型提供了坚实、优秀的数学及代码实现基础。
+* 感谢 **[Oyama-s-HRT-Recorder](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) 及 [HRT-Recorder-online](https://github.com/LaoZhong-Mihari/HRT-Recorder-online)** 开源项目作者，为 PK 模拟器的核心底层算法与多剂量叠加模型提供了坚实、优秀的数学及代码实现基础。
 * 感谢 **[TransFeminine Science](https://transfemscience.org/)** 等开源社区前辈在药代动力学算法领域的卓越贡献，为 PK 核心引擎提供了坚实的数学理论支持。
 * 感谢 **[VFS Tracker](https://github.com/Ethanlita/vfs-tracker)** 开源项目及作者，声音训练模块的音频分析与功能流程参考并继承自该项目。
 * 感谢所有为跨性别生存与医疗权益发声的勇敢者。
