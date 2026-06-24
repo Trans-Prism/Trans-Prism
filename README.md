@@ -64,6 +64,48 @@
 
 ---
 
+## 🚀 快速使用 (Quick Start)
+
+### Android
+直接前往 [Releases 页面](https://github.com/Trans-Prism/Trans-Prism/releases) 下载最新 APK 安装包即可使用。
+
+### Windows / Linux / Web
+```bash
+# 克隆仓库
+git clone https://github.com/Trans-Prism/Trans-Prism.git
+cd Trans-Prism
+
+# 获取依赖
+flutter pub get
+
+# Windows / Linux 桌面端
+flutter build windows   # Windows
+flutter build linux     # Linux
+
+# Web 端
+flutter build web
+```
+
+### iOS / macOS
+```bash
+# 克隆仓库
+git clone https://github.com/Trans-Prism/Trans-Prism.git
+cd Trans-Prism
+flutter pub get
+
+# 构建后需自行签名
+flutter build ios       # iOS
+flutter build macos     # macOS
+```
+> ⚠️ 因成本问题，暂不提供开发者签名，iOS/macOS 用户需自行进行自签名后方可安装使用。
+
+> **⚠️ 注意事项：** Windows、Linux、Web、iOS、macOS 平台因环境所限均未经过完整测试，可能存在意想不到的 Bug，请酌情使用。
+
+### 鸿蒙 OS (HarmonyOS)
+暂无开发计划。鸿蒙用户可尝试使用「卓易通」等兼容层运行 Android 版本 APK。
+
+---
+
 ## 🏗️ 核心架构 (Architecture)
 
 本项目除了 Flutter 客户端，还包含一套高度自动化的云端流水线[Trans-Prism-Builder](https://github.com/daanser/Trans-Prism-Builder)：
