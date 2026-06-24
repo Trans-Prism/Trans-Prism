@@ -1,11 +1,9 @@
-name: Sync Builder Release to R2
+name: Sync App Release to R2
 
 on:
-  workflow_dispatch: # 手动触发测试
-  workflow_run:
-    workflows: ["你的打包工作流名称"] # ⚠️ 记得改成实际名称
-    types:
-      - completed
+  release:
+    types: [published] # 手动发版，完美触发
+  workflow_dispatch:   # 依然保留测试按钮
 
 jobs:
   mirror-and-cleanup:
@@ -14,50 +12,72 @@ jobs:
       - name: 🗂️ 检出代码库
         uses: actions/checkout@v4
 
-      - name: 🚀 按分类精准拉取、生成索引并同步
+      - name: 🚀 拉取、生成索引并同步 App
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          # 定义我们要维护的 5 大项目前缀 (加了 build 是为了兼容你之前的错名，等你改好名后可以删掉 "build")
-          PROJECTS=("tracker" "mtf" "ftm" "rle" "miomtfwiki" "build")
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # 手动触发：获取全仓库最新的 Release
+            TARGET_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq '.tag_name')
+            echo "手动触发：将处理最新版本 $TARGET_TAG"
+          else
+            # 自动触发：使用本次发布的 Tag
+            TARGET_TAG="${{ github.event.release.tag_name }}"
+            echo "自动发版触发：将处理版本 $TARGET_TAG"
+          fi
           
-          for proj in "${PROJECTS[@]}"; do
-            echo "========================================"
-            echo "🔍 正在检索分类: $proj"
-            
-            # 使用 jq 精准过滤出以该前缀开头的【最新一个】 Tag
-            LATEST_TAG=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.tag_name | startswith("'"$proj"'"))] | .[0].tag_name')
-            
-            if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" == "null" ]; then
-              echo "⚠️ 未找到 $proj 的历史发布记录，跳过。"
-              continue
+          if [ -z "$TARGET_TAG" ] || [ "$TARGET_TAG" == "null" ]; then
+            echo "❌ 仓库中未找到任何 App Release！"
+            exit 1
+          fi
+
+          echo "========================================"
+          echo "📦 正在处理版本: $TARGET_TAG"
+          
+          # 清空并重建临时下载目录
+          rm -rf release_assets
+          mkdir release_assets
+          gh release download "$TARGET_TAG" --dir release_assets
+          
+          # 1. 归档到历史记录的特定版本文件夹
+          aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/$TARGET_TAG/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
+          
+          # 2. 🧹 清理 /latest/ 目录中的旧版 APK
+          # 极其关键：删掉旧的带版本号的 apk，防止同时存在 v1.0.apk 和 v1.1.apk
+          echo "正在清理 /latest/ 目录中的历史 APK 文件..."
+          aws s3 rm s3://${{ secrets.R2_BUCKET_NAME }}/app/latest/ --recursive --exclude "*" --include "*.apk" --endpoint-url ${{ secrets.R2_ENDPOINT }}
+          
+          # 3. 📝 生成 Vibe 客户端需要的 latest.json
+          # 提取刚下载的 apk 文件名
+          APK_FILENAME=$(ls release_assets | grep .apk | head -n 1)
+          if [ -n "$APK_FILENAME" ]; then
+            echo "生成版本索引文件 latest.json..."
+            echo "{\"latest_file\": \"$APK_FILENAME\", \"tag\": \"$TARGET_TAG\", \"update_time\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > release_assets/latest.json
+          else
+            echo "⚠️ 警告：当前 Release 中没有找到 .apk 文件！"
+          fi
+          
+          # 4. 同步新的 APK 和 json 到 /latest/
+          aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/app/latest/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
+
+      - name: 🧹 清理 R2 历史版本 (仅保留最近 5 个)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          LATEST_TAGS=$(gh api repos/${{ github.repository }}/releases --jq '.[0:5] | .[].tag_name')
+          echo "受保护的最新 5 个版本: $LATEST_TAGS"
+          
+          S3_DIRS=$(aws s3 ls s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/ --endpoint-url ${{ secrets.R2_ENDPOINT }} | awk '{print $2}' | sed 's/\///')
+          
+          for dir in $S3_DIRS; do
+            if ! echo "$LATEST_TAGS" | grep -qx "$dir"; then
+              echo "🗑️ 空间保护触发，正在清理过期版本: $dir"
+              aws s3 rm s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/$dir/ --recursive --endpoint-url ${{ secrets.R2_ENDPOINT }}
             fi
-            
-            echo "✅ 找到 $proj 的最新版本: $LATEST_TAG"
-            
-            # 清理临时目录并下载
-            rm -rf release_assets
-            mkdir release_assets
-            gh release download "$LATEST_TAG" --dir release_assets
-            
-            # 1. 归档到带版本号的 releases/ 目录
-            aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/builder/releases/$LATEST_TAG/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
-            
-            # 2. 🧹 核心修复：清理 /latest/ 目录下的旧同类文件
-            # 删掉所有含有该前缀的 .zip 文件，防止文件名带有不同日期导致堆积
-            echo "正在清理 /latest/ 目录中的旧版 $proj..."
-            aws s3 rm s3://${{ secrets.R2_BUCKET_NAME }}/builder/latest/ --recursive --exclude "*" --include "$proj*.zip" --endpoint-url ${{ secrets.R2_ENDPOINT }}
-            
-            # 3. 📝 生成 Vibe 客户端需要的 latest.json
-            # 提取刚下载的 zip 文件名
-            FILENAME=$(ls release_assets | grep .zip | head -n 1)
-            # 生成 JSON，格式如 {"latest_file": "mtf-wiki-2026.zip", "tag": "mtf-2026", "update_time": "..."}
-            echo "{\"latest_file\": \"$FILENAME\", \"tag\": \"$LATEST_TAG\", \"update_time\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > release_assets/${proj}_latest.json
-            
-            # 4. 同步新的文件和对应的 json 到 /latest/
-            aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/builder/latest/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
-            
           done
