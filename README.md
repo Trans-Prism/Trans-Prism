@@ -14,6 +14,7 @@
     <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter"></a>
     <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
     <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+    <a href="TODO.md"><img src="https://img.shields.io/badge/📋-TODO%20List-ff69b4" alt="TODO List"></a>
   </p>
 
 </div>
@@ -61,6 +62,9 @@
 
 ### 🏥 友善医疗名录（待开发）
 * 收录国内跨性别友善的内分泌科、精神科医生与就诊指南。
+
+### 📋 开发路线图 (Roadmap)
+查看项目详细的开发计划与待办事项，请参阅 [`TODO.md`](TODO.md)。
 
 ---
 
@@ -117,25 +121,10 @@ flutter build macos     # macOS
 
 ## 🛠️ 本地构建与运行 (Build & Run)
 
-本项目使用 [Flutter](https://flutter.dev) 框架构建，支持 Android / iOS 多端运行。
+本项目使用 [Flutter](https://flutter.dev) 框架构建，支持 Android / iOS / MacOS / Windows / Web 等多端运行。
+构建见上方**🚀 快速使用 (Quick Start)**Part。
 
-```bash
-# 1. 克隆本仓库到本地
-git clone [https://github.com/daanser/Trans-Prism.git](https://github.com/daanser/Trans-Prism.git)
 
-# 2. 进入项目目录
-cd Trans-Prism
-
-# 3. 获取所有依赖包
-flutter pub get
-
-# 4. 在连接的设备或模拟器上运行
-flutter run
-
-# 5. 构建极速精简版 APK (推荐)
-flutter build apk --split-per-abi --obfuscate --split-debug-info=./build/app/outputs/symbols
-
-```
 
 ---
 
