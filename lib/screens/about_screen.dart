@@ -178,7 +178,7 @@ class _AboutScreenState extends State<AboutScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'CC BY-NC-SA 4.0',
+                          'Apache 2.0',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -193,9 +193,8 @@ class _AboutScreenState extends State<AboutScreen> {
                   const SizedBox(height: 8),
                   Text(
                     '本应用原创代码（含 Flutter UI、业务逻辑、资产资源编排等）采用 '
-                    'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 '
-                    'International (CC BY-NC-SA 4.0) 协议进行许可，区别于第三方开源库的各自有许可证。\n'
-                    '详情参见：https://creativecommons.org/licenses/by-nc-sa/4.0/',
+                    'Apache License 2.0 协议进行许可，区别于第三方开源库的各自有许可证。\n'
+                    '详情参见：https://www.apache.org/licenses/LICENSE-2.0',
                     style: TextStyle(
                       fontSize: 12,
                       color: secondaryTextColor,
@@ -242,7 +241,7 @@ class _AboutScreenState extends State<AboutScreen> {
           _buildLicenseCard(
             context,
             icon: Icons.auto_stories,
-            title: 'MioMtFWiki（小澪的跨性别知识库）',
+            title: 'MioMtFWiki（社区驱动的跨性别知识项目）',
             license: 'CC BY-ND 4.0',
             copyright: 'Mio',
             url: 'https://kitsumio.github.io/MioMtFWiki/',

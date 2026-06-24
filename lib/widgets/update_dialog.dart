@@ -3,20 +3,20 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// 优雅的品牌化版本更新弹窗
 ///
-/// 支持多镜像站容错：[apkDownloadUrls] 提供一个 URL 列表，
-/// 依次尝试打开直到成功。
+/// 支持从 R2 边缘节点单一直链下载。
+/// 点击「立即更新」后通过系统浏览器打开下载链接。
 class UpdateDialog extends StatelessWidget {
   final String version;
   final String? releaseNotes;
 
-  /// 多镜像站下载链接列表（按优先级排列）
-  final List<String> apkDownloadUrls;
+  /// R2 单一直链下载 URL
+  final String downloadUrl;
 
   const UpdateDialog({
     super.key,
     required this.version,
     this.releaseNotes,
-    this.apkDownloadUrls = const [],
+    required this.downloadUrl,
   });
 
   /// 在指定 [context] 上展示更新弹窗。
@@ -24,7 +24,7 @@ class UpdateDialog extends StatelessWidget {
     BuildContext context, {
     required String version,
     String? releaseNotes,
-    List<String> apkDownloadUrls = const [],
+    required String downloadUrl,
   }) {
     return showDialog(
       context: context,
@@ -32,7 +32,7 @@ class UpdateDialog extends StatelessWidget {
       builder: (_) => UpdateDialog(
         version: version,
         releaseNotes: releaseNotes,
-        apkDownloadUrls: apkDownloadUrls,
+        downloadUrl: downloadUrl,
       ),
     );
   }
@@ -244,30 +244,26 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  /// 点击「立即更新」：依次尝试每个镜像站 URL
+  /// 点击「立即更新」：直接打开 R2 直链下载
   Future<void> _handleUpdateNow(BuildContext context) async {
-    if (apkDownloadUrls.isEmpty) {
+    if (downloadUrl.isEmpty) {
       const fallbackUrl =
           'https://github.com/Trans-Prism/Trans-Prism/releases/latest';
       await _launchUrl(fallbackUrl);
     } else {
-      // 依次尝试每个镜像 URL，只要有一个成功打开就停止
-      for (final url in apkDownloadUrls) {
-        final opened = await _launchUrl(url);
-        if (opened) break;
-      }
+      await _launchUrl(downloadUrl);
     }
     if (context.mounted) {
       Navigator.of(context).pop();
     }
   }
 
-  /// 尝试打开 URL，返回是否成功
+  /// 尝试打开 URL
   Future<bool> _launchUrl(String url) async {
     try {
       final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-      return true; // launchUrl 不抛异常即视为成功
+      return true;
     } catch (_) {
       return false;
     }

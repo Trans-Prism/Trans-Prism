@@ -304,7 +304,7 @@ class _WikiTabState extends State<WikiTab> {
           _buildWikiTile(
               'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
           _buildWikiTile(
-              'MioMtFWiki', '小澪的跨性别知识库', Icons.auto_stories, Colors.purple),
+              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
         ],
         if (widget.identity == 'ftm') ...[
           _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star, Colors.blue),
@@ -317,7 +317,7 @@ class _WikiTabState extends State<WikiTab> {
           _buildWikiTile(
               'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
           _buildWikiTile(
-              'MioMtFWiki', '小澪的跨性别知识库', Icons.auto_stories, Colors.purple),
+              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
         ],
         const Divider(height: 32),
         Padding(
@@ -338,7 +338,7 @@ class _WikiTabState extends State<WikiTab> {
               'FtM.Wiki (已折叠)', '跨性别男性指南', Icons.folder_open, Colors.grey),
         if (widget.identity == 'ftm')
           _buildWikiTile(
-              'MioMtFWiki', '小澪的跨性别知识库', Icons.auto_stories, Colors.purple),
+              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
         _buildWikiTile('2345.lgbt', '跨性别友好资源导航页', Icons.explore, Colors.teal),
         _buildWikiTile(
             '维基百科 (Wikipedia)', '中文维基百科跨性别词条', Icons.language, Colors.grey),

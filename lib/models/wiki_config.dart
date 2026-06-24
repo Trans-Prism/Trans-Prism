@@ -96,7 +96,7 @@ class WikiCatalog {
     contentBranch: 'main',
   );
 
-  /// MioMtFWiki — 小澪的跨性别知识库（在线版）
+  /// MioMtFWiki — 社区驱动的跨性别知识项目（在线版）
   static const WikiConfig mioMtf = WikiConfig(
     id: 'miomtf',
     title: 'MioMtFWiki',

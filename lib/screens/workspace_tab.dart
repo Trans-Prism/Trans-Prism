@@ -4,7 +4,7 @@ import '../widgets/gradient_icon.dart';
 import 'hormone_converter_screen.dart';
 import 'image_converter_screen.dart';
 import 'medical_directory/medical_directory_list_screen.dart';
-import 'pk_simulation_screen.dart';
+import 'tracker_screen.dart';
 import 'svg_resource_gallery_screen.dart';
 import 'voice_training/voice_training_home.dart';
 
@@ -102,7 +102,7 @@ class WorkspaceTab extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  PKSimulationScreen(genderIdentity: genderIdentity),
+                  TrackerScreen(genderIdentity: genderIdentity),
             ),
           );
         },

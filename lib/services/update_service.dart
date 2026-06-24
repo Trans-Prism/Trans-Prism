@@ -5,35 +5,22 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
-import 'region_detector.dart';
-
-/// GitHub Releases 更新检测响应体（原始远端数据）
-class _GitHubRelease {
-  final String tagName;
-  final String? body;
-
-  /// GitHub 原始 APK 下载链接
-  final String? rawApkDownloadUrl;
-
-  _GitHubRelease({
-    required this.tagName,
-    this.body,
-    this.rawApkDownloadUrl,
-  });
-}
+/// R2 边缘节点全局加速域名
+const String baseUpdateUrl = 'https://updates.55114514.xyz';
 
 /// 更新检测结果
-///
-/// [apkDownloadUrls] 是经过多镜像站容错探测后的可用下载链接列表，
-/// 调用方可以依次尝试直到成功。
 class UpdateCheckResult {
   final bool hasUpdate;
   final String? latestVersion;
   final String? releaseNotes;
 
-  /// 多镜像站 APK 下载链接列表（已通过连通性探测，按优先级排列）
-  final List<String> apkDownloadUrls;
+  /// 单一直链下载 URL（R2 边缘节点直连）
+  final String? downloadUrl;
+
+  /// 最新文件的文件名（用于拼接直链）
+  final String? latestFile;
 
   /// 是否因网络错误导致检测失败
   final bool networkError;
@@ -42,89 +29,47 @@ class UpdateCheckResult {
     required this.hasUpdate,
     this.latestVersion,
     this.releaseNotes,
-    this.apkDownloadUrls = const [],
+    this.downloadUrl,
+    this.latestFile,
     this.networkError = false,
   });
 }
 
-/// 镜像站定义
-class _MirrorDef {
-  /// 前缀代理：直接拼在原始 URL 前面
-  final String? prefix;
-
-  /// 域名替换：将原始 URL 中的 `github.com` 替换为此域名
-  final String? replaceHost;
-
-  const _MirrorDef({this.prefix, this.replaceHost});
-
-  String apply(String rawUrl) {
-    if (prefix != null) {
-      return '$prefix$rawUrl';
-    }
-    if (replaceHost != null) {
-      return rawUrl.replaceFirst('github.com', replaceHost!);
-    }
-    return rawUrl;
-  }
-}
-
-/// 静默自动更新检测服务（查下分离 + 多镜像站容错）
+/// R2 统一更新检测与下载服务
 ///
-/// ## 查下分离原则
+/// ## R2 latest.json 格式
 ///
-/// - **查（API 获取版本信息）**：必须直连 `api.github.com`，绝不拼接代理前缀。
-/// - **下（APK 下载链接）**：从 API 提取 `browser_download_url` 后，
-///   通过多镜像站容错链探测可用镜像，返回首个响应的镜像站 URL。
+/// ```json
+/// {
+///   "latest_file": "TransPrism_v1.3.1_Beta.apk",
+///   "tag": "v1.3.1-beta.1",
+///   "update_time": "2026-06-24T03:04:54Z"
+/// }
+/// ```
 ///
-/// ## 镜像站容错链
-///
-/// 1. `ghp.ci` — 前缀代理，5s 超时
-/// 2. `ghproxy.net` — 前缀代理，5s 超时
-/// 3. `kkgithub.com` — 替换域名，5s 超时
-/// 4. `githubfast.com` — 替换域名，5s 超时
-/// 5. 原始 GitHub 直链 — 兜底（直连不被墙时可用）
+/// 文件名中的版本号通过正则提取：
+/// - APK: `TransPrism_v1.3.1_Beta.apk` → 版本 `1.3.1`
 class UpdateService {
-  // ── GitHub API ──
-  static const _apiUrl =
-      'https://api.github.com/repos/Trans-Prism/Trans-Prism/releases';
-
-  // ── GitHub Releases 页面（无 APK 资产时的降级页）──
-  static const _releasesPageUrl =
-      'https://github.com/Trans-Prism/Trans-Prism/releases/latest';
-
-  // ── 镜像站容错链 ──
-  static const List<_MirrorDef> _mirrors = [
-    _MirrorDef(prefix: 'https://ghp.ci/'),
-    _MirrorDef(prefix: 'https://ghproxy.net/'),
-    _MirrorDef(replaceHost: 'kkgithub.com'),
-    _MirrorDef(replaceHost: 'githubfast.com'),
-  ];
-
   /// API 请求超时
   static const _apiTimeout = Duration(seconds: 10);
 
-  /// 镜像站连通性探测超时（5 秒无响应就跳过）
-  static const _mirrorProbeTimeout = Duration(seconds: 5);
-
-  static const _headers = {
-    'Accept': 'application/vnd.github+json',
-    'User-Agent': 'Trans-Prism-App',
-  };
+  /// 下载超时（大型文件）
+  static const _downloadTimeout = Duration(minutes: 5);
 
   // ──────────────────────────────────────────────
   // 公开方法
   // ──────────────────────────────────────────────
 
-  /// 检查是否有新版本可用。
+  /// 检查 App 自身是否有新版本可用。
   ///
-  /// API 请求走纯直连；下载链接走多镜像站容错探测，返回首个可达的镜像 URL。
+  /// 向 R2 边缘节点发起 HTTP GET 请求，获取 `app/latest/latest.json`。
   /// 静默执行：所有网络异常均返回 [UpdateCheckResult.hasUpdate] = false，
   /// 并设置 [UpdateCheckResult.networkError] = true。
   Future<UpdateCheckResult> checkForUpdate() async {
     try {
-      // 1. 直连 GitHub API
-      final release = await _fetchLatestRelease();
-      if (release == null) {
+      // 1. 获取 R2 云端 latest.json
+      final remote = await _fetchLatestJson('app');
+      if (remote == null) {
         return const UpdateCheckResult(hasUpdate: false, networkError: true);
       }
 
@@ -134,20 +79,30 @@ class UpdateService {
         return const UpdateCheckResult(hasUpdate: false);
       }
 
-      // 3. 版本号比对
-      final remoteVersion = _stripVPrefix(release.tagName);
+      // 3. 从 latest_file 中萃取版本号
+      final remoteVersion = _extractVersion(remote.latestFile);
+      if (remoteVersion == null) {
+        debugPrint('⚠️ 无法从文件名萃取出版本号: ${remote.latestFile}');
+        return const UpdateCheckResult(hasUpdate: false);
+      }
+
+      // 4. 版本号比对
       if (!_isNewer(remoteVersion, localVersion)) {
         return const UpdateCheckResult(hasUpdate: false);
       }
 
-      // 4. 多镜像站容错探测，拿到可用的下载链接列表
-      final urls = await _findWorkingDownloadUrls(release.rawApkDownloadUrl);
+      // 5. 从 tag 提取显示版本号（去 v 前缀）
+      final displayVersion = _stripVPrefix(remote.tag);
+
+      // 6. 拼接下载直链
+      final downloadUrl = '$baseUpdateUrl/app/latest/${remote.latestFile}';
 
       return UpdateCheckResult(
         hasUpdate: true,
-        latestVersion: release.tagName,
-        releaseNotes: release.body,
-        apkDownloadUrls: urls,
+        latestVersion: displayVersion,
+        releaseNotes: null,
+        downloadUrl: downloadUrl,
+        latestFile: remote.latestFile,
       );
     } catch (e) {
       debugPrint('🚨 更新检测失败详细日志: $e');
@@ -155,24 +110,136 @@ class UpdateService {
     }
   }
 
-  // ──────────────────────────────────────────────
-  // API 直连
-  // ──────────────────────────────────────────────
-
-  Future<_GitHubRelease?> _fetchLatestRelease() async {
+  /// 下载 APK 文件到临时目录。
+  ///
+  /// 返回下载后的文件路径，失败返回 null。
+  Future<String?> downloadApk(String downloadUrl,
+      {void Function(double progress)? onProgress}) async {
     try {
-      debugPrint('🔍 正在直连 GitHub API 检查更新...');
-      final response = await http
-          .get(Uri.parse(_apiUrl), headers: _headers)
-          .timeout(_apiTimeout);
+      final tempDir = await getTemporaryDirectory();
+      final fileName = downloadUrl.split('/').last;
+      final filePath = '${tempDir.path}/$fileName';
+      final file = File(filePath);
+
+      debugPrint('📥 开始下载 APK: $downloadUrl');
+
+      final response =
+          await http.get(Uri.parse(downloadUrl)).timeout(_downloadTimeout);
 
       if (response.statusCode != 200) {
-        debugPrint('⚠️ GitHub API 返回非 200: ${response.statusCode}');
+        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
         return null;
       }
 
-      debugPrint('✅ GitHub API 请求成功');
-      return _parseReleaseJson(response.body);
+      await file.writeAsBytes(response.bodyBytes, flush: true);
+      onProgress?.call(1.0);
+
+      debugPrint('✅ APK 下载完成: $filePath');
+      return filePath;
+    } catch (e) {
+      debugPrint('🚨 APK 下载异常: $e');
+      return null;
+    }
+  }
+
+  /// 下载 ZIP 文件到临时目录。
+  ///
+  /// 返回下载后的文件路径，失败返回 null。
+  Future<String?> downloadZip(String downloadUrl,
+      {void Function(double progress)? onProgress}) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final fileName = downloadUrl.split('/').last;
+      final filePath = '${tempDir.path}/$fileName';
+      final file = File(filePath);
+
+      debugPrint('📥 开始下载 ZIP: $downloadUrl');
+
+      final response =
+          await http.get(Uri.parse(downloadUrl)).timeout(_downloadTimeout);
+
+      if (response.statusCode != 200) {
+        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
+        return null;
+      }
+
+      await file.writeAsBytes(response.bodyBytes, flush: true);
+      onProgress?.call(1.0);
+
+      debugPrint('✅ ZIP 下载完成: $filePath');
+      return filePath;
+    } catch (e) {
+      debugPrint('🚨 ZIP 下载异常: $e');
+      return null;
+    }
+  }
+
+  /// 流式下载（带进度回调），用于大文件。
+  ///
+  /// 返回下载后的文件路径，失败返回 null。
+  Future<String?> downloadWithProgress(
+    String downloadUrl, {
+    required void Function(double progress) onProgress,
+  }) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final fileName = downloadUrl.split('/').last;
+      final filePath = '${tempDir.path}/$fileName';
+      final file = File(filePath);
+
+      debugPrint('📥 开始流式下载: $downloadUrl');
+
+      final request = http.Request('GET', Uri.parse(downloadUrl));
+      final response = await http.Client().send(request);
+
+      if (response.statusCode != 200) {
+        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
+        return null;
+      }
+
+      final contentLength = response.contentLength ?? -1;
+      int bytesReceived = 0;
+      final sink = file.openWrite();
+
+      await for (final chunk in response.stream) {
+        sink.add(chunk);
+        bytesReceived += chunk.length;
+        if (contentLength > 0) {
+          onProgress(bytesReceived / contentLength);
+        }
+      }
+
+      await sink.flush();
+      await sink.close();
+      onProgress(1.0);
+
+      debugPrint('✅ 流式下载完成: $filePath');
+      return filePath;
+    } catch (e) {
+      debugPrint('🚨 流式下载异常: $e');
+      return null;
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // R2 API 交互
+  // ──────────────────────────────────────────────
+
+  /// 从 R2 获取指定类型的 latest.json
+  Future<_R2LatestJson?> _fetchLatestJson(String type) async {
+    try {
+      final url = '$baseUpdateUrl/$type/latest/latest.json';
+      debugPrint('🔍 正在检查 $type 更新: $url');
+
+      final response = await http.get(Uri.parse(url)).timeout(_apiTimeout);
+
+      if (response.statusCode != 200) {
+        debugPrint('⚠️ R2 返回非 200: ${response.statusCode}');
+        return null;
+      }
+
+      debugPrint('✅ $type 版本信息获取成功');
+      return _parseLatestJson(response.body);
     } on SocketException catch (e) {
       debugPrint('🚨 网络连接失败 (SocketException): $e');
       return null;
@@ -191,43 +258,27 @@ class UpdateService {
     }
   }
 
-  _GitHubRelease? _parseReleaseJson(String body) {
+  /// 解析 R2 latest.json
+  _R2LatestJson? _parseLatestJson(String body) {
     try {
-      final json = jsonDecode(body) as List<dynamic>;
-      if (json.isEmpty) {
-        debugPrint('⚠️ releases 数组为空');
+      final json = jsonDecode(body) as Map<String, dynamic>;
+
+      final latestFile = json['latest_file'] as String?;
+      if (latestFile == null || latestFile.isEmpty) {
+        debugPrint('⚠️ latest_file 字段缺失');
         return null;
       }
 
-      final latest = json[0] as Map<String, dynamic>;
-      final tagName = latest['tag_name'] as String?;
-      if (tagName == null || tagName.isEmpty) {
-        debugPrint('⚠️ tag_name 缺失');
+      final tag = json['tag'] as String? ?? '';
+
+      if (tag.isEmpty) {
+        debugPrint('⚠️ tag 字段缺失');
         return null;
       }
 
-      final releaseBody = latest['body'] as String?;
-      final assets = latest['assets'] as List<dynamic>?;
-      String? apkUrl;
-      if (assets != null) {
-        for (final asset in assets) {
-          final name = asset['name'] as String? ?? '';
-          if (name.toLowerCase().endsWith('.apk')) {
-            apkUrl = asset['browser_download_url'] as String?;
-            debugPrint('📦 找到 APK: $name');
-            break;
-          }
-        }
-      }
-
-      if (apkUrl == null) {
-        debugPrint('⚠️ 未找到 .apk，降级到 Releases 页面');
-      }
-
-      return _GitHubRelease(
-        tagName: tagName,
-        body: releaseBody,
-        rawApkDownloadUrl: apkUrl,
+      return _R2LatestJson(
+        latestFile: latestFile,
+        tag: tag,
       );
     } on FormatException catch (e) {
       debugPrint('🚨 JSON 解析异常: $e');
@@ -236,83 +287,6 @@ class UpdateService {
       debugPrint('🚨 解析异常: $e');
       return null;
     }
-  }
-
-  // ──────────────────────────────────────────────
-  // 多镜像站容错探测
-  // ──────────────────────────────────────────────
-
-  /// 对原始 APK 下载链接进行多镜像站容错探测，
-  /// 返回按优先级排列的可用 URL 列表（已通过连通性检查）。
-  ///
-  /// ## IP 分流
-  ///
-  /// - **中国大陆用户**：走镜像站容错链探测，返回可达镜像 URL
-  /// - **非中国大陆用户**：跳过镜像探测，直连 GitHub
-  ///
-  /// 如果 [rawUrl] 为空，降级返回 GitHub Releases 页面的镜像列表。
-  Future<List<String>> _findWorkingDownloadUrls(String? rawUrl) async {
-    // ── IP 地理位置分流 ──
-    final inChina = await RegionDetector.instance.detect();
-    if (!inChina) {
-      debugPrint('🌐 非中国大陆地区，跳过镜像探测，直连 GitHub');
-      return [rawUrl ?? _releasesPageUrl];
-    }
-
-    final baseUrls = <String>[];
-
-    if (rawUrl != null && rawUrl.isNotEmpty) {
-      // 对每个镜像站生成 URL
-      for (final mirror in _mirrors) {
-        baseUrls.add(mirror.apply(rawUrl));
-      }
-      // 原始直链作为兜底
-      baseUrls.add(rawUrl);
-    } else {
-      // 无 APK → 对 Releases 页面也走镜像
-      for (final mirror in _mirrors) {
-        baseUrls.add(mirror.apply(_releasesPageUrl));
-      }
-      baseUrls.add(_releasesPageUrl);
-    }
-
-    debugPrint('🔎 开始镜像站连通性探测 (${baseUrls.length} 个候选)...');
-
-    // 逐个探测：向每个 URL 发 GET 请求（只检查响应头是否可达）
-    final working = <String>[];
-    for (int i = 0; i < baseUrls.length; i++) {
-      final url = baseUrls[i];
-      try {
-        final probeUrl =
-            url.endsWith('.apk') || url.contains('/releases/') ? url : url;
-        final response = await http.get(Uri.parse(probeUrl), headers: {
-          'User-Agent': 'Trans-Prism-App',
-          'Range': 'bytes=0-0', // 只请求第一个字节，避免下载整个文件
-        }).timeout(_mirrorProbeTimeout);
-
-        // 206 Partial Content（支持 Range）或 200 都算可达
-        if (response.statusCode == 206 ||
-            response.statusCode == 200 ||
-            response.statusCode == 302 ||
-            response.statusCode == 301) {
-          debugPrint('✅ 镜像[$i] 可达 ($url)');
-          working.add(url);
-        } else {
-          debugPrint('⚠️ 镜像[$i] 返回 ${response.statusCode}');
-        }
-      } catch (e) {
-        debugPrint('⏱️ 镜像[$i] 超时/不可达: $url');
-      }
-    }
-
-    if (working.isEmpty) {
-      debugPrint('⚠️ 所有镜像均不可达，返回原始 URL 兜底');
-      // 至少把原始 URL 放进去让用户试试
-      return [rawUrl ?? _releasesPageUrl];
-    }
-
-    debugPrint('🎯 ${working.length} 个镜像可用: $working');
-    return working;
   }
 
   // ──────────────────────────────────────────────
@@ -329,8 +303,31 @@ class UpdateService {
     }
   }
 
-  String _stripVPrefix(String version) {
-    var v = version;
+  /// 从文件名中萃取版本号或日期。
+  ///
+  /// 支持格式：
+  /// - `TransPrism_v1.3.0_Beta.apk` → `1.3.0`
+  /// - `TransPrism_v1.3.0.apk` → `1.3.0`
+  /// - `miomtfwiki-site-2026-06-23.zip` → `2026-06-23`
+  String? _extractVersion(String fileName) {
+    // 优先匹配语义化版本号（如 1.3.0, 2.0.1）
+    final semverMatch = RegExp(r'(\d+\.\d+\.\d+)').firstMatch(fileName);
+    if (semverMatch != null) {
+      return semverMatch.group(1);
+    }
+
+    // 其次匹配日期戳（如 2026-06-23）
+    final dateMatch = RegExp(r'(\d{4}-\d{2}-\d{2})').firstMatch(fileName);
+    if (dateMatch != null) {
+      return dateMatch.group(1);
+    }
+
+    return null;
+  }
+
+  /// 去版本号 v 前缀和 -beta 后缀
+  String _stripVPrefix(String tag) {
+    var v = tag;
     if (v.startsWith('v') || v.startsWith('V')) {
       v = v.substring(1);
     }
@@ -341,8 +338,19 @@ class UpdateService {
     return v;
   }
 
+  /// 比对两个版本号（支持语义化版本和日期版本）。
+  ///
+  /// 语义化版本：`1.3.0` → `[1, 3, 0]`
+  /// 日期版本：`2026-06-23` → `[2026, 6, 23]`
   bool _isNewer(String remote, String local) {
     try {
+      // 如果是日期格式（YYYY-MM-DD），直接用字符串比较
+      if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(remote) &&
+          RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(local)) {
+        return remote.compareTo(local) > 0;
+      }
+
+      // 语义化版本：按段比较
       final remoteParts = remote.split('.').map(int.parse).toList();
       final localParts = local.split('.').map(int.parse).toList();
       final maxLen = remoteParts.length > localParts.length
@@ -361,4 +369,23 @@ class UpdateService {
       return false;
     }
   }
+}
+
+/// R2 latest.json 结构
+///
+/// ```json
+/// {
+///   "latest_file": "TransPrism_v1.3.1_Beta.apk",
+///   "tag": "v1.3.1-beta.1",
+///   "update_time": "2026-06-24T03:04:54Z"
+/// }
+/// ```
+class _R2LatestJson {
+  final String latestFile;
+  final String tag;
+
+  const _R2LatestJson({
+    required this.latestFile,
+    required this.tag,
+  });
 }

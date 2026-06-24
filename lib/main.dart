@@ -10,7 +10,8 @@ import 'screens/disclaimer_view_screen.dart';
 import 'screens/hormone_converter_screen.dart';
 import 'screens/image_converter_screen.dart';
 import 'screens/medical_directory/medical_directory_list_screen.dart';
-import 'screens/pk_simulation_screen.dart';
+import 'screens/tracker_screen.dart';
+import 'services/tracker_update_service.dart';
 import 'screens/svg_resource_gallery_screen.dart';
 import 'screens/voice_training/voice_training_home.dart';
 import 'screens/wiki_tab.dart';
@@ -438,6 +439,7 @@ class _AppRootControllerState extends State<AppRootController> {
     _loadAppState();
     _loadGreetingSettings();
     WikiSyncService.instance.syncAllInBackground();
+    TrackerUpdateService.instance.checkAndUpdate();
     _initNotifications();
     _initResourceService();
   }
@@ -834,12 +836,14 @@ class _MainDashboardState extends State<MainDashboard> {
     final result = await UpdateService().checkForUpdate();
     if (!mounted) return;
 
-    if (result.hasUpdate && result.latestVersion != null) {
+    if (result.hasUpdate &&
+        result.latestVersion != null &&
+        result.downloadUrl != null) {
       UpdateDialog.show(
         context,
         version: result.latestVersion!,
         releaseNotes: result.releaseNotes,
-        apkDownloadUrls: result.apkDownloadUrls,
+        downloadUrl: result.downloadUrl!,
       );
     }
   }
@@ -1052,7 +1056,7 @@ class _MainDashboardState extends State<MainDashboard> {
                       : const Color(0xFFC7C7CC)),
               selectedIcon:
                   const Icon(Icons.menu_book_rounded, color: Color(0xFF5BCEFA)),
-              label: '百科',
+              label: '资料库',
             ),
             NavigationDestination(
               icon: Icon(Icons.grid_view_outlined,
@@ -1081,7 +1085,7 @@ class _MainDashboardState extends State<MainDashboard> {
   /// 根据当前 Tab 构建不同的 AppBar
   PreferredSizeWidget _buildAppBar(Color textColor, bool isDark) {
     // Tab 标题配置
-    final tabTitles = ['TRANS PRISM', '百科', '工作台', '我的'];
+    final tabTitles = ['TRANS PRISM', '资料库', '工作台', '我的'];
 
     return AppBar(
       title: _currentIndex == 0
@@ -1254,7 +1258,7 @@ class HomeTab extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        PKSimulationScreen(genderIdentity: genderIdentity),
+                        TrackerScreen(genderIdentity: genderIdentity),
                   ),
                 );
               },
@@ -1543,13 +1547,15 @@ class _ProfileTabState extends State<ProfileTab> {
     // 隐藏当前 SnackBar
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    if (result.hasUpdate && result.latestVersion != null) {
+    if (result.hasUpdate &&
+        result.latestVersion != null &&
+        result.downloadUrl != null) {
       // 情况 1：检测到新版本 → 弹出更新 Dialog
       UpdateDialog.show(
         context,
         version: result.latestVersion!,
         releaseNotes: result.releaseNotes,
-        apkDownloadUrls: result.apkDownloadUrls,
+        downloadUrl: result.downloadUrl!,
       );
     } else if (result.networkError) {
       // 情况 2：网络连接失败 → 提醒用户检查网络
@@ -2312,7 +2318,7 @@ class _ProfileTabState extends State<ProfileTab> {
 
     // 后台静默初始化 PK 模拟，确保 Oyama 数据可导出
     if (!DataMigrationService.hasOyamaController) {
-      await PKSimulationScreen.ensureBackgroundInitialized();
+      await TrackerScreen.ensureBackgroundInitialized();
     }
     final success = await DataMigrationService.exportData();
     if (!context.mounted) return;
@@ -2340,7 +2346,7 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<void> _handleImportData(BuildContext context) async {
     // 后台静默初始化 PK 模拟，确保 Oyama 数据可导入
     if (!DataMigrationService.hasOyamaController) {
-      await PKSimulationScreen.ensureBackgroundInitialized();
+      await TrackerScreen.ensureBackgroundInitialized();
     }
     final success = await DataMigrationService.importData();
     if (!context.mounted) return;

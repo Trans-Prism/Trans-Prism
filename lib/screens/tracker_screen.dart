@@ -1,26 +1,17 @@
-// ============================================================
-// Embedded Oyama's HRT Tracker via local HTTP server + WebView
-// https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker
-//
-// The React SPA built output (dist/) is bundled as Flutter assets.
-// At runtime, assets are copied to a temp directory and served
-// via a lightweight dart:io HttpServer on 127.0.0.1.
-// The WebView loads the local URL for full in-app PK simulation.
-// ============================================================
-
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import '../utils/data_migration_service.dart';
 
-/// Maps file extensions to MIME types for the static file server.
+// ========================
+// MIME 类型映射
+// ========================
 const _mimeTypes = <String, String>{
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -46,90 +37,73 @@ String _mimeFor(String path) {
 }
 
 // ========================
-// 本地静态资源服务器
+// 动态静态资源服务器 (解决 Vite SPA CORS 限制)
 // ========================
-
-class _LocalAssetServer {
+class _LocalTrackerServer {
   HttpServer? _server;
-  String? _baseDir;
   bool _started = false;
 
-  /// Ensure assets are copied and the server is bound.
-  /// Returns the full URL like `http://127.0.0.1:PORT`.
+  /// 固定端口，确保 WebView origin 跨启动不变，localStorage 持续可用。
+  /// 若被占用则自动回退到随机端口，并将实际端口持久化到 SharedPreferences。
+  static const int _preferredPort = 53140;
+  static const String _prefsPortKey = '_tracker_server_port';
+
   Future<String> ensureStarted() async {
-    if (_started && _server != null && _baseDir != null) {
+    if (_started && _server != null) {
       return 'http://${_server!.address.host}:${_server!.port}';
     }
 
-    final tempDir = await getApplicationDocumentsDirectory();
-    _baseDir = '${tempDir.path}/oyama_hrt';
+    // 优先使用持久化的端口（跨启动复用），其次尝试固定端口，最后回退到随机
+    final prefs = await SharedPreferences.getInstance();
+    int port = prefs.getInt(_prefsPortKey) ?? 0;
 
-    // Copy assets from bundle to filesystem (one-time)
-    final indexFile = File('$_baseDir/index.html');
-    if (!await indexFile.exists()) {
-      await _copyAssets();
+    if (port == 0) {
+      // 无持久化记录：尝试固定端口
+      try {
+        final probe =
+            await HttpServer.bind(InternetAddress.loopbackIPv4, _preferredPort);
+        await probe.close();
+        port = _preferredPort;
+      } catch (_) {
+        // 固定端口被占用（如 TIME_WAIT），使用随机端口
+        port = 0;
+      }
+    } else {
+      // 有持久化记录：尝试复用旧端口
+      try {
+        final probe = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
+        await probe.close();
+      } catch (_) {
+        // 旧端口不可用 → 尝试固定端口 → 最后随机
+        port = 0;
+        try {
+          final probe = await HttpServer.bind(
+              InternetAddress.loopbackIPv4, _preferredPort);
+          await probe.close();
+          port = _preferredPort;
+        } catch (_) {
+          port = 0;
+        }
+      }
     }
 
-    // Bind to random available port on loopback
-    _server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    _server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
     _started = true;
 
+    // 持久化实际绑定的端口，后续启动复用
+    await prefs.setInt(_prefsPortKey, _server!.port);
+
     _server!.listen(_handleRequest, onError: (err) {
-      debugPrint('[OyamaServer] error: $err');
+      debugPrint('[TrackerServer] error: $err');
     });
 
     debugPrint(
-        '[OyamaServer] listening on http://${_server!.address.host}:${_server!.port}');
+        '[TrackerServer] listening on http://${_server!.address.host}:${_server!.port}');
     return 'http://${_server!.address.host}:${_server!.port}';
   }
 
-  Future<void> _copyAssets() async {
-    final dir = Directory(_baseDir!);
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-
-    // Read AssetManifest.json to discover all bundled files
-    final manifestJson = await rootBundle.loadString('AssetManifest.json');
-    final manifest = json.decode(manifestJson) as Map<String, dynamic>;
-
-    const prefix = 'assets/oyama_hrt/';
-    final tasks = <Future>[];
-
-    for (final entry in manifest.entries) {
-      final assetPath = entry.key;
-      if (!assetPath.startsWith(prefix)) continue;
-
-      final relativePath = assetPath.substring(prefix.length);
-      if (relativePath.isEmpty) continue;
-
-      final targetFile = File('$_baseDir/$relativePath');
-
-      // Create parent directories if needed
-      final parentDir = targetFile.parent;
-      if (!await parentDir.exists()) {
-        await parentDir.create(recursive: true);
-      }
-
-      // Only copy if not already present
-      if (!await targetFile.exists()) {
-        tasks.add(
-          rootBundle.load(assetPath).then((data) async {
-            await targetFile.writeAsBytes(data.buffer.asUint8List());
-          }),
-        );
-      }
-    }
-
-    await Future.wait(tasks);
-    debugPrint('[OyamaServer] copied ${tasks.length} asset files to $_baseDir');
-  }
-
   Future<void> _handleRequest(HttpRequest request) async {
-    // Decode the path; default SPA fallback → index.html
     String requestPath = request.uri.path;
-
-    // Normalise: strip leading slash, treat root/empty as index.html
     if (requestPath.startsWith('/')) {
       requestPath = requestPath.substring(1);
     }
@@ -137,81 +111,103 @@ class _LocalAssetServer {
       requestPath = 'index.html';
     }
 
-    final file = File('$_baseDir/$requestPath');
+    final docDir = await getApplicationDocumentsDirectory();
+    final sandboxedFile = File('${docDir.path}/hrt_tracker/$requestPath');
 
-    // SPA fallback: if file not found, serve index.html
-    if (!await file.exists()) {
-      final indexFile = File('$_baseDir/index.html');
-      if (await indexFile.exists()) {
-        final bytes = await indexFile.readAsBytes();
-        request.response
-          ..statusCode = HttpStatus.ok
-          ..headers.contentType = ContentType.parse(_mimeFor('index.html'))
-          ..add(bytes);
-      } else {
-        request.response.statusCode = HttpStatus.notFound;
+    // 1. 优先尝试从沙盒 (热更新目录) 读取
+    if (await sandboxedFile.exists()) {
+      try {
+        final bytes = await sandboxedFile.readAsBytes();
+        _sendBytes(request, bytes, requestPath);
+        return;
+      } catch (e) {
+        debugPrint('[TrackerServer] Error reading sandboxed file: $e');
       }
-      await request.response.close();
-      return;
     }
 
+    // 2. 沙盒无文件，则从内置的 Assets 兜底读取
     try {
-      final bytes = await file.readAsBytes();
+      final assetPath = 'assets/hrt_tracker/$requestPath';
+      final byteData = await rootBundle.load(assetPath);
+      final bytes = byteData.buffer
+          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+      _sendBytes(request, bytes, requestPath);
+    } catch (e) {
+      // SPA 路由容错：如果找不到，回退到 index.html
+      if (requestPath != 'index.html') {
+        try {
+          final sandboxedIndex = File('${docDir.path}/hrt_tracker/index.html');
+          if (await sandboxedIndex.exists()) {
+            final bytes = await sandboxedIndex.readAsBytes();
+            _sendBytes(request, bytes, 'index.html');
+            return;
+          }
+          final byteData =
+              await rootBundle.load('assets/hrt_tracker/index.html');
+          final bytes = byteData.buffer
+              .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+          _sendBytes(request, bytes, 'index.html');
+          return;
+        } catch (_) {}
+      }
+      request.response.statusCode = HttpStatus.notFound;
+      await request.response.close();
+    }
+  }
+
+  void _sendBytes(HttpRequest request, List<int> bytes, String path) {
+    try {
       request.response
         ..statusCode = HttpStatus.ok
-        ..headers.contentType = ContentType.parse(_mimeFor(requestPath))
-        ..headers.set('Cache-Control', 'max-age=3600')
+        ..headers.contentType = ContentType.parse(_mimeFor(path))
+        ..headers.set('Cache-Control', 'no-cache') // 确保热更新实时生效，不使用缓存
         ..add(bytes);
     } catch (e) {
       request.response.statusCode = HttpStatus.internalServerError;
     }
-    await request.response.close();
+    request.response.close();
   }
 
   Future<void> stop() async {
     _started = false;
     await _server?.close(force: true);
     _server = null;
-    debugPrint('[OyamaServer] stopped');
+    debugPrint('[TrackerServer] stopped');
   }
 }
 
-// ========================
-// 共享的单例服务器（多个页面访问同一服务器）
-// ========================
-
-_LocalAssetServer? _sharedServer;
-Future<_LocalAssetServer> _getSharedServer() async {
-  _sharedServer ??= _LocalAssetServer();
+// 共享的单例服务器
+_LocalTrackerServer? _sharedServer;
+Future<_LocalTrackerServer> _getSharedServer() async {
+  _sharedServer ??= _LocalTrackerServer();
   return _sharedServer!;
 }
 
 // ========================
-// PK Simulation Screen
+// WebView 挂载界面
 // ========================
-
-class PKSimulationScreen extends StatefulWidget {
+class TrackerScreen extends StatefulWidget {
   final String genderIdentity;
-  const PKSimulationScreen({super.key, required this.genderIdentity});
+  const TrackerScreen({super.key, required this.genderIdentity});
 
   /// 在后台静默初始化 Oyama SPA（无需显示 WebView）。
-  ///
-  /// 供导出/导入功能调用，确保通过 JavaScript 访问 SPA 数据时
-  /// WebView 控制器已就绪。多次调用安全（内部会跳过已初始化的情况）。
+  /// 供导出/导入功能调用，确保通过 JavaScript 访问 SPA 数据时 WebView 控制器已就绪。
   static Future<void> ensureBackgroundInitialized() async {
-    // 如果已有控制器则跳过
     if (DataMigrationService.hasOyamaController) return;
 
     try {
       final server = await _getSharedServer();
       final baseUrl = await server.ensureStarted();
 
-      // 创建离屏 WebView 控制器（不附加到 Widget 树）
       final ctrl = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(Colors.transparent);
 
-      // 等待页面加载完成
+      if (ctrl.platform is AndroidWebViewController) {
+        await (ctrl.platform as AndroidWebViewController)
+            .setAllowFileAccess(true);
+      }
+
       final pageLoaded = Completer<void>();
       ctrl.setNavigationDelegate(
         NavigationDelegate(
@@ -221,24 +217,20 @@ class PKSimulationScreen extends StatefulWidget {
         ),
       );
 
-      // 加载 SPA 首页
       await ctrl.loadRequest(Uri.parse('$baseUrl/index.html'));
 
-      // 等待页面渲染完成（超时 15 秒）
       await pageLoaded.future.timeout(const Duration(seconds: 15));
-
-      // 注册到数据迁移服务
       DataMigrationService.registerOyamaController(ctrl);
     } catch (e) {
-      debugPrint('[PKSim] background init error: $e');
+      debugPrint('[TrackerScreen] background init error: $e');
     }
   }
 
   @override
-  State<PKSimulationScreen> createState() => _PKSimulationScreenState();
+  State<TrackerScreen> createState() => _TrackerScreenState();
 }
 
-class _PKSimulationScreenState extends State<PKSimulationScreen>
+class _TrackerScreenState extends State<TrackerScreen>
     with WidgetsBindingObserver {
   WebViewController? _controller;
   bool _loading = true;
@@ -303,8 +295,6 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // NOTE: we intentionally keep the shared server alive
-    // so that returning to this screen is instant.
     super.dispose();
   }
 
@@ -330,13 +320,18 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
               if (mounted) setState(() => _loading = false);
             },
             onWebResourceError: (err) {
-              debugPrint('[OyamaWebView] error: ${err.description}');
+              debugPrint('[TrackerWebView] error: ${err.description}');
               if (mounted && _loading) {
                 setState(() => _error = '加载失败: ${err.description}');
               }
             },
           ),
         );
+
+      if (ctrl.platform is AndroidWebViewController) {
+        await (ctrl.platform as AndroidWebViewController)
+            .setAllowFileAccess(true);
+      }
 
       await ctrl.loadRequest(Uri.parse('$baseUrl/index.html'));
 
@@ -349,7 +344,7 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
         _controller = ctrl;
       });
     } catch (e) {
-      debugPrint('[OyamaWebView] init error: $e');
+      debugPrint('[TrackerWebView] init error: $e');
       if (mounted) setState(() => _error = e.toString());
     }
   }
@@ -365,13 +360,10 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isTransfem = widget.genderIdentity != 'ftm';
-    final clr = isTransfem ? const Color(0xFFF5A9B8) : const Color(0xFF5BCEFA);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('血药浓度模拟'),
-        backgroundColor: clr.withOpacity(0.1),
+        backgroundColor: const Color(0xFFF5F4F0),
         actions: [
           if (_loading && _error == null)
             const Padding(
@@ -387,7 +379,14 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
       body: Column(
         children: [
           Expanded(child: _buildBody()),
-          if (_licenseInitialised && _licenseVisible) _buildLicenseNotice(),
+          if (_licenseInitialised && _licenseVisible)
+            Container(
+              color: const Color(0xFFF5F4F0),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom,
+              ),
+              child: _buildLicenseNotice(),
+            ),
         ],
       ),
     );
@@ -398,9 +397,10 @@ class _PKSimulationScreenState extends State<PKSimulationScreen>
     return Card(
       margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
       elevation: 0,
+      color: const Color(0xFFF5F4F0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: const BorderSide(color: Color(0xFFE8E6E0)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
