@@ -21,7 +21,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             # 手动触发：获取全仓库最新的 Release
-            TARGET_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq '.tag_name')
+            TARGET_TAG=$(gh api repos/${{ github.repository }}/releases --jq '.[0].tag_name')
             echo "手动触发：将处理最新版本 $TARGET_TAG"
           else
             # 自动触发：使用本次发布的 Tag
