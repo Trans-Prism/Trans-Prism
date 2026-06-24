@@ -1,0 +1,69 @@
+name: Sync App Release to R2
+
+on:
+  release:
+    types: [published] # 🚀 因为你是手动发版，这个触发器会完美生效！
+  workflow_dispatch:   # 依然保留手动点击的按钮
+
+jobs:
+  mirror-and-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗂️ 检出代码库 (获取 Git 上下文)
+        uses: actions/checkout@v4
+
+      - name: 🚀 批量拉取并同步至 R2 (/app/ 命名空间)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          echo "触发事件类型: ${{ github.event_name }}"
+          echo "执行全量增量同步：将始终检查并同步最新的 5 个 App Release..."
+          
+          # 直接获取最新的 5 个 Tag，无视触发机制
+          TARGET_TAGS=$(gh api repos/${{ github.repository }}/releases --jq '.[0:5] | .[].tag_name')
+          
+          if [ -z "$TARGET_TAGS" ]; then
+            echo "❌ 仓库中未找到任何 Release！"
+            exit 1
+          fi
+          
+          # 开始循环处理
+          for tag in $TARGET_TAGS; do
+            echo "----------------------------------------"
+            echo "📦 正在校验与同步版本: $tag"
+            
+            # 清空并重建临时下载目录
+            rm -rf release_assets
+            mkdir release_assets
+            
+            # 下载该 tag 的所有附件 (比如你的 APK 和 JSON)
+            gh release download "$tag" --dir release_assets
+            
+            # 归档到带版本号的文件夹
+            aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/$tag/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
+            
+            # 覆盖更新最新版固定链接目录
+            aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/app/latest/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
+          done
+
+      - name: 🧹 清理 R2 历史版本 (仅保留最近 5 个)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          LATEST_TAGS=$(gh api repos/${{ github.repository }}/releases --jq '.[0:5] | .[].tag_name')
+          echo "受保护的最新 5 个版本: $LATEST_TAGS"
+          
+          S3_DIRS=$(aws s3 ls s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/ --endpoint-url ${{ secrets.R2_ENDPOINT }} | awk '{print $2}' | sed 's/\///')
+          
+          for dir in $S3_DIRS; do
+            if ! echo "$LATEST_TAGS" | grep -qx "$dir"; then
+              echo "🗑️ 空间保护触发，正在清理过期版本: $dir"
+              aws s3 rm s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/$dir/ --recursive --endpoint-url ${{ secrets.R2_ENDPOINT }}
+            fi
+          done
