@@ -24,7 +24,7 @@
 
 **Trans Prism（稳态光盒）** 是一款致力于为跨性别群体提供安全、客观、无审查的日常辅助工具的开源 App。采用**在线/离线双擎架构**与**纯本地物理持久化**策略，核心知识库和极其隐私的生理数据不依赖任何第三方服务器。
 
-> Created via Deepseek, Gemini, Claude, GLM Vibe Coding（按使用率排序）
+> Created via Deepseek, Gemini, Claude, GLM, Mimo Vibe Coding（按使用率排序）
 
 ---
 
@@ -152,5 +152,17 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 > **⚠️ 医疗免责声明：** 本 App 所有功能仅供学术交流与数据可视化参考，**不能替代专业医生的诊断与处方**。调整激素剂量请务必在正规医生指导下进行。
 
 ---
+
+<br>
+
+<div align="center">
+  <a href="https://star-history.com/#Trans-Prism/Trans-Prism&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date" width="400" />
+    </picture>
+  </a>
+</div>
 
 *"May you find your steady state."*
