@@ -2,7 +2,7 @@ name: trans_prism
 description: "稳态光盒 (Trans Prism) - 一站式 HRT 用药提醒与离线知识库终端"
 publish_to: 'none'
 
-version: 1.5.0
+version: 1.5.5
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -44,7 +44,7 @@ dependencies:
   permission_handler: ^11.3.1
   
   # --- 音频相关 (嗓音分析) ---
-  record: ^6.0.0
+  record: ^7.0.0
   pitch_detector_dart: ^0.0.7
   audioplayers: ^6.4.0
   shelf: ^1.4.1

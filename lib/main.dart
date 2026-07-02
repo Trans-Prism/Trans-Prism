@@ -5,6 +5,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 
 import 'models/gender_identity.dart';
 import 'screens/about_screen.dart';
+import 'screens/bra_calculator_page.dart';
 import 'screens/disclaimer_page.dart';
 import 'screens/disclaimer_view_screen.dart';
 import 'screens/hormone_converter_screen.dart';
@@ -1207,6 +1208,8 @@ class HomeTab extends StatelessWidget {
         moduleVisibility[HomeModuleVisibility.keyImageConverter] ?? true;
     final showHormoneConverter =
         moduleVisibility[HomeModuleVisibility.keyHormoneConverter] ?? true;
+    final showBraCalculator =
+        moduleVisibility[HomeModuleVisibility.keyBraCalculator] ?? true;
 
     // HRT 标题：只要药物存量或血药浓度任一可见就显示
     final showHrtSection = showMedStock || showPkSim;
@@ -1270,7 +1273,8 @@ class HomeTab extends StatelessWidget {
         if (showMedicalDirectory ||
             showSvgLibrary ||
             showImageConverter ||
-            showHormoneConverter) ...[
+            showHormoneConverter ||
+            showBraCalculator) ...[
           _buildSectionTitle('工具箱', isDark: isDark),
           const SizedBox(height: 12),
           if (showMedicalDirectory)
@@ -1340,6 +1344,24 @@ class HomeTab extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const HormoneConverterScreen(),
+                  ),
+                );
+              },
+            ),
+          if ((showImageConverter || showHormoneConverter) && showBraCalculator)
+            const SizedBox(height: 12),
+          if (showBraCalculator)
+            _buildPersonalCard(
+              context,
+              title: '罩杯计算器',
+              subtitle: '基于 MtF.wiki 算法 · 发育记录追踪',
+              icon: Icons.straighten_rounded,
+              isDark: isDark,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BraCalculatorPage(),
                   ),
                 );
               },

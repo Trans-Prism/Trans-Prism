@@ -728,17 +728,14 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   // =======================================================================
   Widget _buildAttribution() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Opacity(
-        opacity: 0.30,
-        child: Text(
-          '换算算法及参考范围数据衍生自 mtf.wiki (CC BY-NC-SA 4.0)',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
-          ),
-          textAlign: TextAlign.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        '换算算法及参考范围数据衍生自 MtF.wiki (CC BY-SA 4.0) 及网络公开经验数据',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11,
+          color: isDark ? Colors.white38 : Colors.black38,
         ),
       ),
     );

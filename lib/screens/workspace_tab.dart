@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_icon.dart';
+import 'bra_calculator_page.dart';
 import 'hormone_converter_screen.dart';
 import 'image_converter_screen.dart';
 import 'medical_directory/medical_directory_list_screen.dart';
@@ -103,6 +104,21 @@ class WorkspaceTab extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) =>
                   TrackerScreen(genderIdentity: genderIdentity),
+            ),
+          );
+        },
+        isDark: isDark,
+      ),
+      _buildMenuCard(
+        context,
+        title: '罩杯计算器',
+        subtitle: '基于 MtF.wiki 算法 · 发育记录追踪',
+        icon: Icons.straighten_rounded,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BraCalculatorPage(),
             ),
           );
         },
