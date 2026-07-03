@@ -128,6 +128,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 2. **PK 计算引擎**（衍生自 Oyama）— [MIT License](https://opensource.org/licenses/MIT)
 3. **嗓音训练模块**（衍生自 VFS Tracker）— [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 4. **内置知识库文本** — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) / [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
+5. **激素换算器及罩杯计算器** (衍生自MtF-wiki及网络公开资料) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) 
 
 ---
 
