@@ -14,6 +14,7 @@
     <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter"></a>
     <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
     <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+    <a href="https://github.com/Trans-Prism/Trans-Prism/releases"><img src="https://img.shields.io/github/v/release/Trans-Prism/Trans-Prism?color=%235BCEFA&label=Version" alt="Version"></a>
   </p>
 
 </div>
@@ -48,6 +49,9 @@
 ### 🏥 友善医疗名录
 收录国内跨性别友善的内分泌科、精神科医生与就诊指南，支持筛选、收藏、自动同步更新。
 
+### 📏 罩杯计算器 & 发育记录追踪
+基于 MtF.wiki 大陆标准算法（胸围差 10cm=A，每 2.5cm 递进），5 项测量输入，自动计算 CN/US/EU 三地尺码。每次计算结果自动保存为发育记录，支持历史趋势回溯。所有数据纯本地持久化，绝不离开设备。
+      |
 ### 🎨 SVG 图解资源库
 跨性别主题 SVG 图标库（Noto/OpenMoji/Twemoji 三种风格），支持导出 PNG/JPEG/WEBP、分享、存相册。
 
@@ -90,7 +94,7 @@ flutter build macos     # macOS（需自行签名）
 ```
 Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder (内容工厂)
      │                                               │
-     │ 9 大功能模块                                    │ Python 工具链清洗 5 个上游
+     │ 10 大功能模块                                   │ Python 工具链清洗 5 个上游
      │ 纯本地存储 (SharedPreferences)                  │ 编译 MkDocs Material 静态站点
      │ 三路 OTA: APK/Wiki/Tracker                      │ 封包 ZIP → GitHub Release → R2
 ```
@@ -137,6 +141,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 | 改 Wiki 知识库 | [`wiki_sync_service.dart`](lib/services/wiki_sync_service.dart:37) / [`wiki_update_manager.dart`](lib/services/wiki_update_manager.dart:31) |
 | 改医疗名录 | [`medical_directory_service.dart`](lib/services/medical_directory_service.dart:22) |
 | 改激素换算 | [`hormone_converter_logic.dart`](lib/utils/hormone_converter_logic.dart:1)（纯函数）|
+| 改罩杯计算 | [`bra_calculator.dart`](lib/services/bra_calculator.dart:1)（纯函数）/ [`bra_calculator_page.dart`](lib/screens/bra_calculator_page.dart:1)（UI）|
 | 改主题 | [`theme_service.dart`](lib/services/theme_service.dart:7) |
 | 改更新逻辑 | [`update_service.dart`](lib/services/update_service.dart:52) |
 | 了解全貌 | [`REPO_MAP.md`](REPO_MAP.md)（AI Agent 导航）|
