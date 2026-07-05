@@ -14,7 +14,7 @@
     <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter"></a>
     <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
     <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
-    <a href="https://github.com/Trans-Prism/Trans-Prism/releases"><img src="https://img.shields.io/github/v/release/Trans-Prism/Trans-Prism?color=%235BCEFA&label=Version" alt="Version"></a>
+    <a href="https://github.com/Trans-Prism/Trans-Prism/releases"><img src="https://img.shields.io/github/v/release/Trans-Prism/Trans-Prism?include_prereleases&color=%235BCEFA&label=Version" alt="Version"></a>
   </p>
 
 </div>
