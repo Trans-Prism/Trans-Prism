@@ -5,6 +5,9 @@ on:
     types: [published] # 手动发版，完美触发
   workflow_dispatch:   # 依然保留测试按钮
 
+permissions:
+  contents: write
+
 jobs:
   mirror-and-cleanup:
     runs-on: ubuntu-latest
