@@ -159,16 +159,14 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 
 ---
 
-<br>
+## Star History
 
-<div align="center">
-  <a href="https://star-history.com/#Trans-Prism/Trans-Prism&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Trans-Prism/Trans-Prism&type=Date" width="400" />
-    </picture>
-  </a>
-</div>
+<a href="https://www.star-history.com/?type=date&repos=Trans-Prism%2FTrans-Prism">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Trans-Prism/Trans-Prism&type=date&theme=dark&legend=top-left&sealed_token=Rac_fHrj8ACOWMqtsdR8LJdWDQTj36Zy7oql6OuWtVO84yJViDVTVTNwYdLxnF46HhM0oNseO49w8NHVh1krGhZAv_Y1Ay4sW-oU8vFX_7zdc5cUvQ0IDAvkBhGNCGKlOpmm09HpVB2O92_CCDJNezVI-ZwJ8acrUOxQ9nnPXSxBHGy2qoV1rhAEGl5U" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Trans-Prism/Trans-Prism&type=date&legend=top-left&sealed_token=Rac_fHrj8ACOWMqtsdR8LJdWDQTj36Zy7oql6OuWtVO84yJViDVTVTNwYdLxnF46HhM0oNseO49w8NHVh1krGhZAv_Y1Ay4sW-oU8vFX_7zdc5cUvQ0IDAvkBhGNCGKlOpmm09HpVB2O92_CCDJNezVI-ZwJ8acrUOxQ9nnPXSxBHGy2qoV1rhAEGl5U" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Trans-Prism/Trans-Prism&type=date&legend=top-left&sealed_token=Rac_fHrj8ACOWMqtsdR8LJdWDQTj36Zy7oql6OuWtVO84yJViDVTVTNwYdLxnF46HhM0oNseO49w8NHVh1krGhZAv_Y1Ay4sW-oU8vFX_7zdc5cUvQ0IDAvkBhGNCGKlOpmm09HpVB2O92_CCDJNezVI-ZwJ8acrUOxQ9nnPXSxBHGy2qoV1rhAEGl5U" />
+ </picture>
+</a>
 
 *"May you find your steady state."*
