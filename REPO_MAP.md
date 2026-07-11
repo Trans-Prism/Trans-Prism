@@ -141,6 +141,31 @@
 
 ---
 
+## CI/CD
+
+本仓库只有一个 GitHub Actions 工作流：
+
+### [`sync_app_to_r2.yml`](.github/workflows/sync_app_to_r2.yml)
+
+| 属性 | 值 |
+|------|-----|
+| **触发条件** | `release: [published]` 或 `workflow_dispatch`（手动） |
+| **运行环境** | `ubuntu-latest` |
+| **职责** | Release 产物镜像到 Cloudflare R2 并生成版本索引 |
+
+**执行流程**：
+1. `🗂️ 检出代码库` — `actions/checkout@v4`
+2. `🚀 拉取、生成索引并同步 App`（单一步骤内完成）：
+   - 下载指定 Release 的全部 assets 到 `release_assets/`
+   - **🔐 计算 APK SHA-256 校验和**：遍历所有 `.apk` 文件，用 `sha256sum` 计算哈希值，生成 `${apk}.sha256` 文件，通过 `gh release upload` 上传回 GitHub Release
+   - 归档到 R2 `/app/releases/{tag}/`
+   - 清理 R2 `/app/latest/` 下的旧版 APK
+   - 生成 `latest.json`（含 `latest_file` / `tag` / `update_time`）
+   - 同步到 R2 `/app/latest/`
+3. `🧹 清理 R2 历史版本` — 仅保留最近 5 个 Release 在 R2 上
+
+---
+
 ## 许可模型
 
 > 完整的许可证文本与法律条款见 [`LICENSE`](LICENSE)。本仓库采用**复合授权（Composite Licensing）**模式。

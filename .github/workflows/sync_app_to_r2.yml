@@ -42,6 +42,26 @@ jobs:
           mkdir release_assets
           gh release download "$TARGET_TAG" --dir release_assets
           
+          # 🔐 计算 APK SHA-256 校验和并上传到 GitHub Release
+          echo "========================================"
+          echo "🔐 正在计算 APK SHA-256 校验和..."
+          cd release_assets
+          for apk in *.apk; do
+            if [ -f "$apk" ]; then
+              sha256sum "$apk" > "$apk.sha256"
+              echo "  ✅ $apk → $apk.sha256"
+              echo "     $(cat $apk.sha256)"
+            fi
+          done
+          cd ..
+          # 上传校验和文件到 Release（--clobber 允许覆盖）
+          if ls release_assets/*.sha256 1>/dev/null 2>&1; then
+            gh release upload "$TARGET_TAG" release_assets/*.sha256 --clobber
+            echo "✅ SHA-256 校验和文件已上传到 GitHub Release"
+          else
+            echo "⚠️ 未找到 .apk 文件，跳过校验和生成"
+          fi
+          
           # 1. 归档到历史记录的特定版本文件夹
           aws s3 sync release_assets s3://${{ secrets.R2_BUCKET_NAME }}/app/releases/$TARGET_TAG/ --endpoint-url ${{ secrets.R2_ENDPOINT }}
           
