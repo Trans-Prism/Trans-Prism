@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
@@ -71,15 +70,13 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final textColor = isDark
+        ? const Color(0xFFF5F5F7)
+        : const Color(0xFF1D1D1F);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '图片格式转换',
-          style: TextStyle(color: textColor),
-        ),
+        title: Text('图片格式转换', style: TextStyle(color: textColor)),
       ),
       body: _selectedFile == null
           ? _buildInitialState(isDark)
@@ -139,8 +136,10 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
               ),
               const SizedBox(height: 24),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF5BCEFA).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -148,8 +147,11 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.folder_open_outlined,
-                        size: 18, color: Color(0xFF5BCEFA)),
+                    Icon(
+                      Icons.folder_open_outlined,
+                      size: 18,
+                      color: Color(0xFF5BCEFA),
+                    ),
                     SizedBox(width: 6),
                     Text(
                       '浏览文件',
@@ -191,21 +193,14 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
 
   /// 图片预览
   Widget _buildPreview(bool isDark) {
-    if (_selectedFile?.path == null) return const SizedBox.shrink();
-
-    final filePath = _selectedFile!.path!;
+    if (_selectedFile?.bytes == null) return const SizedBox.shrink();
 
     Widget preview;
     if (_isSvgInput) {
-      preview = SvgPicture.file(
-        File(filePath),
-        fit: BoxFit.contain,
-      );
+      final svgContent = String.fromCharCodes(_selectedFile!.bytes!);
+      preview = SvgPicture.string(svgContent, fit: BoxFit.contain);
     } else {
-      preview = Image.file(
-        File(filePath),
-        fit: BoxFit.contain,
-      );
+      preview = Image.memory(_selectedFile!.bytes!, fit: BoxFit.contain);
     }
 
     return Container(
@@ -251,8 +246,9 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color:
-                    isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93),
+                color: isDark
+                    ? const Color(0xFF98989E)
+                    : const Color(0xFF8E8E93),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -286,8 +282,9 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
   // ════════════════════════════════════════════════════════════
 
   Widget _buildControlBoard(bool isDark) {
-    final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93);
+    final secondaryTextColor = isDark
+        ? const Color(0xFF98989E)
+        : const Color(0xFF8E8E93);
     const labelWidth = 60.0;
 
     return Container(
@@ -335,35 +332,38 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                           // 位图输入时 SVG 选项置灰禁用（onSelected 传 null）
                           final disabled = _isBitmapInput && f == 'svg';
                           return ChoiceChip(
-                            label: Text(f.toUpperCase(),
-                                style: const TextStyle(fontSize: 11)),
+                            label: Text(
+                              f.toUpperCase(),
+                              style: const TextStyle(fontSize: 11),
+                            ),
                             selected: sel,
                             onSelected: disabled
                                 ? null
                                 : (_) => setState(() => _selectedFormat = f),
                             visualDensity: VisualDensity.compact,
-                            selectedColor:
-                                const Color(0xFF5BCEFA).withOpacity(0.15),
+                            selectedColor: const Color(
+                              0xFF5BCEFA,
+                            ).withOpacity(0.15),
                             disabledColor: isDark
                                 ? Colors.white.withOpacity(0.03)
                                 : Colors.grey.withOpacity(0.05),
                             labelStyle: TextStyle(
                               color: disabled
                                   ? (isDark
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade300)
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300)
                                   : sel
-                                      ? const Color(0xFF5BCEFA)
-                                      : secondaryTextColor,
+                                  ? const Color(0xFF5BCEFA)
+                                  : secondaryTextColor,
                             ),
                             side: BorderSide(
                               color: disabled
                                   ? Colors.transparent
                                   : sel
-                                      ? const Color(0xFF5BCEFA)
-                                      : (isDark
-                                          ? Colors.grey.shade700
-                                          : Colors.grey.shade300),
+                                  ? const Color(0xFF5BCEFA)
+                                  : (isDark
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300),
                             ),
                           );
                         }).toList(),
@@ -393,19 +393,23 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ...[512, 1024, 2048].map((size) => Padding(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child: ActionChip(
-                                    label: Text('$size',
-                                        style: const TextStyle(fontSize: 11)),
-                                    onPressed: () {
-                                      setState(() {
-                                        _targetWidthStr = size.toString();
-                                      });
-                                    },
-                                    visualDensity: VisualDensity.compact,
+                            ...[512, 1024, 2048].map(
+                              (size) => Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: ActionChip(
+                                  label: Text(
+                                    '$size',
+                                    style: const TextStyle(fontSize: 11),
                                   ),
-                                )),
+                                  onPressed: () {
+                                    setState(() {
+                                      _targetWidthStr = size.toString();
+                                    });
+                                  },
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ),
+                            ),
                             // 自定义值按钮
                             SizedBox(
                               height: 32,
@@ -424,7 +428,8 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                                         : Colors.grey.shade400,
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10),
+                                    horizontal: 10,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(18),
                                   ),
@@ -453,56 +458,60 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
     const themeColor = Color(0xFF5BCEFA);
 
     Widget buildFileButton() => SizedBox(
-          height: 44,
-          child: OutlinedButton.icon(
-            onPressed: _isExporting ? null : _handleExportToFile,
-            icon: _isExporting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.folder_open_outlined, size: 18),
-            label: const Text(
-              '保存到文件',
-              style: TextStyle(fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: themeColor,
-              side: BorderSide(color: themeColor.withOpacity(0.3)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: _isExporting ? null : _handleExportToFile,
+        icon: _isExporting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.folder_open_outlined, size: 18),
+        label: const Text(
+          '保存到文件',
+          style: TextStyle(fontSize: 14),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: themeColor,
+          side: BorderSide(color: themeColor.withOpacity(0.3)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
+        ),
+      ),
+    );
 
     Widget buildAlbumButton() => SizedBox(
-          height: 44,
-          child: FilledButton.icon(
-            onPressed: _isExporting ? null : _handleExportToAlbum,
-            icon: _isExporting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.download_rounded, size: 18),
-            label: const Text(
-              '保存到相册',
-              style: TextStyle(fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: themeColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
+      height: 44,
+      child: FilledButton.icon(
+        onPressed: _isExporting ? null : _handleExportToAlbum,
+        icon: _isExporting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.download_rounded, size: 18),
+        label: const Text(
+          '保存到相册',
+          style: TextStyle(fontSize: 14),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        style: FilledButton.styleFrom(
+          backgroundColor: themeColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
+        ),
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -510,7 +519,8 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         border: Border(
           top: BorderSide(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          ),
         ),
       ),
       child: SafeArea(
@@ -537,6 +547,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['svg', 'png', 'jpg', 'jpeg', 'webp'],
+        withData: true,
       );
 
       if (result != null && result.files.isNotEmpty) {
@@ -580,29 +591,32 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
       if (savedPath != null) {
         try {
           final xFile = XFile(savedPath);
-          await Share.shareXFiles(
-            [xFile],
-            text: '转换图片 - $_selectedFormat',
-          );
+          await Share.shareXFiles([xFile], text: '转换图片 - $_selectedFormat');
         } catch (_) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('✅ 已保存(可前往文件管理器查看): $savedPath'),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ 已保存(可前往文件管理器查看): $savedPath'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('导出失败'),
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('导出失败'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('导出出错: $e'),
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('导出出错: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
       setState(() => _isExporting = false);
     }
@@ -619,23 +633,29 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
       if (!mounted) return;
 
       if (savedPath != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('✅ 已保存: $savedPath'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ 已保存: $savedPath'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('导出失败'),
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('导出失败'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('导出出错: $e'),
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('导出出错: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
       setState(() => _isExporting = false);
     }
@@ -643,9 +663,9 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
 
   /// 执行实际的导出操作
   Future<String?> _performExport() async {
-    if (_selectedFile?.path == null) return null;
+    if (_selectedFile?.bytes == null) return null;
 
-    final filePath = _selectedFile!.path!;
+    final fileBytes = _selectedFile!.bytes!;
     final baseName = _selectedFile!.name;
     // 去除原扩展名
     final nameWithoutExt = baseName.contains('.')
@@ -654,17 +674,16 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
     final width = double.tryParse(_targetWidthStr) ?? 1024;
 
     if (_isSvgFormat) {
-      // SVG 导出：直接复制原文件
-      final file = File(filePath);
-      final bytes = await file.readAsBytes();
+      // SVG 导出：直接使用已有字节
       return SvgExportService.saveBytes(
-        bytes.toList(),
+        fileBytes.toList(),
         '$nameWithoutExt.svg',
       );
     } else {
-      // 位图导出：调用 ImageExportService.convertLocalImage
-      final bytes = await ImageExportService.convertLocalImage(
-        filePath: filePath,
+      // 位图导出：调用 ImageExportService.convertLocalImageBytes（Web 兼容）
+      final bytes = await ImageExportService.convertLocalImageBytes(
+        fileName: _selectedFile!.name,
+        fileBytes: fileBytes,
         targetFormat: _selectedFormat,
         targetWidth: width,
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/permission_manager.dart';
+import 'gradient_icon.dart';
 
 // =============================================================================
 // BatteryOptimizationGuideCard — 「通知到达率优化」状态检测卡片
@@ -77,13 +78,16 @@ class _BatteryOptimizationGuideCardState
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFA726).withOpacity(0.15),
+                    color: isDark
+                        ? const Color(0xFF5BCEFA).withOpacity(0.15)
+                        : const Color(0xFF5BCEFA).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.notifications_active_rounded,
-                    color: Color(0xFFFFA726),
-                    size: 22,
+                  child: const Center(
+                    child: GradientIcon(
+                      Icons.notifications_active_rounded,
+                      size: 22,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -305,11 +309,14 @@ class _BatteryOptimizationGuideCardState
         final shouldOpenSettings = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.info_outline, color: Color(0xFFFFA726)),
-                SizedBox(width: 8),
-                Expanded(
+                Icon(Icons.info_outline,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFFE5E5EA)
+                        : const Color(0xFF3A3A3C)),
+                const SizedBox(width: 8),
+                const Expanded(
                   child: Text(
                     '需要手动授权',
                     style: TextStyle(fontWeight: FontWeight.w700),
@@ -347,11 +354,14 @@ class _BatteryOptimizationGuideCardState
     final shouldOpen = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.power_settings_new_rounded, color: Color(0xFFE57373)),
-            SizedBox(width: 8),
-            Expanded(
+            Icon(Icons.power_settings_new_rounded,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFFE5E5EA)
+                    : const Color(0xFF3A3A3C)),
+            const SizedBox(width: 8),
+            const Expanded(
               child: Text(
                 '厂商后台自启动',
                 style: TextStyle(fontWeight: FontWeight.w700),

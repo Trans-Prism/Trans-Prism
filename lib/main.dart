@@ -83,10 +83,7 @@ ThemeData _buildLightTheme() {
             color: Color(0xFF5BCEFA),
           );
         }
-        return const TextStyle(
-          fontSize: 11,
-          color: Color(0xFF86868B),
-        );
+        return const TextStyle(fontSize: 11, color: Color(0xFF86868B));
       }),
     ),
     useMaterial3: true,
@@ -158,10 +155,7 @@ ThemeData _buildDarkTheme() {
             color: Color(0xFF5BCEFA),
           );
         }
-        return const TextStyle(
-          fontSize: 11,
-          color: Color(0xFF636366),
-        );
+        return const TextStyle(fontSize: 11, color: Color(0xFF636366));
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
@@ -171,24 +165,17 @@ ThemeData _buildDarkTheme() {
       }),
     ),
     // ── 底部应用栏 ──
-    bottomAppBarTheme: const BottomAppBarThemeData(
-      color: Color(0xFF1C1C1E),
-    ),
+    bottomAppBarTheme: const BottomAppBarThemeData(color: Color(0xFF1C1C1E)),
     // ── 对话框 ──
     dialogTheme: DialogThemeData(
       backgroundColor: const Color(0xFF2C2C2E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       titleTextStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Color(0xFFF5F5F7),
       ),
-      contentTextStyle: const TextStyle(
-        fontSize: 14,
-        color: Color(0xFFAEAEB2),
-      ),
+      contentTextStyle: const TextStyle(fontSize: 14, color: Color(0xFFAEAEB2)),
     ),
     // ── 输入框 ──
     inputDecorationTheme: InputDecorationTheme(
@@ -223,9 +210,7 @@ ThemeData _buildDarkTheme() {
     // ── 弹出菜单 ──
     popupMenuTheme: PopupMenuThemeData(
       color: const Color(0xFF2C2C2E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       textStyle: const TextStyle(color: Color(0xFFF5F5F7), fontSize: 14),
     ),
     // ── 菜单按钮 ──
@@ -255,9 +240,7 @@ ThemeData _buildDarkTheme() {
       labelStyle: const TextStyle(color: Color(0xFFF5F5F7)),
       secondaryLabelStyle: const TextStyle(color: Color(0xFFAEAEB2)),
       side: BorderSide.none,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     // ── 按钮 ──
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -273,9 +256,7 @@ ThemeData _buildDarkTheme() {
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: const Color(0xFF5BCEFA),
-      ),
+      style: TextButton.styleFrom(foregroundColor: const Color(0xFF5BCEFA)),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
@@ -308,10 +289,7 @@ ThemeData _buildDarkTheme() {
       linearTrackColor: Color(0xFF3A3A3C),
     ),
     // ── 分隔线 ──
-    dividerTheme: const DividerThemeData(
-      color: Color(0xFF3A3A3C),
-      space: 1,
-    ),
+    dividerTheme: const DividerThemeData(color: Color(0xFF3A3A3C), space: 1),
     // ── 时间选择器、日期选择器 ──
     datePickerTheme: DatePickerThemeData(
       backgroundColor: const Color(0xFF2C2C2E),
@@ -347,9 +325,7 @@ ThemeData _buildDarkTheme() {
       backgroundColor: const Color(0xFF2C2C2E),
       contentTextStyle: const TextStyle(color: Color(0xFFF5F5F7)),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     // ── 工具提示 ──
     tooltipTheme: TooltipThemeData(
@@ -399,7 +375,7 @@ class _TransToolboxAppState extends State<TransToolboxApp> {
       listenable: _themeService,
       builder: (context, _) {
         return MaterialApp(
-          title: 'Project Trans Toolbox',
+          title: 'Trans Prism',
           debugShowCheckedModeBanner: false,
           theme: _buildLightTheme(),
           darkTheme: _buildDarkTheme(),
@@ -453,8 +429,8 @@ class _AppRootControllerState extends State<AppRootController> {
     await NotificationService().requestPermission();
 
     // 3. 批量请求所有关键保活权限（通知 + 精确闹钟 + 忽略电池优化）
-    final permResult =
-        await PermissionManager().requestAllCriticalPermissions();
+    final permResult = await PermissionManager()
+        .requestAllCriticalPermissions();
     debugPrint('📋 [main] 权限请求总览: $permResult');
   }
 
@@ -487,9 +463,11 @@ class _AppRootControllerState extends State<AppRootController> {
     // 测试 5：getSvgPath fallback
     final transSym = svc.searchResources('trans symbol').first;
     debugPrint(
-        '📁 trans_symbol twemoji path: ${transSym.getSvgPath(preferredStyle: "twemoji")}');
+      '📁 trans_symbol twemoji path: ${transSym.getSvgPath(preferredStyle: "twemoji")}',
+    );
     debugPrint(
-        '📁 trans_symbol openmoji fallback: ${transSym.getSvgPath(preferredStyle: "openmoji")}');
+      '📁 trans_symbol openmoji fallback: ${transSym.getSvgPath(preferredStyle: "openmoji")}',
+    );
 
     // 测试 6：无结果
     final noResult = svc.searchResources('zzzznotfound');
@@ -602,9 +580,7 @@ class _AppRootControllerState extends State<AppRootController> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: LoadingIndicator(),
-      );
+      return const Scaffold(body: LoadingIndicator());
     }
 
     if (!_disclaimerAccepted) {
@@ -615,8 +591,9 @@ class _AppRootControllerState extends State<AppRootController> {
       return OnboardingScreen(onSelect: _handleIdentitySelection);
     }
 
-    final displayName =
-        _namePrefix.isEmpty ? _greetingName : '$_namePrefix. $_greetingName';
+    final displayName = _namePrefix.isEmpty
+        ? _greetingName
+        : '$_namePrefix. $_greetingName';
 
     return MainDashboard(
       genderIdentity: _genderIdentity!,
@@ -654,7 +631,7 @@ class OnboardingScreen extends StatelessWidget {
                 : [
                     const Color(0xFF5BCEFA),
                     const Color(0xFFF5A9B8),
-                    Colors.white
+                    Colors.white,
                   ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -744,35 +721,46 @@ class OnboardingScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4)),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
           children: [
             CircleAvatar(
-                backgroundColor: color.withOpacity(0.2),
-                child: Icon(icon, color: color)),
+              backgroundColor: color.withOpacity(0.2),
+              child: Icon(icon, color: color),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : null)),
-                  Text(subtitle,
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.grey.shade400 : Colors.grey)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : null,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.grey.shade400 : Colors.grey,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios,
-                size: 16, color: isDark ? Colors.grey.shade500 : Colors.grey),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDark ? Colors.grey.shade500 : Colors.grey,
+            ),
           ],
         ),
       ),
@@ -858,8 +846,9 @@ class _MainDashboardState extends State<MainDashboard> {
   ///   4. 回滚：下滑/遮罩关闭（未点击保存）→ 恢复 [originalConfig] → 无痕回滚
   Future<void> _showHomeModuleSettings() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final textColor = isDark
+        ? const Color(0xFFF5F5F7)
+        : const Color(0xFF1D1D1F);
 
     // ── 1. 快照：深拷贝当前配置 ──
     final originalConfig = Map<String, bool>.from(_moduleVisibility);
@@ -926,7 +915,9 @@ class _MainDashboardState extends State<MainDashboard> {
                               HomeModuleVisibility.moduleIcons[key] ?? '';
                           return SwitchListTile(
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 2),
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
                             title: Text(
                               '$icon  $label',
                               style: TextStyle(
@@ -958,7 +949,8 @@ class _MainDashboardState extends State<MainDashboard> {
                         child: FilledButton(
                           onPressed: () async {
                             await HomeModuleVisibility.saveAll(
-                                _moduleVisibility);
+                              _moduleVisibility,
+                            );
                             if (ctx.mounted) Navigator.pop(ctx, true);
                           },
                           style: FilledButton.styleFrom(
@@ -996,8 +988,9 @@ class _MainDashboardState extends State<MainDashboard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final textColor = isDark
+        ? const Color(0xFFF5F5F7)
+        : const Color(0xFF1D1D1F);
 
     return Scaffold(
       // ── 根据当前 Tab 显示不同的 AppBar ──
@@ -1043,38 +1036,52 @@ class _MainDashboardState extends State<MainDashboard> {
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
           destinations: [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined,
-                  color: isDark
-                      ? const Color(0xFF636366)
-                      : const Color(0xFFC7C7CC)),
+              icon: Icon(
+                Icons.home_outlined,
+                color: isDark
+                    ? const Color(0xFF636366)
+                    : const Color(0xFFC7C7CC),
+              ),
               selectedIcon: const Icon(Icons.home, color: Color(0xFF5BCEFA)),
               label: '首页',
             ),
             NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined,
-                  color: isDark
-                      ? const Color(0xFF636366)
-                      : const Color(0xFFC7C7CC)),
-              selectedIcon:
-                  const Icon(Icons.menu_book_rounded, color: Color(0xFF5BCEFA)),
+              icon: Icon(
+                Icons.menu_book_outlined,
+                color: isDark
+                    ? const Color(0xFF636366)
+                    : const Color(0xFFC7C7CC),
+              ),
+              selectedIcon: const Icon(
+                Icons.menu_book_rounded,
+                color: Color(0xFF5BCEFA),
+              ),
               label: '资料库',
             ),
             NavigationDestination(
-              icon: Icon(Icons.grid_view_outlined,
-                  color: isDark
-                      ? const Color(0xFF636366)
-                      : const Color(0xFFC7C7CC)),
-              selectedIcon:
-                  const Icon(Icons.grid_view_rounded, color: Color(0xFF5BCEFA)),
+              icon: Icon(
+                Icons.grid_view_outlined,
+                color: isDark
+                    ? const Color(0xFF636366)
+                    : const Color(0xFFC7C7CC),
+              ),
+              selectedIcon: const Icon(
+                Icons.grid_view_rounded,
+                color: Color(0xFF5BCEFA),
+              ),
               label: '工作台',
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline,
-                  color: isDark
-                      ? const Color(0xFF636366)
-                      : const Color(0xFFC7C7CC)),
-              selectedIcon:
-                  const Icon(Icons.person_rounded, color: Color(0xFF5BCEFA)),
+              icon: Icon(
+                Icons.person_outline,
+                color: isDark
+                    ? const Color(0xFF636366)
+                    : const Color(0xFFC7C7CC),
+              ),
+              selectedIcon: const Icon(
+                Icons.person_rounded,
+                color: Color(0xFF5BCEFA),
+              ),
               label: '我的',
             ),
           ],
@@ -1120,16 +1127,18 @@ class _MainDashboardState extends State<MainDashboard> {
       actions: _currentIndex == 0
           ? [
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: 16),
                 child: GestureDetector(
                   onTap: _showHomeModuleSettings,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : const Color(0xFF5BCEFA).withOpacity(0.10),
+                          ? const Color(0xFF5BCEFA).withOpacity(0.15)
+                          : const Color(0xFF5BCEFA).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -1139,8 +1148,8 @@ class _MainDashboardState extends State<MainDashboard> {
                           Icons.dashboard_customize_rounded,
                           size: 16,
                           color: isDark
-                              ? const Color(0xFF98989E)
-                              : const Color(0xFF5BCEFA),
+                              ? const Color(0xFF7DD9FB)
+                              : const Color(0xFF00A2DF),
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -1149,8 +1158,8 @@ class _MainDashboardState extends State<MainDashboard> {
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: isDark
-                                ? const Color(0xFF98989E)
-                                : const Color(0xFF5BCEFA),
+                                ? const Color(0xFF7DD9FB)
+                                : const Color(0xFF00A2DF),
                           ),
                         ),
                       ],
@@ -1189,8 +1198,9 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+    final textColor = isDark
+        ? const Color(0xFFF5F5F7)
+        : const Color(0xFF1D1D1F);
 
     // 判断模块可见性
     final showGreeting =
@@ -1530,10 +1540,12 @@ class _ProfileTabState extends State<ProfileTab> {
   void initState() {
     super.initState();
     _greetingController = TextEditingController(text: widget.greetingName);
-    _customPrefix = !_prefixOptions.containsKey(widget.namePrefix) &&
+    _customPrefix =
+        !_prefixOptions.containsKey(widget.namePrefix) &&
         widget.namePrefix.isNotEmpty;
-    _customPrefixController =
-        TextEditingController(text: _customPrefix ? widget.namePrefix : '');
+    _customPrefixController = TextEditingController(
+      text: _customPrefix ? widget.namePrefix : '',
+    );
   }
 
   @override
@@ -1602,12 +1614,15 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
-    final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
-    final cardBorderColor =
-        isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+    final textColor = isDark
+        ? const Color(0xFFF5F5F7)
+        : const Color(0xFF1D1D1F);
+    final secondaryTextColor = isDark
+        ? const Color(0xFF98989E)
+        : const Color(0xFF86868B);
+    final cardBorderColor = isDark
+        ? Colors.grey.shade800
+        : Colors.grey.shade200;
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     return ListView(
@@ -1654,10 +1669,11 @@ class _ProfileTabState extends State<ProfileTab> {
                     style: TextStyle(fontSize: 13, color: secondaryTextColor),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.chevron_right,
-                      size: 18,
-                      color:
-                          isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                  ),
                 ],
               ),
               onTap: () => _showThemeBottomSheet(context),
@@ -1721,9 +1737,7 @@ class _ProfileTabState extends State<ProfileTab> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const AboutScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
                 );
               },
             ),
@@ -1826,10 +1840,10 @@ class _ProfileTabState extends State<ProfileTab> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: leadingColor.withOpacity(0.1),
+          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(leadingIcon, color: leadingColor, size: 20),
+        child: GradientIcon(leadingIcon, size: 20),
       ),
       title: Text(
         title,
@@ -1846,10 +1860,13 @@ class _ProfileTabState extends State<ProfileTab> {
           color: isDark ? const Color(0xFF98989E) : const Color(0xFF86868B),
         ),
       ),
-      trailing: trailing ??
-          Icon(Icons.chevron_right,
-              size: 20,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+      trailing:
+          trailing ??
+          Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+          ),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       shape: const RoundedRectangleBorder(),
@@ -1911,8 +1928,9 @@ class _ProfileTabState extends State<ProfileTab> {
                   decoration: InputDecoration(
                     labelText: '前缀',
                     filled: true,
-                    fillColor:
-                        isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                    fillColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -1922,14 +1940,21 @@ class _ProfileTabState extends State<ProfileTab> {
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     isDense: true,
                   ),
                   items: _prefixOptions.entries
-                      .map((e) => DropdownMenuItem(
+                      .map(
+                        (e) => DropdownMenuItem(
                           value: e.key,
-                          child: Text(e.value,
-                              style: const TextStyle(fontSize: 13))))
+                          child: Text(
+                            e.value,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) {
                     if (v == null) return;
@@ -1963,7 +1988,9 @@ class _ProfileTabState extends State<ProfileTab> {
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       isDense: true,
                     ),
                     onChanged: (v) {
@@ -1980,8 +2007,9 @@ class _ProfileTabState extends State<ProfileTab> {
                   decoration: InputDecoration(
                     labelText: '称呼（默认"伙伴"）',
                     filled: true,
-                    fillColor:
-                        isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                    fillColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -1991,7 +2019,9 @@ class _ProfileTabState extends State<ProfileTab> {
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     isDense: true,
                   ),
                   onChanged: (v) {
@@ -2066,42 +2096,48 @@ class _ProfileTabState extends State<ProfileTab> {
                         borderRadius: BorderRadius.circular(12),
                         side: selected
                             ? const BorderSide(
-                                color: Color(0xFF5BCEFA), width: 1.5)
+                                color: Color(0xFF5BCEFA),
+                                width: 1.5,
+                              )
                             : BorderSide.none,
                       ),
                       tileColor: selected
                           ? const Color(0xFF5BCEFA).withOpacity(0.06)
                           : (isDark
-                              ? const Color(0xFF2C2C2E)
-                              : Colors.grey.shade50),
+                                ? const Color(0xFF2C2C2E)
+                                : Colors.grey.shade50),
                       leading: Icon(
                         id == GenderIdentity.mtf
                             ? Icons.female
                             : id == GenderIdentity.ftm
-                                ? Icons.male
-                                : Icons.transgender,
+                            ? Icons.male
+                            : Icons.transgender,
                         color: selected
                             ? const Color(0xFF5BCEFA)
                             : (isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade500),
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade500),
                       ),
                       title: Text(
                         GenderIdentity.label(id),
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           color: selected
                               ? const Color(0xFF5BCEFA)
                               : (isDark
-                                  ? const Color(0xFFF5F5F7)
-                                  : const Color(0xFF1D1D1F)),
+                                    ? const Color(0xFFF5F5F7)
+                                    : const Color(0xFF1D1D1F)),
                         ),
                       ),
                       trailing: selected
-                          ? const Icon(Icons.check_circle,
-                              color: Color(0xFF5BCEFA), size: 22)
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: Color(0xFF5BCEFA),
+                              size: 22,
+                            )
                           : null,
                       onTap: () {
                         widget.onIdentityChanged(id);
@@ -2223,10 +2259,7 @@ class _ProfileTabState extends State<ProfileTab> {
       ),
       subtitle: Text(
         desc,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-        ),
+        style: const TextStyle(fontSize: 12, color: Colors.grey),
       ),
       trailing: selected
           ? const Icon(Icons.check_circle, color: Color(0xFF5BCEFA), size: 22)
@@ -2310,9 +2343,7 @@ class _ProfileTabState extends State<ProfileTab> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.info_outline, color: Color(0xFFE57373)),
@@ -2320,9 +2351,7 @@ class _ProfileTabState extends State<ProfileTab> {
             Text('备份提示'),
           ],
         ),
-        content: const Text(
-          'PK 血药浓度模拟数据请在血药浓度板块内的设置进行单独导出，当前备份操作不包含血药浓度模拟数据。',
-        ),
+        content: const Text('PK 血药浓度模拟数据请在血药浓度板块内的设置进行单独导出，当前备份操作不包含血药浓度模拟数据。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

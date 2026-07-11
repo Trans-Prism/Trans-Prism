@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/wiki_config.dart';
 import '../services/wiki_offline_service.dart';
 import '../services/wiki_update_manager.dart';
+import '../widgets/gradient_icon.dart';
 import '../widgets/wiki_license_notice.dart';
 import 'offline_wiki_screen.dart';
 import 'wiki_web_screen.dart';
@@ -300,24 +301,19 @@ class _WikiTabState extends State<WikiTab> {
       children: [
         // ── 根据身份显示对应 Wiki ──
         if (widget.identity == 'mtf') ...[
-          _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南 (推荐)', Icons.star, Colors.pink),
-          _buildWikiTile(
-              'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
-          _buildWikiTile(
-              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
+          _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南 (推荐)', Icons.star),
+          _buildWikiTile('RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book),
+          _buildWikiTile('MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories),
         ],
         if (widget.identity == 'ftm') ...[
-          _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star, Colors.blue),
-          _buildWikiTile(
-              'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
+          _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南 (推荐)', Icons.star),
+          _buildWikiTile('RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book),
         ],
         if (widget.identity == 'nb') ...[
-          _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南', Icons.star, Colors.pink),
-          _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南', Icons.star, Colors.blue),
-          _buildWikiTile(
-              'RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book, Colors.blueGrey),
-          _buildWikiTile(
-              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
+          _buildWikiTile('MtF.Wiki', '跨性别女性进阶指南', Icons.star),
+          _buildWikiTile('FtM.Wiki', '跨性别男性进阶指南', Icons.star),
+          _buildWikiTile('RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book),
+          _buildWikiTile('MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories),
         ],
         const Divider(height: 32),
         Padding(
@@ -331,17 +327,13 @@ class _WikiTabState extends State<WikiTab> {
           ),
         ),
         if (widget.identity == 'ftm')
-          _buildWikiTile(
-              'MtF.Wiki (已折叠)', '跨性别女性指南', Icons.folder_open, Colors.grey),
+          _buildWikiTile('MtF.Wiki (已折叠)', '跨性别女性指南', Icons.folder_open),
         if (widget.identity == 'mtf')
-          _buildWikiTile(
-              'FtM.Wiki (已折叠)', '跨性别男性指南', Icons.folder_open, Colors.grey),
+          _buildWikiTile('FtM.Wiki (已折叠)', '跨性别男性指南', Icons.folder_open),
         if (widget.identity == 'ftm')
-          _buildWikiTile(
-              'MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories, Colors.purple),
-        _buildWikiTile('2345.lgbt', '跨性别友好资源导航页', Icons.explore, Colors.teal),
-        _buildWikiTile(
-            '维基百科 (Wikipedia)', '中文维基百科跨性别词条', Icons.language, Colors.grey),
+          _buildWikiTile('MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories),
+        _buildWikiTile('2345.lgbt', '跨性别友好资源导航页', Icons.explore),
+        _buildWikiTile('维基百科 (Wikipedia)', '中文维基百科跨性别词条', Icons.language),
         const WikiLicenseNotice(),
       ],
     );
@@ -351,7 +343,6 @@ class _WikiTabState extends State<WikiTab> {
     String displayTitle,
     String subtitle,
     IconData icon,
-    Color color,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -428,17 +419,19 @@ class _WikiTabState extends State<WikiTab> {
             switchValue ? '当前模式：离线' : '当前模式：在线',
             style: TextStyle(
               fontSize: 11,
-              color: switchValue
-                  ? const Color(0xFF5BCEFA)
-                  : (isDark ? Colors.grey.shade500 : Colors.grey),
+              color: isDark ? Colors.grey.shade500 : Colors.grey,
             ),
           ),
+          const SizedBox(width: 8),
           Tooltip(
             message: switchValue ? '已开启离线版' : '点击开启离线版下载',
-            child: Switch(
-              value: switchValue,
-              onChanged: (v) => _handleOfflineToggle(wikiType!, v),
-              activeColor: const Color(0xFF5BCEFA),
+            child: Transform.scale(
+              scale: 0.75,
+              child: CupertinoSwitch(
+                value: switchValue,
+                onChanged: (v) => _handleOfflineToggle(wikiType!, v),
+                activeColor: const Color(0xFF5BCEFA),
+              ),
             ),
           ),
         ],
@@ -458,7 +451,7 @@ class _WikiTabState extends State<WikiTab> {
             color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
       ),
       child: ListTile(
-        leading: Icon(icon, color: color),
+        leading: GradientIcon(icon, size: 28),
         title: Text(displayTitle,
             style: TextStyle(
                 fontWeight: FontWeight.bold,

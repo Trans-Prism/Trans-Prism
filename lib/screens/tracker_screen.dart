@@ -310,23 +310,25 @@ class _TrackerScreenState extends State<TrackerScreen>
 
       final ctrl = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(Colors.white)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (url) {
-              if (mounted) setState(() => _loading = true);
-            },
-            onPageFinished: (url) {
-              if (mounted) setState(() => _loading = false);
-            },
-            onWebResourceError: (err) {
-              debugPrint('[TrackerWebView] error: ${err.description}');
-              if (mounted && _loading) {
-                setState(() => _error = '加载失败: ${err.description}');
-              }
-            },
-          ),
-        );
+        ..setBackgroundColor(Colors.white);
+
+      ctrl.setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            if (mounted) setState(() => _loading = true);
+          },
+          onPageFinished: (url) {
+            if (mounted) setState(() => _loading = false);
+            _injectSpacingFix(ctrl);
+          },
+          onWebResourceError: (err) {
+            debugPrint('[TrackerWebView] error: ${err.description}');
+            if (mounted && _loading) {
+              setState(() => _error = '加载失败: ${err.description}');
+            }
+          },
+        ),
+      );
 
       if (ctrl.platform is AndroidWebViewController) {
         await (ctrl.platform as AndroidWebViewController)
@@ -346,6 +348,47 @@ class _TrackerScreenState extends State<TrackerScreen>
     } catch (e) {
       debugPrint('[TrackerWebView] init error: $e');
       if (mounted) setState(() => _error = e.toString());
+    }
+  }
+
+  /// 修复 SPA 顶部空白。只针对 body/root 级容器精准操作，不破坏内部布局。
+  Future<void> _injectSpacingFix(WebViewController controller) async {
+    const script = '''
+(function() {
+  function fix() {
+    var root = document.getElementById("root")
+             || document.getElementById("app")
+             || document.body;
+
+    // 1) Reset body and root: remove padding-top, margin-top, min-height
+    [document.body, root].forEach(function(el) {
+      if (!el) return;
+      el.style.setProperty("padding-top", "0", "important");
+      el.style.setProperty("margin-top", "0", "important");
+      el.style.setProperty("min-height", "0", "important");
+    });
+
+    // 2) Reset first 3 levels of children: padding-top + margin-top only
+    function fixTopLevels(el, depth) {
+      if (!el || depth > 3) return;
+      el.style.setProperty("padding-top", "0", "important");
+      el.style.setProperty("margin-top", "0", "important");
+      var ch = el.children;
+      for (var i = 0; ch && i < ch.length; i++) fixTopLevels(ch[i], depth + 1);
+    }
+    fixTopLevels(root, 0);
+  }
+
+  fix();
+  var obs = new MutationObserver(function() { fix(); });
+  obs.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"]});
+  [500, 1500, 3000].forEach(function(ms) { setTimeout(fix, ms); });
+})();
+''';
+    try {
+      await controller.runJavaScript(script);
+    } catch (e) {
+      debugPrint("[TrackerWebView] spacing fix error: $e");
     }
   }
 

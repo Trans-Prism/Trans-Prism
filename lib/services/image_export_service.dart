@@ -61,7 +61,8 @@ class ImageExportService {
       final ui.Picture picture = pictureInfo.picture;
       final Size originalSize = pictureInfo.size;
       debugPrint(
-          '📐 [ImageExportService] 原始尺寸: ${originalSize.width}×${originalSize.height}');
+        '📐 [ImageExportService] 原始尺寸: ${originalSize.width}×${originalSize.height}',
+      );
 
       // 3. 按 targetWidth 等比计算 targetHeight
       if (originalSize.width <= 0 || originalSize.height <= 0) {
@@ -100,8 +101,9 @@ class ImageExportService {
       final ui.Image image = await scaledPicture.toImage(w, h);
 
       // 7. 提取 raw RGBA 字节流
-      final ByteData? rawBytes =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final ByteData? rawBytes = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       if (rawBytes == null) {
         throw Exception('raw RGBA 提取失败');
       }
@@ -131,7 +133,8 @@ class ImageExportService {
       image.dispose();
 
       debugPrint(
-          '✅ [ImageExportService] 编码完成: ${encoded.length} bytes, format=$format');
+        '✅ [ImageExportService] 编码完成: ${encoded.length} bytes, format=$format',
+      );
 
       // ── 控制台打印确认 ──
       // ignore: avoid_print
@@ -144,7 +147,8 @@ class ImageExportService {
       print('  尺寸: ${w}×${h}');
       // ignore: avoid_print
       print(
-          '  文件大小: ${encoded.length} bytes (${(encoded.length / 1024).toStringAsFixed(1)} KB)');
+        '  文件大小: ${encoded.length} bytes (${(encoded.length / 1024).toStringAsFixed(1)} KB)',
+      );
       // ignore: avoid_print
       print('══════════════════════════════════════════');
 
@@ -176,8 +180,10 @@ class ImageExportService {
     required String targetFormat,
     required double targetWidth,
   }) async {
-    assert(supportedFormats.contains(targetFormat),
-        'Unsupported format: $targetFormat');
+    assert(
+      supportedFormats.contains(targetFormat),
+      'Unsupported format: $targetFormat',
+    );
 
     try {
       if (filePath.toLowerCase().endsWith('.svg')) {
@@ -202,15 +208,62 @@ class ImageExportService {
     }
   }
 
-  /// 处理本地 SVG 文件转换（复用 Canvas 绘制缩放管线）
-  static Future<Uint8List?> _convertLocalSvg({
-    required String filePath,
+  // ─── Web 兼容的字节版方法 ──────────────────────────────────────
+
+  /// 将本地图片字节（SVG 或位图）转换为指定格式和分辨率
+  ///
+  /// Web 兼容版本：不依赖 `dart:io` File，直接接受字节数据。
+  /// 通过 [fileName] 扩展名自动判断 SVG 或位图并分发处理。
+  ///
+  /// [fileName]   文件名（用于判断是否为 SVG）
+  /// [fileBytes]  文件完整字节数据
+  /// [targetFormat] 输出格式：'png' / 'jpeg' / 'webp'
+  /// [targetWidth]  目标宽度（像素）
+  ///
+  /// 返回编码后的字节数据，失败返回 null
+  static Future<Uint8List?> convertLocalImageBytes({
+    required String fileName,
+    required Uint8List fileBytes,
     required String targetFormat,
     required double targetWidth,
   }) async {
-    // 1. 从本地文件系统读取 SVG 原始文本
-    final String svgString = File(filePath).readAsStringSync();
-    debugPrint('📐 [ImageExportService] 本地 SVG 已读取: $filePath');
+    assert(
+      supportedFormats.contains(targetFormat),
+      'Unsupported format: $targetFormat',
+    );
+
+    try {
+      if (fileName.toLowerCase().endsWith('.svg')) {
+        return await _convertLocalSvgBytes(
+          svgBytes: fileBytes,
+          targetFormat: targetFormat,
+          targetWidth: targetWidth,
+        );
+      } else {
+        return await _convertLocalBitmapBytes(
+          fileBytes: fileBytes,
+          targetFormat: targetFormat,
+          targetWidth: targetWidth,
+        );
+      }
+    } catch (e, s) {
+      debugPrint('❌ [ImageExportService] convertLocalImageBytes 失败: $e');
+      debugPrint('❌ [ImageExportService] 堆栈: $s');
+      return null;
+    }
+  }
+
+  /// 从字节数据转换本地 SVG（Web 兼容版）
+  ///
+  /// [svgBytes] SVG 文件的原始字节
+  static Future<Uint8List?> _convertLocalSvgBytes({
+    required Uint8List svgBytes,
+    required String targetFormat,
+    required double targetWidth,
+  }) async {
+    // 1. 从字节解码 SVG 文本
+    final String svgString = String.fromCharCodes(svgBytes);
+    debugPrint('📐 [ImageExportService] SVG 字节已读取: ${svgBytes.length} bytes');
 
     // 2. 通过 vg.vg.loadPicture 解析 SVG → PictureInfo
     final loader = SvgStringLoader(svgString);
@@ -223,7 +276,8 @@ class ImageExportService {
     final ui.Picture picture = pictureInfo.picture;
     final Size originalSize = pictureInfo.size;
     debugPrint(
-        '📐 [ImageExportService] SVG 原始尺寸: ${originalSize.width}×${originalSize.height}');
+      '📐 [ImageExportService] SVG 原始尺寸: ${originalSize.width}×${originalSize.height}',
+    );
 
     // 3. 按 targetWidth 等比计算 targetHeight
     if (originalSize.width <= 0 || originalSize.height <= 0) {
@@ -258,8 +312,9 @@ class ImageExportService {
     final ui.Image image = await scaledPicture.toImage(w, h);
 
     // 6. 提取 raw RGBA 字节流
-    final ByteData? rawBytes =
-        await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final ByteData? rawBytes = await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
     if (rawBytes == null) {
       throw Exception('raw RGBA 提取失败');
     }
@@ -287,7 +342,168 @@ class ImageExportService {
     image.dispose();
 
     debugPrint(
-        '✅ [ImageExportService] 本地 SVG 转换完成: ${encoded.length} bytes, format=$targetFormat');
+      '✅ [ImageExportService] SVG 字节转换完成: ${encoded.length} bytes, format=$targetFormat',
+    );
+    return encoded;
+  }
+
+  /// 从字节数据转换本地位图（PNG/JPEG/WEBP）（Web 兼容版）
+  ///
+  /// [fileBytes] 位图文件的原始字节
+  static Future<Uint8List?> _convertLocalBitmapBytes({
+    required Uint8List fileBytes,
+    required String targetFormat,
+    required double targetWidth,
+  }) async {
+    debugPrint('📐 [ImageExportService] 位图字节已读取: ${fileBytes.length} bytes');
+
+    // 1. 解码为图像对象
+    final img.Image? originalImage = img.decodeImage(fileBytes);
+    if (originalImage == null) {
+      throw Exception('图片解码失败');
+    }
+    debugPrint(
+      '📐 [ImageExportService] 原始尺寸: ${originalImage.width}×${originalImage.height}',
+    );
+
+    // 2. 尺寸缩放：根据 targetWidth 等比计算高度
+    if (originalImage.width <= 0) {
+      throw Exception('无效的图片宽度: ${originalImage.width}');
+    }
+    final double aspectRatio = originalImage.height / originalImage.width;
+    final int targetHeight = (targetWidth * aspectRatio).round();
+
+    final img.Image resizedImage = img.copyResize(
+      originalImage,
+      width: targetWidth.toInt(),
+      height: targetHeight,
+      interpolation: img.Interpolation.linear,
+    );
+    debugPrint(
+      '📐 [ImageExportService] 缩放后尺寸: ${resizedImage.width}×${resizedImage.height}',
+    );
+
+    // 3. 格式编码
+    Uint8List encoded;
+    switch (targetFormat) {
+      case 'png':
+        encoded = img.encodePng(resizedImage);
+        break;
+      case 'jpeg':
+        if (resizedImage.hasAlpha) {
+          final img.Image whiteBg = _compositeOnWhite(resizedImage);
+          encoded = img.encodeJpg(whiteBg, quality: 95);
+        } else {
+          encoded = img.encodeJpg(resizedImage, quality: 95);
+        }
+        break;
+      case 'webp':
+        final pngBytes = img.encodePng(resizedImage);
+        encoded = await FlutterImageCompress.compressWithList(
+          pngBytes,
+          format: CompressFormat.webp,
+          quality: 95,
+        );
+        break;
+      default:
+        throw ArgumentError('Unsupported format: $targetFormat');
+    }
+
+    debugPrint(
+      '✅ [ImageExportService] 位图字节转换完成: ${encoded.length} bytes, format=$targetFormat',
+    );
+    return encoded;
+  }
+
+  /// 处理本地 SVG 文件转换（复用 Canvas 绘制缩放管线）
+  static Future<Uint8List?> _convertLocalSvg({
+    required String filePath,
+    required String targetFormat,
+    required double targetWidth,
+  }) async {
+    // 1. 从本地文件系统读取 SVG 原始文本
+    final String svgString = File(filePath).readAsStringSync();
+    debugPrint('📐 [ImageExportService] 本地 SVG 已读取: $filePath');
+
+    // 2. 通过 vg.vg.loadPicture 解析 SVG → PictureInfo
+    final loader = SvgStringLoader(svgString);
+    final PictureInfo pictureInfo = await vg.vg.loadPicture(
+      loader,
+      null,
+      clipViewbox: true,
+    );
+
+    final ui.Picture picture = pictureInfo.picture;
+    final Size originalSize = pictureInfo.size;
+    debugPrint(
+      '📐 [ImageExportService] SVG 原始尺寸: ${originalSize.width}×${originalSize.height}',
+    );
+
+    // 3. 按 targetWidth 等比计算 targetHeight
+    if (originalSize.width <= 0 || originalSize.height <= 0) {
+      throw Exception('无效的 SVG 尺寸: $originalSize');
+    }
+    final double aspectRatio = originalSize.height / originalSize.width;
+    final double targetHeight = (targetWidth * aspectRatio).ceilToDouble();
+
+    final int w = targetWidth.ceil();
+    final int h = targetHeight.ceil();
+    debugPrint('📐 [ImageExportService] SVG 目标尺寸: ${w}×${h}');
+
+    // 4. 计算缩放倍率
+    final double scale = targetWidth / originalSize.width;
+
+    // 5. PictureRecorder + Canvas 缩放绘制
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    // ⚠️ JPEG 处理：先绘制纯白背景，避免透明区变黑
+    if (targetFormat == 'jpeg') {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+        Paint()..color = Colors.white,
+      );
+    }
+
+    canvas.scale(scale, scale);
+    canvas.drawPicture(picture);
+
+    final ui.Picture scaledPicture = recorder.endRecording();
+    final ui.Image image = await scaledPicture.toImage(w, h);
+
+    // 6. 提取 raw RGBA 字节流
+    final ByteData? rawBytes = await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    if (rawBytes == null) {
+      throw Exception('raw RGBA 提取失败');
+    }
+    final Uint8List rawRgba = rawBytes.buffer.asUint8List();
+
+    // 7. 编码
+    Uint8List encoded;
+    if (targetFormat == 'webp') {
+      final pngBytes = _encodePngFromRgba(rawRgba, w, h);
+      final result = await FlutterImageCompress.compressWithList(
+        pngBytes,
+        format: CompressFormat.webp,
+        quality: 95,
+      );
+      encoded = result;
+    } else {
+      encoded = _encodeImageBytes(
+        rawBytes: rawRgba,
+        width: w,
+        height: h,
+        format: targetFormat,
+      );
+    }
+
+    image.dispose();
+
+    debugPrint(
+      '✅ [ImageExportService] 本地 SVG 转换完成: ${encoded.length} bytes, format=$targetFormat',
+    );
     return encoded;
   }
 
@@ -308,7 +524,8 @@ class ImageExportService {
     // 1. 读取文件二进制流
     final Uint8List fileBytes = File(filePath).readAsBytesSync();
     debugPrint(
-        '📐 [ImageExportService] 本地位图已读取: $filePath (${fileBytes.length} bytes)');
+      '📐 [ImageExportService] 本地位图已读取: $filePath (${fileBytes.length} bytes)',
+    );
 
     // 2. 解码为图像对象
     final img.Image? originalImage = img.decodeImage(fileBytes);
@@ -316,7 +533,8 @@ class ImageExportService {
       throw Exception('图片解码失败: $filePath');
     }
     debugPrint(
-        '📐 [ImageExportService] 原始尺寸: ${originalImage.width}×${originalImage.height}');
+      '📐 [ImageExportService] 原始尺寸: ${originalImage.width}×${originalImage.height}',
+    );
 
     // 3. 尺寸缩放：根据 targetWidth 等比计算高度
     if (originalImage.width <= 0) {
@@ -332,7 +550,8 @@ class ImageExportService {
       interpolation: img.Interpolation.linear,
     );
     debugPrint(
-        '📐 [ImageExportService] 缩放后尺寸: ${resizedImage.width}×${resizedImage.height}');
+      '📐 [ImageExportService] 缩放后尺寸: ${resizedImage.width}×${resizedImage.height}',
+    );
 
     // 4. 格式编码
     Uint8List encoded;
@@ -363,7 +582,8 @@ class ImageExportService {
     }
 
     debugPrint(
-        '✅ [ImageExportService] 本地图片转换完成: ${encoded.length} bytes, format=$targetFormat');
+      '✅ [ImageExportService] 本地图片转换完成: ${encoded.length} bytes, format=$targetFormat',
+    );
     return encoded;
   }
 
@@ -371,10 +591,7 @@ class ImageExportService {
   ///
   /// 逐像素计算：`out = src.rgba * alpha + white * (1 - alpha)`
   static img.Image _compositeOnWhite(img.Image src) {
-    final img.Image dst = img.Image(
-      width: src.width,
-      height: src.height,
-    );
+    final img.Image dst = img.Image(width: src.width, height: src.height);
     for (int y = 0; y < src.height; y++) {
       for (int x = 0; x < src.width; x++) {
         final px = src.getPixel(x, y);
@@ -384,12 +601,18 @@ class ImageExportService {
         } else if (alpha <= 0.0) {
           dst.setPixelRgba(x, y, 255, 255, 255, 255);
         } else {
-          final int r =
-              (px.r * alpha + 255 * (1.0 - alpha)).round().clamp(0, 255);
-          final int g =
-              (px.g * alpha + 255 * (1.0 - alpha)).round().clamp(0, 255);
-          final int b =
-              (px.b * alpha + 255 * (1.0 - alpha)).round().clamp(0, 255);
+          final int r = (px.r * alpha + 255 * (1.0 - alpha)).round().clamp(
+            0,
+            255,
+          );
+          final int g = (px.g * alpha + 255 * (1.0 - alpha)).round().clamp(
+            0,
+            255,
+          );
+          final int b = (px.b * alpha + 255 * (1.0 - alpha)).round().clamp(
+            0,
+            255,
+          );
           dst.setPixelRgba(x, y, r, g, b, 255);
         }
       }
