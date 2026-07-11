@@ -1,4 +1,68 @@
 
+========================================================================
+                    Trans Prism (稳态光盒) — 复合开源许可证
+                    COMPOSITE OPEN SOURCE LICENSE
+========================================================================
+
+Trans Prism 项目采用「代码、算法与内容分离」的复合授权模式(Composite Licensing
+Model)。不同组件适用不同的开源许可证，具体映射见下文「组件-许可证映射表」。
+
+本文件构成整个项目的完整许可声明。使用、分发、修改本项目或其任何部分时，
+您必须同时遵守本文件列出的所有适用许可证条款。
+
+========================================================================
+第 I 部分：组件-许可证映射表 (Component-License Mapping)
+========================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 编号 │ 组件 / Component               │ 许可证 / License        │ 类别    │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  1   │ 原创客户端代码                  │ Apache License 2.0     │ 代码    │
+│      │ (Flutter/Dart 源码, lib/)       │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  2   │ PK 计算引擎                     │ MIT License            │ 算法    │
+│      │ (PK Simulator, 衍生自 Oyama)   │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  3   │ 嗓音训练模块                     │ CC BY-NC-SA 4.0       │ 代码    │
+│      │ (Voice Training, 衍生自 VFS     │                        │ 算法    │
+│      │  Tracker)                       │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  4a  │ MtF.Wiki 知识库内容             │ CC BY-SA 4.0          │ 内容    │
+│      │ (Project Trans 系)              │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  4b  │ FtM.Wiki 知识库内容             │ CC BY-SA 4.0          │ 内容    │
+│      │ (Project Trans 系)              │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  4c  │ RLE.Wiki 知识库内容             │ CC BY-SA 4.0          │ 内容    │
+│      │ (Project Trans 系)              │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  4d  │ MioMtFWiki 知识库内容           │ CC BY-ND 4.0          │ 内容    │
+│      │ (社区驱动项目)                   │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  5   │ 激素换算器 & 罩杯计算器          │ CC BY-SA 4.0          │ 算法    │
+│      │ (衍生自 MtF.wiki 及网络公开资料) │                        │ 内容    │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  6   │ SVG 图解资源库                   │ 各自保留               │ 资源    │
+│      │ (Twemoji / OpenMoji /           │ (CC-BY / Apache 2.0   │         │
+│      │  Noto Emoji 风格)              │  / SIL OFL 等)        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  7   │ 2345.LGBT 导航页源码            │ LGPL-3.0              │ 代码    │
+│      │ (衍生自 Project Trans)          │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  8   │ Trans-Prism-Builder 流水线脚本  │ Apache License 2.0     │ 代码    │
+│      │ (Python 工具链, CI Workflows)   │                        │         │
+├──────┼────────────────────────────────┼────────────────────────┼─────────┤
+│  9   │ 第三方 Dart/Flutter 依赖包       │ 各自许可               │ 依赖    │
+│      │ (见 pubspec.yaml)               │ (MIT / BSD / Apache   │         │
+│      │                                  │  等)                  │         │
+└──────┴────────────────────────────────┴────────────────────────┴─────────┘
+
+========================================================================
+第 II 部分：各许可证全文与适用说明
+========================================================================
+
+--- II-A: Apache License 2.0（组件 1: 原创客户端代码）---
+
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -187,7 +251,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright [2025] [Trans Prism Contributors]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -202,14 +266,200 @@
    limitations under the License.
 
 
-=======================================================================
-本许可仅适用于 Trans Prism 项目的原创代码部分。
+--- II-B: MIT License（组件 2: PK 计算引擎）---
 
-* 内置 Wiki 内容（如 MtF.Wiki、FtM.Wiki、RLE.Wiki、MioMtFWiki 等）
-  保留其各自的原始许可协议（CC BY-SA 4.0 / CC BY-ND 4.0 等）。
-* 药代动力学计算引擎（PK Core Engine）遵循 MIT License。
-* 嗓音训练模块（VFS Tracker 衍生部分）遵循 CC BY-NC-SA 4.0。
-* 第三方图标资源（如 Twemoji、OpenMoji、Noto Emoji）保留各自许可。
-* 商业使用（包括售卖本软件或将其功能置于付费墙之后）不在 Apache 2.0
-  许可的额外限制范围内，请务必尊重各上游组件的原始许可条款。
-=======================================================================
+PK 计算引擎（PK Simulation Engine）衍生自 Oyama's HRT Recorder
+(https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) 及
+HRT-Recorder-online (https://github.com/LaoZhong-Mihari/HRT-Recorder-online)，
+遵循 MIT License：
+
+MIT License
+
+Copyright (c) [Oyama's HRT Recorder Contributors]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+--- II-C: Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+         International（组件 3: 嗓音训练模块）---
+
+嗓音训练模块（Voice Training Module）衍生自 VFS Tracker
+(https://github.com/Ethanlita/vfs-tracker)，遵循 CC BY-NC-SA 4.0。
+
+本模块仅允许**非商业性使用**。您可以自由地共享、复制、重新发布本模块的
+代码与算法，但必须满足以下条件：
+  - 署名（Attribution）：必须标注原始作者与 VFS Tracker 项目链接。
+  - 非商业性（NonCommercial）：不得将本模块或其衍生作品用于商业目的，
+    包括但不限于将其置于付费墙之后、作为付费 App 的独占功能、或通过
+    售卖本模块直接获利。
+  - 相同方式共享（ShareAlike）：如果您对本模块进行修改、转换或构建，
+    则必须使用相同的 CC BY-NC-SA 4.0 许可分发您的衍生作品。
+
+完整许可证文本：https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans
+
+
+--- II-D: Creative Commons Attribution-ShareAlike 4.0 International
+         （组件 4a/4b/4c/5: Project Trans 系知识库内容与衍生算法）---
+
+内置知识库中属于 Project Trans 系的内容（MtF.Wiki、FtM.Wiki、RLE.Wiki），
+以及衍生自 MtF.wiki 及网络公开资料的激素换算器与罩杯计算器，遵循 CC BY-SA 4.0。
+
+您可以自由地共享、复制、重新发布相关内容，但必须满足以下条件：
+  - 署名（Attribution）：必须标注原始来源为 Project Trans 及对应的 Wiki 项目，
+    并提供指向原项目的链接。
+  - 相同方式共享（ShareAlike）：如果您对内容进行修改、转换或构建，
+    则必须使用相同的 CC BY-SA 4.0 许可分发您的衍生作品。
+
+完整许可证文本：https://creativecommons.org/licenses/by-sa/4.0/legalcode.zh-hans
+
+
+--- II-E: Creative Commons Attribution-NoDerivatives 4.0 International
+         （组件 4d: MioMtFWiki 知识库内容）---
+
+内置知识库中属于 MioMtFWiki (社区驱动的跨性别知识项目) 的内容遵循
+CC BY-ND 4.0（署名—禁止演绎 4.0 协议国际版）。
+
+允许的操作：
+  ✓ 转载、镜像、离线打包和重新分发
+  ✓ 转换格式、建立索引、全文搜索、响应式排版等技术性处理
+  ✓ 在应用程序中集成和展示
+  ✓ 商业传播
+
+禁止的操作：
+  ✗ 修改、删减、重写或翻译后再次发布项目内容
+
+署名要求：
+  使用时须保留来源信息、标明 MioMtFWiki 项目链接并保留协议声明。
+
+完整许可证文本：https://creativecommons.org/licenses/by-nd/4.0/legalcode.zh-hans
+
+
+--- II-F: SVG 资源库许可说明（组件 6）---
+
+SVG 图解资源库中的图标素材来源于以下三个开源项目，各自保留其原始许可：
+
+  1. Noto Emoji       → Apache License 2.0
+  2. OpenMoji         → CC BY-SA 4.0
+  3. Twemoji          → CC-BY 4.0
+
+具体图标归属详见 assets/resource_metadata.json。
+
+
+--- II-G: 第三方依赖许可说明（组件 9）---
+
+Trans Prism 使用的大量第三方 Dart/Flutter 依赖包（详见 pubspec.yaml）
+各自遵循其原始许可协议（MIT、BSD、Apache 2.0 等）。本项目的原创代码
+不改变这些第三方组件的许可条款。
+
+
+========================================================================
+第 III 部分：特别声明与注意事项
+========================================================================
+
+--- III-A: 商业使用提醒 ---
+
+本项目整体采用复合许可模式。如果您计划将本项目或其部分用于商业用途
+（包括但不限于：将本软件或其功能置于付费墙之后、在商业产品中集成使用、
+或基于本项目提供商业服务），请务必注意：
+
+  • 原创客户端代码（Apache 2.0）允许商业使用，无需额外授权。
+  • 嗓音训练模块（CC BY-NC-SA 4.0）**禁止**商业使用。
+  • Project Trans 系知识库内容（CC BY-SA 4.0）允许商业使用，
+    但须以相同方式共享。
+  • MioMtFWiki 内容（CC BY-ND 4.0）允许商业传播，但**禁止**修改后发布。
+  • SVGs 图标资源须遵循各自原始许可的商业使用条款。
+
+**您有责任自行评估并遵守所有适用的上游许可条款。**
+
+--- III-B: 医疗免责声明 ---
+
+本 App 所有功能仅供学术交流与数据可视化参考，**不能替代专业医生的诊断
+与处方**。调整激素剂量请务必在正规医生指导下进行。项目的贡献者和版权
+持有者不对因使用本软件导致的任何健康损害承担责任。
+
+--- III-C: 贡献者须知 ---
+
+任何向 Trans Prism 项目提交的贡献（包括但不限于代码提交、Pull Request、
+问题反馈中的代码片段），若涉及原创客户端代码部分，将被视为同意以
+Apache License 2.0 条款提交。若贡献涉及其他许可组件，须确保您有权
+按该组件的许可条款提交。
+
+--- III-D: 商标声明 ---
+
+"Trans Prism" 名称与项目标识（Logo）不属于开源许可的授权范围。
+在合理描述项目出处之外使用这些商标，需获得项目维护者的明确许可。
+
+--- III-E: 上游项目致谢 ---
+
+本项目建立在以下开源项目的基础上，特此致谢：
+
+  • Project Trans — MtF.Wiki, FtM.Wiki, RLE.Wiki (CC BY-SA 4.0 / LGPL-3.0)
+  • KitsuMio — MioMtFWiki (CC BY-ND 4.0)
+  • SmirnovaOyama — Oyama's HRT Recorder (MIT)
+  • LaoZhong-Mihari — HRT-Recorder-online (MIT)
+  • Ethanlita — VFS Tracker (CC BY-NC-SA 4.0)
+  • Twitter/Twemoji, OpenMoji, Google/Noto Emoji (SVG 图标来源)
+
+
+========================================================================
+第 IV 部分：许可选择流程图（快速参考）
+========================================================================
+
+您想对 Trans Prism 进行什么操作？
+                
+    ├── 使用/运行 App
+    │     └── ✅ 无需额外授权，直接使用
+    │
+    ├── 修改原创 Flutter/Dart 代码
+    │     └── ✅ Apache 2.0 — 可修改，须标注变更
+    │
+    ├── 修改嗓音训练模块
+    │     └── ⚠️ CC BY-NC-SA — 非商业 + 署名 + 相同方式共享
+    │
+    ├── 打包/分发完整 App
+    │     └── ✅ 可分发，须附本 LICENSE 全文
+    │
+    ├── 将 App 置于付费墙销售
+    │     ├── ✔️ 原创代码部分：允许
+    │     ├── ❌ 嗓音训练模块：禁止
+    │     └── ⚠️ 知识库内容：须遵守各自 CC 许可
+    │
+    ├── 修改知识库内容后再次分发
+    │     ├── ⚠️ Project Trans 系：CC BY-SA（须相同方式共享）
+    │     ├── ❌ MioMtFWiki：禁止修改后发布（CC BY-ND）
+    │     └── ⚠️ 激素换算器/罩杯计算器：CC BY-SA
+    │
+    └── 提取 SVG 图标用于其他项目
+          └── ✅ 遵照各自原始许可（Apache 2.0 / CC BY-SA 4.0 / CC-BY 4.0）
+
+
+========================================================================
+第 V 部分：附录 — 许可全文链接
+========================================================================
+
+  • Apache License 2.0        → https://www.apache.org/licenses/LICENSE-2.0
+  • MIT License               → https://opensource.org/licenses/MIT
+  • CC BY-SA 4.0              → https://creativecommons.org/licenses/by-sa/4.0/legalcode.zh-hans
+  • CC BY-ND 4.0              → https://creativecommons.org/licenses/by-nd/4.0/legalcode.zh-hans
+  • CC BY-NC-SA 4.0           → https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans
+  • LGPL-3.0                  → https://www.gnu.org/licenses/lgpl-3.0.html
+
+---
+
+*May you find your steady state.*

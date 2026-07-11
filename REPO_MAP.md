@@ -138,3 +138,22 @@
 1. **首页与详情页用药数据各自直读 SharedPreferences**：`MedicationStockSummary` 绕过 Service 直读 SP key `drug_inventory_list`，存在双写口子。
 2. **R2 命名空间分裂**：`/app/` 与 `/builder/` 路径规则不同，新增分发类目时容易混淆。
 3. **罩杯发育记录 JSON 整体读写**（非增量）：记录增多后序列化/反序列化成本线性增长，当前数据量可忽略。
+
+---
+
+## 许可模型
+
+> 完整的许可证文本与法律条款见 [`LICENSE`](LICENSE)。本仓库采用**复合授权（Composite Licensing）**模式。
+
+| 组件 | 许可证 | 说明 |
+|------|--------|------|
+| 原创 Dart/Flutter 源码（`lib/`、`android/`、`ios/` 等） | **Apache License 2.0** | 允许商业使用、修改、分发，须保留版权声明 |
+| PK 计算引擎（`assets/hrt_tracker/`，WebView JS） | **MIT License** | 衍生自 Oyama's HRT Recorder |
+| 嗓音训练模块（`lib/screens/voice_training/`） | **CC BY-NC-SA 4.0** | 衍生自 VFS Tracker，**禁止商业使用** |
+| 内置知识库内容（MtF/FtM/RLE Wiki） | **CC BY-SA 4.0** | Project Trans 系，修改后须相同方式共享 |
+| MioMtFWiki 内容 | **CC BY-ND 4.0** | **禁止修改后再次发布** |
+| 激素换算器 & 罩杯计算器算法 | **CC BY-SA 4.0** | 衍生自 MtF.wiki 及网络公开资料 |
+| SVG 图标资源（`assets/svg_resources/`） | 各自原始许可 | Twemoji(CC-BY) / OpenMoji(CC BY-SA) / Noto(Apache 2.0) |
+| 第三方依赖（pubspec.yaml） | 各自许可 | MIT / BSD / Apache 2.0 等 |
+
+**贡献者须知**：向本仓库提交的原创代码贡献，将被视为按 Apache License 2.0 条款授权。
