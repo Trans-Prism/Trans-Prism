@@ -51,14 +51,14 @@ class UpdateDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF5BCEFA).withOpacity(0.12),
-              blurRadius: 40,
-              offset: const Offset(0, 16),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 30,
+              offset: const Offset(0, 12),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -78,10 +78,10 @@ class UpdateDialog extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 32, bottom: 20),
+      padding: const EdgeInsets.only(top: 28, bottom: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
+          colors: [Color(0xFF8ECAE6), Color(0xFFE8AEBF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -93,34 +93,27 @@ class UpdateDialog extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
+              color: Colors.white.withOpacity(0.20),
             ),
             child: const Icon(
               Icons.system_update_rounded,
-              size: 36,
+              size: 32,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildGlowDot(const Color(0xFF5BCEFA)),
+              _buildGlowDot(const Color(0xFF8ECAE6)),
               const SizedBox(width: 6),
-              _buildGlowDot(const Color(0xFFF5A9B8)),
+              _buildGlowDot(const Color(0xFFE8AEBF)),
               const SizedBox(width: 6),
-              _buildGlowDot(Colors.white),
+              _buildGlowDot(Colors.white70),
             ],
           ),
         ],
@@ -130,28 +123,25 @@ class UpdateDialog extends StatelessWidget {
 
   Widget _buildGlowDot(Color color) {
     return Container(
-      width: 6,
-      height: 6,
+      width: 5,
+      height: 5,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.7),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.5), blurRadius: 6),
-        ],
+        color: color.withOpacity(0.6),
       ),
     );
   }
 
   Widget _buildTitle() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 4),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
       child: Text(
         '发现新版本 $version',
         style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
+          fontSize: 19,
+          fontWeight: FontWeight.w700,
           color: Color(0xFF1D1D1F),
-          letterSpacing: -0.3,
+          letterSpacing: -0.2,
         ),
         textAlign: TextAlign.center,
       ),
@@ -224,14 +214,13 @@ class UpdateDialog extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => _handleUpdateNow(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5BCEFA),
+                backgroundColor: const Color(0xFF8ECAE6),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                shadowColor: const Color(0xFF5BCEFA).withOpacity(0.3),
               ),
               child: const Text(
                 '立即更新',
