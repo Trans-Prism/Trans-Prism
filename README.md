@@ -70,13 +70,6 @@ flutter pub get
 flutter build windows   # Windows
 flutter build linux     # Linux
 flutter build web       # Web
-```
-
-### iOS / macOS
-```bash
-git clone https://github.com/Trans-Prism/Trans-Prism.git
-cd Trans-Prism
-flutter pub get
 flutter build ios       # iOS（需自行签名）
 flutter build macos     # macOS（需自行签名）
 ```
