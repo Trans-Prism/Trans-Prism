@@ -117,6 +117,27 @@
 
 ---
 
+## 主题系统（双风格可切换）
+
+用户可在「我的 → 主题风格」中自由切换 **简约风（minimal）** 与 **液态玻璃（liquid）**，选择持久化于 SharedPreferences（`theme_style`）。
+
+| 文件 | 职责 |
+|------|------|
+| [`theme_service.dart`](lib/services/theme_service.dart:7) | `ThemeService`（ChangeNotifier）：`themeMode`/`themeColor`/`themeStyle` 三态持久化 |
+| [`glass_tokens.dart`](lib/theme/glass_tokens.dart:1) | `GlassTokens`：液态玻璃 Token（模糊/表面色/边框/阴影/高光边）+ 简约退化 Token + 无障碍降级变体 |
+| [`glass_theme.dart`](lib/theme/glass_theme.dart:1) | `GlassTheme`（InheritedWidget）：向下游暴露当前 Token，`GlassTheme.of(context)` |
+| [`glass_card.dart`](lib/widgets/glass_card.dart:1) | `GlassCard`：双模自适应卡片（液态=模糊+半透明+高光边；简约=实色+弥散阴影） |
+| [`glass_app_bar.dart`](lib/widgets/glass_app_bar.dart:1) | `GlassAppBar`：浮动玻璃 AppBar（液态=模糊+滚动边缘；简约=实色） |
+| [`glass_nav.dart`](lib/widgets/glass_nav.dart:1) | `GlassNav`：玻璃底部导航（液态=浮动胶囊+高光边；简约=实色） |
+| [`glass_sheet.dart`](lib/widgets/glass_sheet.dart:1) | `GlassSheet`：玻璃 BottomSheet 容器 |
+| [`glass_dialog.dart`](lib/widgets/glass_dialog.dart:1) | `GlassDialog`：玻璃对话框容器 |
+| [`glass_pill.dart`](lib/widgets/glass_pill.dart:1) | `GlassPill`：玻璃胶囊/Chip（轻材质） |
+| [`main.dart`](lib/main.dart:530) | `_TransToolboxAppState.build()`：按 `themeStyle` 分支选择 `_buildLiquidXxxTheme`/`_buildXxxTheme`，注入 `GlassTheme`，并按 `accessibleNavigation` 触发无障碍降级 |
+
+**设计原则**：组件库"双模自适应"——`GlassXxx` 在 minimal 模式下退化为与既有简约外观一致，业务页调用点改动极小即可在两风格间无缝切换。液态玻璃遵循 Apple WWDC *Designing Fluid Interfaces* §12 Materials & depth（半透明浮动层 + 顶部高光边 + 滚动边缘效果）与 §14 无障碍降级。
+
+---
+
 ## 数据持久化总览
 
 | 存储类型 | 用途 | Key 示例 |

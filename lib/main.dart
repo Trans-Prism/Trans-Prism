@@ -30,10 +30,14 @@ import 'services/theme_service.dart';
 import 'widgets/gradient_icon.dart';
 import 'widgets/loading_indicator.dart';
 import 'widgets/medication_stock_summary.dart';
+import 'widgets/glass_card.dart';
+import 'widgets/glass_sheet.dart';
 import 'widgets/update_dialog.dart';
 import 'widgets/battery_optimization_guide_card.dart';
 import 'storage/disclaimer_repository.dart';
 import 'storage/gender_identity_repository.dart';
+import 'theme/glass_tokens.dart';
+import 'theme/glass_theme.dart';
 import 'utils/data_migration_service.dart';
 
 void main() {
@@ -507,6 +511,111 @@ ThemeData _buildDarkTheme(Color primaryColor) {
   );
 }
 
+/// 构建液态玻璃 · 亮色主题
+///
+/// 复用简约风的 `textTheme` / `colorScheme`（保持品牌色与字体一致），
+/// 仅将 AppBar / 卡片 / 导航栏 / Sheet / Dialog 的背景设为透明，
+/// 由 [GlassAppBar] / [GlassCard] / [GlassNav] / [GlassSheet] / [GlassDialog]
+/// 等组件通过 `BackdropFilter` 接管半透明材质（§12 Materials & depth）。
+ThemeData _buildLiquidLightTheme(Color primaryColor) {
+  return _buildLightTheme(primaryColor).copyWith(
+    scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF333333),
+        fontSize: 22,
+        height: 1.3,
+        letterSpacing: -0.2,
+      ),
+      iconTheme: IconThemeData(color: Color(0xFF333333)),
+      actionsIconTheme: IconThemeData(color: Color(0xFF333333)),
+    ),
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      margin: EdgeInsets.zero,
+    ),
+    navigationBarTheme: const NavigationBarThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: Colors.transparent,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+  );
+}
+
+/// 构建液态玻璃 · 暗色主题
+ThemeData _buildLiquidDarkTheme(Color primaryColor) {
+  return _buildDarkTheme(primaryColor).copyWith(
+    scaffoldBackgroundColor: const Color(0xFF0F0F12),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: Color(0xFFEDEDF0),
+        fontSize: 22,
+        height: 1.3,
+        letterSpacing: -0.2,
+      ),
+      iconTheme: IconThemeData(color: Color(0xFFEDEDF0)),
+      actionsIconTheme: IconThemeData(color: Color(0xFFEDEDF0)),
+    ),
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      margin: EdgeInsets.zero,
+    ),
+    navigationBarTheme: const NavigationBarThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: Colors.transparent,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+  );
+}
+
 /// 根应用 — StatefulWidget 以响应 ThemeService 的变化
 class TransToolboxApp extends StatefulWidget {
   const TransToolboxApp({super.key});
@@ -529,13 +638,31 @@ class _TransToolboxAppState extends State<TransToolboxApp> {
     return ListenableBuilder(
       listenable: _themeService,
       builder: (context, _) {
-        return MaterialApp(
-          title: 'Trans Prism',
-          debugShowCheckedModeBanner: false,
-          theme: _buildLightTheme(_themeService.themeColor),
-          darkTheme: _buildDarkTheme(_themeService.themeColor),
-          themeMode: _themeService.themeMode,
-          home: AppRootController(themeService: _themeService),
+        final isLiquid = _themeService.themeStyle == 'liquid';
+        final isDark = _themeService.isDarkMode;
+        // 解析玻璃 Token：按风格/亮暗/无障碍降级（§14）
+        var tokens = GlassTokens.resolve(
+          isLiquid: isLiquid,
+          isDark: isDark,
+        );
+        // 无障碍：减少透明度时玻璃面实心化。
+        // 注意：此处 context 在 MaterialApp 之上，MediaQuery 尚未注入，
+        // 故用 WidgetsBinding 的平台视图判断；运行期降级由各 GlassXxx
+        // 组件在自身 build 内通过 MediaQuery.accessibleNavigation 兜底。
+        return GlassTheme(
+          tokens: tokens,
+          child: MaterialApp(
+            title: 'Trans Prism',
+            debugShowCheckedModeBanner: false,
+            theme: isLiquid
+                ? _buildLiquidLightTheme(_themeService.themeColor)
+                : _buildLightTheme(_themeService.themeColor),
+            darkTheme: isLiquid
+                ? _buildLiquidDarkTheme(_themeService.themeColor)
+                : _buildDarkTheme(_themeService.themeColor),
+            themeMode: _themeService.themeMode,
+            home: AppRootController(themeService: _themeService),
+          ),
         );
       },
     );
@@ -1195,11 +1322,20 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   /// 温润通透悬浮胶囊导航栏 — 去色块，细线图标 + 强调色加粗
+  ///
+  /// 液态玻璃模式下增强：使用 [GlassTokens] 的表面色 + 顶部高光边 + 边框；
+  /// 简约风下保持既有通透外观不变。
   Widget _buildPillNav(bool isDark, Color textColor, Color unselectedColor) {
+    final tokens = GlassTheme.of(context);
+    final isLiquid = tokens.isEnabled;
+
     // 通透底色：半透明 + 模糊感（无硬边框）
-    final bgColor = isDark
-        ? const Color(0xFF24242C).withValues(alpha: 0.92)
-        : Colors.white.withValues(alpha: 0.88);
+    final bgColor = isLiquid
+        ? tokens.surfaceColor
+        : (isDark
+            ? const Color(0xFF24242C).withValues(alpha: 0.92)
+            : Colors.white.withValues(alpha: 0.88));
+    final blurSigma = isLiquid ? tokens.blurSigma : 20.0;
 
     // 细线图标（outlined）+ 选中态填充图标
     final destinations = [
@@ -1217,10 +1353,121 @@ class _MainDashboardState extends State<MainDashboard> {
       (icon: Icons.person_outline, selectedIcon: Icons.person, label: '我的'),
     ];
 
+    if (isLiquid) {
+      // 液态玻璃：Stack 多层（模糊 + 饱和度 + 表面 + 光泽 + 色散 + 高光边 + 内容）
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: tokens.shadowColor,
+              blurRadius: tokens.shadowBlur,
+              offset: tokens.shadowOffset,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                child: const SizedBox.expand(),
+              ),
+              ColoredBox(
+                color: bgColor,
+                child: const SizedBox.expand(),
+              ),
+              IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: tokens.sheenGradient,
+                    ),
+                  ),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              IgnorePointer(
+                child: CustomPaint(
+                  painter: ChromaticEdgePainter(
+                    colors: tokens.chromaticEdgeColors,
+                    radius: 32,
+                    width: 0.8,
+                  ),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border(
+                      top: BorderSide(
+                        width: 1.2,
+                        color: Colors.white.withValues(
+                          alpha: tokens.highlightEdgeAlpha,
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              SizedBox(
+                height: 60,
+                child: Row(
+                  children: List.generate(destinations.length, (index) {
+                    final dest = destinations[index];
+                    final isSelected = _currentIndex == index;
+                    return Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _currentIndex = index),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isSelected ? dest.selectedIcon : dest.icon,
+                              size: 22,
+                              color: isSelected
+                                  ? widget.themeService.themeColor
+                                  : unselectedColor,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              dest.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? widget.themeService.themeColor
+                                    : unselectedColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 简约风：保持既有通透外观
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: Container(
           height: 60,
           decoration: BoxDecoration(
@@ -1281,8 +1528,33 @@ class _MainDashboardState extends State<MainDashboard> {
   PreferredSizeWidget _buildAppBar(Color textColor, bool isDark) {
     // Tab 标题配置
     final tabTitles = ['TRANS PRISM', '资料库', '工作台', '我的'];
+    final tokens = GlassTheme.of(context);
 
     return AppBar(
+      // 液态玻璃模式：用 flexibleSpace 注入模糊 + 半透明表面 + 顶部高光边
+      flexibleSpace: tokens.isEnabled
+          ? ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: tokens.blurSigma,
+                  sigmaY: tokens.blurSigma,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: tokens.surfaceColor,
+                    border: Border(
+                      bottom: BorderSide(
+                        width: 0.5,
+                        color: Colors.white.withValues(
+                          alpha: tokens.highlightEdgeAlpha * 0.6,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       title: _currentIndex == 0
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -1510,7 +1782,10 @@ class HomeTab extends StatelessWidget {
               },
             ),
           if (showMedicalDirectory &&
-              (showSvgLibrary || showImageConverter || showHormoneConverter))
+              (showSvgLibrary ||
+                  showImageConverter ||
+                  showHormoneConverter ||
+                  showBraCalculator))
             const SizedBox(height: 12),
           if (showSvgLibrary)
             _buildPersonalCard(
@@ -1528,7 +1803,8 @@ class HomeTab extends StatelessWidget {
                 );
               },
             ),
-          if (showSvgLibrary && (showImageConverter || showHormoneConverter))
+          if (showSvgLibrary &&
+              (showImageConverter || showHormoneConverter || showBraCalculator))
             const SizedBox(height: 12),
           if (showImageConverter)
             _buildPersonalCard(
@@ -1546,7 +1822,7 @@ class HomeTab extends StatelessWidget {
                 );
               },
             ),
-          if (showImageConverter && showHormoneConverter)
+          if (showImageConverter && (showHormoneConverter || showBraCalculator))
             const SizedBox(height: 12),
           if (showHormoneConverter)
             _buildPersonalCard(
@@ -1564,7 +1840,7 @@ class HomeTab extends StatelessWidget {
                 );
               },
             ),
-          if ((showImageConverter || showHormoneConverter) && showBraCalculator)
+          if (showHormoneConverter && showBraCalculator)
             const SizedBox(height: 12),
           if (showBraCalculator)
             _buildPersonalCard(
@@ -1638,63 +1914,51 @@ class HomeTab extends StatelessWidget {
     final secondaryColor =
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
-    return InkWell(
+    // 使用 GlassCard：简约风下退化为白底/#24242C + 弥散阴影（与原外观一致），
+    // 液态玻璃模式下自动呈现半透明 + 模糊 + 高光边材质。
+    return GlassCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF24242C) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.035),
-              blurRadius: 24,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // 单色克制图标（跟随主题）
-            Icon(icon, size: 24, color: secondaryColor),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
-                      color: isDark
-                          ? const Color(0xFFEDEDF0)
-                          : const Color(0xFF333333),
-                    ),
+      padding: const EdgeInsets.all(22),
+      child: Row(
+        children: [
+          // 单色克制图标（跟随主题）
+          Icon(icon, size: 24, color: secondaryColor),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                    color: isDark
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.45,
-                      color: secondaryColor,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.45,
+                    color: secondaryColor,
                   ),
-                ],
-              ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            Icon(
-              Icons.chevron_right,
-              color: secondaryColor,
-              size: 20,
-            ),
-          ],
-        ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: secondaryColor,
+            size: 20,
+          ),
+        ],
       ),
     );
   }
@@ -1828,203 +2092,207 @@ class _ProfileTabState extends State<ProfileTab> {
     final cardBg = isDark ? const Color(0xFF1C1C1A) : Colors.white;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       children: [
         // ═══════════════════════════════════════════════
         //   身份与资料
         // ═══════════════════════════════════════════════
         _buildSectionHeader('身份与资料', isDark: isDark),
-        _buildGroupContainer(
+        // ── 性别认同 ──
+        _buildSettingsTile(
           isDark: isDark,
-          cardBg: cardBg,
-          cardBorderColor: cardBorderColor,
-          children: [
-            // ── 性别认同 ──
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.transgender,
-              leadingColor: themeService.themeColor,
-              title: '性别认同',
-              subtitle: null,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    GenderIdentity.label(widget.genderIdentity),
-                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
-                ],
+          leadingIcon: Icons.transgender,
+          leadingColor: themeService.themeColor,
+          title: '性别认同',
+          subtitle: null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                GenderIdentity.label(widget.genderIdentity),
+                style: TextStyle(fontSize: 13, color: secondaryTextColor),
               ),
-              onTap: () => _showGenderBottomSheet(context),
-            ),
-            _buildDivider(isDark: isDark),
-            // ── 个人称呼 ──
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.badge_outlined,
-              leadingColor: themeService.themeColor,
-              title: '个人称呼',
-              subtitle: null,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${widget.namePrefix.isNotEmpty ? '${widget.namePrefix} ' : ''}${widget.greetingName.isNotEmpty ? widget.greetingName : '伙伴'}',
-                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                  ),
-                ],
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
               ),
-              onTap: () => _showGreetingBottomSheet(
-                  context, textColor, secondaryTextColor),
-            ),
-          ],
+            ],
+          ),
+          onTap: () => _showGenderBottomSheet(context),
         ),
-        const SizedBox(height: 24),
+        // ── 个人称呼 ──
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.badge_outlined,
+          leadingColor: themeService.themeColor,
+          title: '个人称呼',
+          subtitle: null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${widget.namePrefix.isNotEmpty ? '${widget.namePrefix} ' : ''}${widget.greetingName.isNotEmpty ? widget.greetingName : '伙伴'}',
+                style: TextStyle(fontSize: 13, color: secondaryTextColor),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              ),
+            ],
+          ),
+          onTap: () =>
+              _showGreetingBottomSheet(context, textColor, secondaryTextColor),
+        ),
+
+        const SizedBox(height: 12),
 
         // ═══════════════════════════════════════════════
         //   外观与显示
         // ═══════════════════════════════════════════════
         _buildSectionHeader('外观与显示', isDark: isDark),
-        _buildGroupContainer(
+        // ── 主题模式 ──
+        _buildSettingsTile(
           isDark: isDark,
-          cardBg: cardBg,
-          cardBorderColor: cardBorderColor,
-          children: [
-            // ── 主题模式 ──
-            _buildSettingsTile(
+          leadingIcon: _themeModeIcon(widget.themeService.themeMode),
+          leadingColor: themeService.themeColor,
+          title: '主题模式',
+          subtitle: null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _themeModeName(widget.themeService.themeMode),
+                style: TextStyle(fontSize: 13, color: secondaryTextColor),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              ),
+            ],
+          ),
+          onTap: () => _showThemeBottomSheet(context),
+        ),
+        // ── 主题风格 ──
+        ListenableBuilder(
+          listenable: themeService,
+          builder: (context, _) {
+            return _buildSettingsTile(
               isDark: isDark,
-              leadingIcon: _themeModeIcon(widget.themeService.themeMode),
+              leadingIcon: Icons.interests_outlined,
               leadingColor: themeService.themeColor,
-              title: '主题模式',
-              subtitle: null,
+              title: '主题风格',
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _themeModeName(widget.themeService.themeMode),
+                    themeService.themeStyle == 'minimal' ? '简约风' : '液态玻璃',
                     style: TextStyle(fontSize: 13, color: secondaryTextColor),
                   ),
                   const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                  Icon(Icons.chevron_right,
+                      size: 16, color: secondaryTextColor),
+                ],
+              ),
+              onTap: () =>
+                  _showStyleSelectionSheet(context, isDark, themeService),
+            );
+          },
+        ),
+        // ── 主题色 ──
+        ListenableBuilder(
+          listenable: themeService,
+          builder: (context, _) {
+            return _buildSettingsTile(
+              isDark: isDark,
+              leadingIcon: Icons.palette_outlined,
+              leadingColor: themeService.themeColor,
+              title: '主题色',
+              subtitle: null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildMiniColorDot(
+                    context,
+                    color: const Color(0xFFF5A9B8),
+                    isSelected: themeService.themeColor.toARGB32() ==
+                        const Color(0xFFF5A9B8).toARGB32(),
+                    onTap: () =>
+                        themeService.setThemeColor(const Color(0xFFF5A9B8)),
+                    isDark: isDark,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildMiniColorDot(
+                    context,
+                    color: const Color(0xFF5BCEFA),
+                    isSelected: themeService.themeColor.toARGB32() ==
+                        const Color(0xFF5BCEFA).toARGB32(),
+                    onTap: () =>
+                        themeService.setThemeColor(const Color(0xFF5BCEFA)),
+                    isDark: isDark,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildMiniColorDot(
+                    context,
+                    color: const Color(0xFFD97757),
+                    isSelected: themeService.themeColor.toARGB32() ==
+                        const Color(0xFFD97757).toARGB32(),
+                    onTap: () =>
+                        themeService.setThemeColor(const Color(0xFFD97757)),
+                    isDark: isDark,
                   ),
                 ],
               ),
-              onTap: () => _showThemeBottomSheet(context),
-            ),
-            _buildDivider(isDark: isDark),
-            // ── 主题色 ──
-            ListenableBuilder(
-              listenable: themeService,
-              builder: (context, _) {
-                return _buildSettingsTile(
-                  isDark: isDark,
-                  leadingIcon: Icons.palette_outlined,
-                  leadingColor: themeService.themeColor,
-                  title: '主题色',
-                  subtitle: null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildMiniColorDot(
-                        context,
-                        color: const Color(0xFFF5A9B8),
-                        isSelected: themeService.themeColor.toARGB32() ==
-                            const Color(0xFFF5A9B8).toARGB32(),
-                        onTap: () =>
-                            themeService.setThemeColor(const Color(0xFFF5A9B8)),
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildMiniColorDot(
-                        context,
-                        color: const Color(0xFF5BCEFA),
-                        isSelected: themeService.themeColor.toARGB32() ==
-                            const Color(0xFF5BCEFA).toARGB32(),
-                        onTap: () =>
-                            themeService.setThemeColor(const Color(0xFF5BCEFA)),
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildMiniColorDot(
-                        context,
-                        color: const Color(0xFFD97757),
-                        isSelected: themeService.themeColor.toARGB32() ==
-                            const Color(0xFFD97757).toARGB32(),
-                        onTap: () =>
-                            themeService.setThemeColor(const Color(0xFFD97757)),
-                        isDark: isDark,
-                      ),
-                    ],
-                  ),
-                  onTap: () {}, // 点击点阵直接切换颜色，无需整体点击
-                );
-              },
-            ),
-          ],
+              onTap: () {}, // 点击点阵直接切换颜色，无需整体点击
+            );
+          },
         ),
-        const SizedBox(height: 24),
+
+        const SizedBox(height: 12),
 
         // ═══════════════════════════════════════════════
         //   高级与系统
         // ═══════════════════════════════════════════════
         _buildSectionHeader('高级与系统', isDark: isDark),
-        _buildGroupContainer(
+        // ── 通知与提醒权限入口 ──
+        _buildSettingsTile(
           isDark: isDark,
-          cardBg: cardBg,
-          cardBorderColor: cardBorderColor,
-          children: [
-            // ── 通知与提醒权限入口 ──
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.notifications_active_outlined,
-              leadingColor: themeService.themeColor,
-              title: '通知权限与保活',
-              subtitle: null,
-              onTap: () => _showBatteryOptimizationDialog(context),
-            ),
-            _buildDivider(isDark: isDark),
-            // ── 数据管理入口 ──
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.sd_storage_outlined,
-              leadingColor: themeService.themeColor,
-              title: '数据导出与恢复',
-              subtitle: null,
-              onTap: () =>
-                  _showDataManagementBottomSheet(context, isDark, themeService),
-            ),
-            _buildDivider(isDark: isDark),
-            // ── 关于与支持入口 ──
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.info_outline,
-              leadingColor: themeService.themeColor,
-              title: '关于与支持',
-              subtitle: null,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              },
-            ),
-          ],
+          leadingIcon: Icons.notifications_active_outlined,
+          leadingColor: themeService.themeColor,
+          title: '通知权限与保活',
+          subtitle: null,
+          onTap: () => _showBatteryOptimizationDialog(context),
         ),
+        // ── 数据管理入口 ──
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.sd_storage_outlined,
+          leadingColor: themeService.themeColor,
+          title: '数据导出与恢复',
+          subtitle: null,
+          onTap: () =>
+              _showDataManagementBottomSheet(context, isDark, themeService),
+        ),
+        // ── 关于与支持入口 ──
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.info_outline,
+          leadingColor: themeService.themeColor,
+          title: '关于与支持',
+          subtitle: null,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutScreen()),
+            );
+          },
+        ),
+
         const SizedBox(height: 24),
 
         // ── 版本号 + 版权信息 ──
@@ -2053,34 +2321,7 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   // ════════════════════════════════════════════════════════════
-  //  分组容器（一张大卡片包多个 ListTile）
-  // ════════════════════════════════════════════════════════════
-
-  Widget _buildGroupContainer({
-    required bool isDark,
-    required Color cardBg,
-    required Color cardBorderColor,
-    required List<Widget> children,
-  }) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cardBorderColor),
-      ),
-      color: cardBg,
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: children,
-      ),
-    );
-  }
-
-  // ════════════════════════════════════════════════════════════
-  //  通用设置列表项
+  //  通用卡片列表项（统一全域卡片风格）
   // ════════════════════════════════════════════════════════════
 
   Widget _buildSettingsTile({
@@ -2092,43 +2333,92 @@ class _ProfileTabState extends State<ProfileTab> {
     Widget? trailing,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GradientIcon(leadingIcon, size: 20),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
-        ),
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color:
-                    isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86),
-              ),
-            )
-          : null,
-      trailing: trailing ??
-          Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.035),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
           ),
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      shape: const RoundedRectangleBorder(),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF333338)
+                        : const Color(0xFFEFEFEF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(leadingIcon, size: 20, color: secondaryColor),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                          color: isDark
+                              ? const Color(0xFFEDEDF0)
+                              : const Color(0xFF333333),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 11,
+                            height: 1.3,
+                            color: secondaryColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (trailing != null)
+                  trailing
+                else
+                  Icon(
+                    Icons.chevron_right,
+                    color: secondaryColor,
+                    size: 16,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -2482,6 +2772,156 @@ class _ProfileTabState extends State<ProfileTab> {
   // ════════════════════════════════════════════════════════════
   //  主题模式 BottomSheet
   // ════════════════════════════════════════════════════════════
+
+  void _showStyleSelectionSheet(
+      BuildContext context, bool isDark, ThemeService themeService) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        // 用 GlassSheet 包装：液态玻璃模式下呈半透明 + 模糊材质，
+        // 简约风下退化为实色圆角 Sheet（与原外观一致）。
+        return GlassSheet(
+          showGrabHandle: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 拖拽条
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF38383A)
+                      : const Color(0xFFE5E5EA),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Text(
+                      '选择主题风格',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListenableBuilder(
+                listenable: themeService,
+                builder: (context, _) {
+                  return Column(
+                    children: [
+                      _buildStyleOption(
+                        context,
+                        title: '简约风',
+                        subtitle: '类 Claude、喜茶的小清新柔和圆角卡片',
+                        value: 'minimal',
+                        currentValue: themeService.themeStyle,
+                        onChanged: (val) {
+                          themeService.setThemeStyle(val);
+                          Navigator.pop(context);
+                        },
+                        isDark: isDark,
+                      ),
+                      _buildStyleOption(
+                        context,
+                        title: '液态玻璃',
+                        subtitle: 'Apple WWDC25 Liquid Glass · 半透明模糊材质',
+                        value: 'liquid',
+                        currentValue: themeService.themeStyle,
+                        onChanged: (val) {
+                          themeService.setThemeStyle(val);
+                          Navigator.pop(context);
+                        },
+                        isDark: isDark,
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStyleOption(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String value,
+    required String currentValue,
+    required Function(String) onChanged,
+    required bool isDark,
+    bool isDisabled = false,
+  }) {
+    final isSelected = value == currentValue;
+    return InkWell(
+      onTap: isDisabled ? null : () => onChanged(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isDisabled
+                          ? (isDark
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade400)
+                          : (isDark ? Colors.white : Colors.black87),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDisabled
+                          ? (isDark
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade300)
+                          : (isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: Theme.of(context).primaryColor,
+              )
+            else if (!isDisabled)
+              Icon(
+                Icons.circle_outlined,
+                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _showThemeBottomSheet(BuildContext context) {
     showModalBottomSheet(
