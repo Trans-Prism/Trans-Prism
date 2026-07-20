@@ -1831,9 +1831,9 @@ class _ProfileTabState extends State<ProfileTab> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       children: [
         // ═══════════════════════════════════════════════
-        //   个性化与身份
+        //   身份与资料
         // ═══════════════════════════════════════════════
-        _buildSectionHeader('个性化与身份', isDark: isDark),
+        _buildSectionHeader('身份与资料', isDark: isDark),
         _buildGroupContainer(
           isDark: isDark,
           cardBg: cardBg,
@@ -1845,24 +1845,70 @@ class _ProfileTabState extends State<ProfileTab> {
               leadingIcon: Icons.transgender,
               leadingColor: themeService.themeColor,
               title: '性别认同',
-              subtitle: GenderIdentity.label(widget.genderIdentity),
+              subtitle: null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    GenderIdentity.label(widget.genderIdentity),
+                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                  ),
+                ],
+              ),
               onTap: () => _showGenderBottomSheet(context),
             ),
             _buildDivider(isDark: isDark),
-            // ── 个人称呼（内嵌表单） ──
-            _buildGreetingSection(
+            // ── 个人称呼 ──
+            _buildSettingsTile(
               isDark: isDark,
-              textColor: textColor,
-              secondaryTextColor: secondaryTextColor,
+              leadingIcon: Icons.badge_outlined,
+              leadingColor: themeService.themeColor,
+              title: '个人称呼',
+              subtitle: null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${widget.namePrefix.isNotEmpty ? '${widget.namePrefix} ' : ''}${widget.greetingName.isNotEmpty ? widget.greetingName : '伙伴'}',
+                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                  ),
+                ],
+              ),
+              onTap: () => _showGreetingBottomSheet(
+                  context, textColor, secondaryTextColor),
             ),
-            _buildDivider(isDark: isDark),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // ═══════════════════════════════════════════════
+        //   外观与显示
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('外观与显示', isDark: isDark),
+        _buildGroupContainer(
+          isDark: isDark,
+          cardBg: cardBg,
+          cardBorderColor: cardBorderColor,
+          children: [
             // ── 主题模式 ──
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: _themeModeIcon(widget.themeService.themeMode),
               leadingColor: themeService.themeColor,
               title: '主题模式',
-              subtitle: _themeModeLabel(widget.themeService.themeMode, isDark),
+              subtitle: null,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1880,147 +1926,100 @@ class _ProfileTabState extends State<ProfileTab> {
               ),
               onTap: () => _showThemeBottomSheet(context),
             ),
+            _buildDivider(isDark: isDark),
+            // ── 主题色 ──
+            ListenableBuilder(
+              listenable: themeService,
+              builder: (context, _) {
+                return _buildSettingsTile(
+                  isDark: isDark,
+                  leadingIcon: Icons.palette_outlined,
+                  leadingColor: themeService.themeColor,
+                  title: '主题色',
+                  subtitle: null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildMiniColorDot(
+                        context,
+                        color: const Color(0xFFF5A9B8),
+                        isSelected: themeService.themeColor.toARGB32() ==
+                            const Color(0xFFF5A9B8).toARGB32(),
+                        onTap: () =>
+                            themeService.setThemeColor(const Color(0xFFF5A9B8)),
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildMiniColorDot(
+                        context,
+                        color: const Color(0xFF5BCEFA),
+                        isSelected: themeService.themeColor.toARGB32() ==
+                            const Color(0xFF5BCEFA).toARGB32(),
+                        onTap: () =>
+                            themeService.setThemeColor(const Color(0xFF5BCEFA)),
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildMiniColorDot(
+                        context,
+                        color: const Color(0xFFD97757),
+                        isSelected: themeService.themeColor.toARGB32() ==
+                            const Color(0xFFD97757).toARGB32(),
+                        onTap: () =>
+                            themeService.setThemeColor(const Color(0xFFD97757)),
+                        isDark: isDark,
+                      ),
+                    ],
+                  ),
+                  onTap: () {}, // 点击点阵直接切换颜色，无需整体点击
+                );
+              },
+            ),
           ],
         ),
         const SizedBox(height: 24),
 
         // ═══════════════════════════════════════════════
-        //   系统与提醒
+        //   高级与系统
         // ═══════════════════════════════════════════════
-        _buildSectionHeader('系统与提醒', isDark: isDark),
-        const BatteryOptimizationGuideCard(),
-        const SizedBox(height: 24),
-
-        // ═══════════════════════════════════════════════
-        //   数据与备份
-        // ═══════════════════════════════════════════════
-        _buildSectionHeader('数据与备份', isDark: isDark),
+        _buildSectionHeader('高级与系统', isDark: isDark),
         _buildGroupContainer(
           isDark: isDark,
           cardBg: cardBg,
           cardBorderColor: cardBorderColor,
           children: [
+            // ── 通知与提醒权限入口 ──
             _buildSettingsTile(
               isDark: isDark,
-              leadingIcon: Icons.backup_rounded,
+              leadingIcon: Icons.notifications_active_outlined,
               leadingColor: themeService.themeColor,
-              title: '旧版数据导出（迁移专用）',
-              subtitle: '导出所有本地数据为 JSON 备份文件',
-              onTap: () => _handleExportData(context),
+              title: '通知权限与保活',
+              subtitle: null,
+              onTap: () => _showBatteryOptimizationDialog(context),
             ),
             _buildDivider(isDark: isDark),
+            // ── 数据管理入口 ──
             _buildSettingsTile(
               isDark: isDark,
-              leadingIcon: Icons.unarchive_rounded,
+              leadingIcon: Icons.sd_storage_outlined,
               leadingColor: themeService.themeColor,
-              title: '新版数据导入',
-              subtitle: '从备份 JSON 文件恢复数据到本机',
-              onTap: () => _handleImportData(context),
+              title: '数据导出与恢复',
+              subtitle: null,
+              onTap: () =>
+                  _showDataManagementBottomSheet(context, isDark, themeService),
             ),
-          ],
-        ),
-        const SizedBox(height: 24),
-
-// ═══════════════════════════════════════════════
-// 主题色选择
-// ═══════════════════════════════════════════════
-        Text(
-          '主题色',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isDark ? const Color(0xFF8A8A8E) : const Color(0xFF8A8A86),
-          ),
-        ),
-        const SizedBox(height: 12),
-        ListenableBuilder(
-          listenable: themeService,
-          builder: (context, _) {
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                buildColorOption(
-                  context,
-                  color: const Color(0xFFF5A9B8),
-                  name: '跨旗粉',
-                  isSelected: themeService.themeColor.toARGB32() ==
-                      const Color(0xFFF5A9B8).toARGB32(),
-                  onTap: () =>
-                      themeService.setThemeColor(const Color(0xFFF5A9B8)),
-                  isDark: isDark,
-                ),
-                buildColorOption(
-                  context,
-                  color: const Color(0xFF5BCEFA),
-                  name: '跨旗蓝',
-                  isSelected: themeService.themeColor.toARGB32() ==
-                      const Color(0xFF5BCEFA).toARGB32(),
-                  onTap: () =>
-                      themeService.setThemeColor(const Color(0xFF5BCEFA)),
-                  isDark: isDark,
-                ),
-                buildColorOption(
-                  context,
-                  color: const Color(0xFFD97757),
-                  name: 'Claude橙',
-                  isSelected: themeService.themeColor.toARGB32() ==
-                      const Color(0xFFD97757).toARGB32(),
-                  onTap: () =>
-                      themeService.setThemeColor(const Color(0xFFD97757)),
-                  strikethrough: true,
-                  isDark: isDark,
-                ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 24),
-
-// ═══════════════════════════════════════════════
-        //   关于与支持
-        // ═══════════════════════════════════════════════
-        _buildSectionHeader('关于与支持', isDark: isDark),
-        _buildGroupContainer(
-          isDark: isDark,
-          cardBg: cardBg,
-          cardBorderColor: cardBorderColor,
-          children: [
+            _buildDivider(isDark: isDark),
+            // ── 关于与支持入口 ──
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.info_outline,
               leadingColor: themeService.themeColor,
-              title: '关于',
-              subtitle: '应用信息与第三方开源许可',
+              title: '关于与支持',
+              subtitle: null,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              },
-            ),
-            _buildDivider(isDark: isDark),
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.system_update_rounded,
-              leadingColor: themeService.themeColor,
-              title: '检查更新',
-              subtitle: '手动检测是否有新版本可用',
-              onTap: () => _handleCheckUpdate(context),
-            ),
-            _buildDivider(isDark: isDark),
-            _buildSettingsTile(
-              isDark: isDark,
-              leadingIcon: Icons.description_outlined,
-              leadingColor: themeService.themeColor,
-              title: '免责声明',
-              subtitle: '医疗、数据与开源许可声明',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DisclaimerViewScreen(),
-                  ),
                 );
               },
             ),
@@ -2089,7 +2088,7 @@ class _ProfileTabState extends State<ProfileTab> {
     required IconData leadingIcon,
     required Color leadingColor,
     required String title,
-    required String subtitle,
+    String? subtitle,
     Widget? trailing,
     required VoidCallback onTap,
   }) {
@@ -2111,13 +2110,16 @@ class _ProfileTabState extends State<ProfileTab> {
           color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          color: isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86),
-        ),
-      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86),
+              ),
+            )
+          : null,
       trailing: trailing ??
           Icon(
             Icons.chevron_right,
@@ -2148,205 +2150,213 @@ class _ProfileTabState extends State<ProfileTab> {
   //  个人称呼内嵌编辑区
   // ════════════════════════════════════════════════════════════
 
-  Widget _buildGreetingSection({
-    required bool isDark,
-    required Color textColor,
-    required Color secondaryTextColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '个人称呼',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
+  // ════════════════════════════════════════════════════════════
+  //  个人称呼 BottomSheet
+  // ════════════════════════════════════════════════════════════
+
+  void _showGreetingBottomSheet(
+    BuildContext context,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
-          const SizedBox(height: 2),
-          Text(
-            '设置首页问候语中显示的称呼和名字前缀',
-            style: TextStyle(fontSize: 12, color: secondaryTextColor),
-          ),
-          const SizedBox(height: 12),
-          // 前缀 + 昵称行
-          Row(
-            children: [
-              // 前缀下拉
-              SizedBox(
-                width: 110,
-                child: DropdownButtonFormField<String>(
-                  initialValue: _prefixOptions.containsKey(widget.namePrefix)
-                      ? widget.namePrefix
-                      : '__custom__',
-                  decoration: InputDecoration(
-                    labelText: '前缀',
-                    filled: true,
-                    fillColor:
-                        isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    isDense: true,
-                  ),
-                  items: _prefixOptions.entries
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e.key,
-                          child: Text(
-                            e.value,
-                            style: const TextStyle(fontSize: 13),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    if (v == null) return;
-                    if (v == '__custom__') {
-                      setState(() => _customPrefix = true);
-                    } else {
-                      setState(() => _customPrefix = false);
-                      widget.onNamePrefixChanged(v);
-                    }
-                  },
-                ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        '设置个人称呼',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? const Color(0xFFEDEDF0)
+                              : const Color(0xFF333333),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '设置首页问候语中显示的称呼和名字前缀',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark
+                              ? const Color(0xFF98989E)
+                              : const Color(0xFF8A8A86),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // 前缀下拉
+                      DropdownButtonFormField<String>(
+                        initialValue:
+                            _prefixOptions.containsKey(widget.namePrefix)
+                                ? widget.namePrefix
+                                : '__custom__',
+                        decoration: InputDecoration(
+                          labelText: '前缀',
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xFF24242C)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: _prefixOptions.entries
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e.key,
+                                child: Text(e.value),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) {
+                          if (v == null) return;
+                          if (v == '__custom__') {
+                            setModalState(() => _customPrefix = true);
+                          } else {
+                            setModalState(() => _customPrefix = false);
+                            widget.onNamePrefixChanged(v);
+                          }
+                        },
+                      ),
+                      if (_customPrefix) ...[
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _customPrefixController,
+                          decoration: InputDecoration(
+                            labelText: '自定义前缀',
+                            filled: true,
+                            fillColor: isDark
+                                ? const Color(0xFF24242C)
+                                : Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          onChanged: (v) {
+                            if (v.isNotEmpty) widget.onNamePrefixChanged(v);
+                          },
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _greetingController,
+                        decoration: InputDecoration(
+                          labelText: '称呼（默认"伙伴"）',
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xFF24242C)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (v) {
+                          if (v.isNotEmpty) widget.onGreetingNameChanged(v);
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: widget.themeService.themeColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            '完成',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-              if (_customPrefix) ...[
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 100,
-                  child: TextField(
-                    controller: _customPrefixController,
-                    decoration: InputDecoration(
-                      labelText: '自定义',
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF24242C)
-                          : Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      isDense: true,
-                    ),
-                    onChanged: (v) {
-                      if (v.isNotEmpty) widget.onNamePrefixChanged(v);
-                    },
-                  ),
-                ),
-              ],
-              const SizedBox(width: 8),
-              // 昵称
-              Expanded(
-                child: TextField(
-                  controller: _greetingController,
-                  decoration: InputDecoration(
-                    labelText: '称呼（默认"伙伴"）',
-                    filled: true,
-                    fillColor:
-                        isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    isDense: true,
-                  ),
-                  onChanged: (v) {
-                    if (v.isNotEmpty) widget.onGreetingNameChanged(v);
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget buildColorOption(
+  Widget _buildMiniColorDot(
     BuildContext context, {
     required Color color,
-    required String name,
     required bool isSelected,
     required VoidCallback onTap,
     required bool isDark,
-    bool strikethrough = false,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected
-                    ? (isDark ? Colors.white : Colors.black)
-                    : Colors.transparent,
-                width: 2,
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected
+                ? (isDark ? Colors.white : Colors.black)
+                : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.4),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
-              boxShadow: [
-                if (isSelected)
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            name,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected
-                  ? (isDark ? Colors.white : Colors.black)
-                  : (isDark
-                      ? const Color(0xFF8A8A8E)
-                      : const Color(0xFF8A8A86)),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              decoration: strikethrough ? TextDecoration.lineThrough : null,
-              decorationColor: isSelected
-                  ? (isDark ? Colors.white : Colors.black)
-                  : (isDark
-                      ? const Color(0xFF8A8A8E)
-                      : const Color(0xFF8A8A86)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2646,6 +2656,104 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             const SizedBox(height: 16),
           ],
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  通知到达率优化 Dialog
+  // ════════════════════════════════════════════════════════════
+
+  void _showBatteryOptimizationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 600),
+            child: const SingleChildScrollView(
+              child: BatteryOptimizationGuideCard(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  数据导出与恢复 BottomSheet
+  // ════════════════════════════════════════════════════════════
+
+  void _showDataManagementBottomSheet(
+    BuildContext context,
+    bool isDark,
+    ThemeService themeService,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '数据管理',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Icon(Icons.backup_rounded,
+                      color: themeService.themeColor),
+                  title: const Text('导出数据（迁移专用）',
+                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  subtitle: const Text('导出所有本地数据为 JSON 备份文件'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleExportData(context);
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(Icons.unarchive_rounded,
+                      color: themeService.themeColor),
+                  title: const Text('导入数据',
+                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  subtitle: const Text('从备份 JSON 文件恢复数据到本机'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleImportData(context);
+                  },
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
