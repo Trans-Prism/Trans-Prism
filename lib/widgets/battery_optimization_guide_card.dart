@@ -313,7 +313,7 @@ class _BatteryOptimizationGuideCardState
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5A9B8),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 child: const Text('去系统设置'),
               ),
@@ -381,7 +381,7 @@ class _BatteryOptimizationGuideCardState
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFF5A9B8),
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
             child: const Text('去系统设置'),
           ),
@@ -413,16 +413,16 @@ class _StepLabel extends StatelessWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFFF5A9B8).withOpacity(0.15),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Text(
               number,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFF5A9B8),
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),

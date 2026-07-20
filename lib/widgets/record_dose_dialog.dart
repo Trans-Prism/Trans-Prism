@@ -225,7 +225,7 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
                       icon: Icons.schedule_rounded,
                       label: '下次计划',
                       value: drug.nextDoseLabel,
-                      valueColor: const Color(0xFFF5A9B8),
+                      valueColor: Theme.of(context).colorScheme.primary,
                     ),
 
                   const SizedBox(height: 16),
@@ -291,7 +291,7 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
                     child: FilledButton.icon(
                       onPressed: _submitting ? null : _confirmDose,
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFF5A9B8),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

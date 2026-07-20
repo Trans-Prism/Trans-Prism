@@ -181,7 +181,7 @@ class _MedicationCardState extends State<MedicationCard> {
     if (_timeUntilNext.isNegative) return Colors.red.shade400;
     if (_timeUntilNext.inHours < 1) return Colors.red.shade400;
     if (_timeUntilNext.inDays < 1) return Colors.orange.shade400;
-    return const Color(0xFFF5A9B8);
+    return Theme.of(context).colorScheme.primary;
   }
 
   String get _nextDateText {
@@ -281,7 +281,7 @@ class _MedicationCardState extends State<MedicationCard> {
             Switch(
               value: drug.reminderEnabled,
               onChanged: (val) => widget.onToggleReminder?.call(val),
-              activeColor: const Color(0xFFF5A9B8),
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
             PopupMenuButton<String>(
               icon: Icon(
@@ -377,8 +377,8 @@ class _MedicationCardState extends State<MedicationCard> {
                   value: progress,
                   strokeWidth: 3,
                   backgroundColor: Colors.grey.shade200,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFFF5A9B8),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -429,7 +429,7 @@ class _MedicationCardState extends State<MedicationCard> {
           size: 16,
           color: isDark
               ? Colors.grey.shade500
-              : const Color(0xFFF5A9B8).withOpacity(0.7),
+              : Theme.of(context).colorScheme.primary.withOpacity(0.7),
         ),
         const SizedBox(width: 4),
         Text(
@@ -439,7 +439,7 @@ class _MedicationCardState extends State<MedicationCard> {
             fontWeight: FontWeight.w500,
             color: isDark
                 ? Colors.grey.shade400
-                : const Color(0xFFF5A9B8).withOpacity(0.7),
+                : Theme.of(context).colorScheme.primary.withOpacity(0.7),
           ),
         ),
       ],
@@ -470,7 +470,7 @@ class _MedicationCardState extends State<MedicationCard> {
               valueColor: AlwaysStoppedAnimation<Color>(
                 drug.runwayDays <= 3
                     ? Colors.red.shade300
-                    : const Color(0xFFF5A9B8),
+                    : Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -547,7 +547,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFF5A9B8),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

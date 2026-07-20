@@ -175,9 +175,9 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                             horizontal: 16, vertical: 14),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.swap_horiz_rounded,
-                              color: Color(0xFFF5A9B8),
+                              color: Theme.of(context).colorScheme.primary,
                               size: 22,
                             ),
                             const SizedBox(width: 12),
@@ -195,15 +195,18 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF5A9B8).withOpacity(0.1),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '$siteCount 部位',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFF5A9B8),
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ),
@@ -294,10 +297,10 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
           // 模板标题
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.swap_horiz_rounded,
                 size: 14,
-                color: Color(0xFFF5A9B8),
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 4),
               Text(
@@ -312,11 +315,11 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
               // 更换模板按钮
               GestureDetector(
                 onTap: _bindingInProgress ? null : _showTemplatePicker,
-                child: const Text(
+                child: Text(
                   '更换',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFFF5A9B8),
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -330,18 +333,18 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.auto_awesome,
                     size: 13,
-                    color: Color(0xFFF5A9B8),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '推荐: $_recommendedSite',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFF5A9B8),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -367,14 +370,14 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                           size: 14,
                           color: isSelected
                               ? Colors.white
-                              : const Color(0xFFF5A9B8),
+                              : Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     Text(site),
                   ],
                 ),
                 selected: isSelected,
-                selectedColor: const Color(0xFFF5A9B8),
+                selectedColor: Theme.of(context).colorScheme.primary,
                 backgroundColor:
                     isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
                 labelStyle: TextStyle(
@@ -413,14 +416,18 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
         icon: Icon(
           Icons.add_rounded,
           size: 16,
-          color: _bindingInProgress ? Colors.grey : const Color(0xFFF5A9B8),
+          color: _bindingInProgress
+              ? Colors.grey
+              : Theme.of(context).colorScheme.primary,
         ),
         label: Text(
           _bindingInProgress ? '加载中...' : '开启注射部位轮换（仅限注射剂）',
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: _bindingInProgress ? Colors.grey : const Color(0xFFF5A9B8),
+            color: _bindingInProgress
+                ? Colors.grey
+                : Theme.of(context).colorScheme.primary,
           ),
         ),
         style: TextButton.styleFrom(

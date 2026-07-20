@@ -50,18 +50,20 @@ void main() {
 ///   text-primary  #333333  深灰（非刺眼纯黑）
 ///   text-secondary#8A8A86  细腻浅灰
 ///   accent        #F5A9B8  跨性别旗帜粉（品牌色）
-ThemeData _buildLightTheme() {
+ThemeData _buildLightTheme(Color primaryColor) {
   return ThemeData(
     scaffoldBackgroundColor: const Color(0xFFF9F8F6),
-    colorScheme: const ColorScheme(
+    colorScheme: ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xFFF5A9B8),
-      onPrimary: Color(0xFF3A1A22),
-      secondary: Color(0xFFF5A9B8),
-      onSecondary: Color(0xFF3A1A22),
-      surface: Color(0xFFF9F8F6),
-      onSurface: Color(0xFF333333),
-      error: Color(0xFFC44A4A),
+      primary: primaryColor,
+      onPrimary: primaryColor.computeLuminance() > 0.5
+          ? const Color(0xFF3A1A22)
+          : Colors.white,
+      secondary: primaryColor,
+      onSecondary: const Color(0xFF3A1A22),
+      surface: const Color(0xFFF9F8F6),
+      onSurface: const Color(0xFF333333),
+      error: const Color(0xFFC44A4A),
       onError: Colors.white,
     ),
     textTheme: const TextTheme(
@@ -156,10 +158,10 @@ ThemeData _buildLightTheme() {
       height: 64,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(
+          return TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Color(0xFFF5A9B8),
+            color: primaryColor,
             height: 1.3,
           );
         }
@@ -172,7 +174,7 @@ ThemeData _buildLightTheme() {
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: Color(0xFFF5A9B8), size: 24);
+          return IconThemeData(color: primaryColor, size: 24);
         }
         return const IconThemeData(color: Color(0xFF8A8A86), size: 24);
       }),
@@ -187,21 +189,23 @@ ThemeData _buildLightTheme() {
 }
 
 /// 构建暗色主题 — 温润暖夜 · 呼吸感
-ThemeData _buildDarkTheme() {
+ThemeData _buildDarkTheme(Color primaryColor) {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF1C1C1A),
-    colorScheme: const ColorScheme(
+    colorScheme: ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFFF5A9B8),
-      onPrimary: Color(0xFF3A1A22),
-      secondary: Color(0xFFF5A9B8),
-      onSecondary: Color(0xFF3A1A22),
-      surface: Color(0xFF1C1C1A),
-      onSurface: Color(0xFFEDEDF0),
-      error: Color(0xFFE57373),
-      onError: Color(0xFF1A1A1A),
+      primary: primaryColor,
+      onPrimary: primaryColor.computeLuminance() > 0.5
+          ? const Color(0xFF3A1A22)
+          : Colors.white,
+      secondary: primaryColor,
+      onSecondary: const Color(0xFF3A1A22),
+      surface: const Color(0xFF1C1C1A),
+      onSurface: const Color(0xFFEDEDF0),
+      error: const Color(0xFFE57373),
+      onError: const Color(0xFF1A1A1A),
     ),
     // ── 文字主题 ──
     textTheme: const TextTheme(
@@ -300,17 +304,17 @@ ThemeData _buildDarkTheme() {
       indicatorColor: Colors.transparent,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(
+          return TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Color(0xFFF5A9B8),
+            color: primaryColor,
           );
         }
         return const TextStyle(fontSize: 11, color: Color(0xFF6B6B76));
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: Color(0xFFF5A9B8));
+          return IconThemeData(color: primaryColor);
         }
         return const IconThemeData(color: Color(0xFF6B6B76));
       }),
@@ -342,7 +346,7 @@ ThemeData _buildDarkTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFF5A9B8)),
+        borderSide: BorderSide(color: primaryColor),
       ),
       labelStyle: const TextStyle(color: Color(0xFF8E8E96)),
       hintStyle: const TextStyle(color: Color(0xFF6B6B76)),
@@ -374,13 +378,13 @@ ThemeData _buildDarkTheme() {
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFF5A9B8);
+          return primaryColor;
         }
         return Colors.grey.shade500;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFF5A9B8).withOpacity(0.3);
+          return primaryColor.withValues(alpha: 0.3);
         }
         return const Color(0xFF333338);
       }),
@@ -397,17 +401,17 @@ ThemeData _buildDarkTheme() {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: const Color(0xFFEDEDF0),
-        backgroundColor: const Color(0xFFF5A9B8),
+        backgroundColor: primaryColor,
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: const Color(0xFFF5A9B8),
+        backgroundColor: primaryColor,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: const Color(0xFFF5A9B8)),
+      style: TextButton.styleFrom(foregroundColor: primaryColor),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
@@ -420,7 +424,7 @@ ThemeData _buildDarkTheme() {
       checkColor: WidgetStateProperty.all(Colors.white),
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFF5A9B8);
+          return primaryColor;
         }
         return const Color(0xFF333338);
       }),
@@ -428,14 +432,14 @@ ThemeData _buildDarkTheme() {
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFF5A9B8);
+          return primaryColor;
         }
         return const Color(0xFF8E8E96);
       }),
     ),
     // ── 进度条 ──
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: Color(0xFFF5A9B8),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: primaryColor,
       circularTrackColor: Color(0xFF333338),
       linearTrackColor: Color(0xFF333338),
     ),
@@ -454,22 +458,22 @@ ThemeData _buildDarkTheme() {
       }),
       dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFF5A9B8);
+          return primaryColor;
         }
         return null;
       }),
-      todayForegroundColor: WidgetStateProperty.all(const Color(0xFFF5A9B8)),
+      todayForegroundColor: WidgetStateProperty.all(primaryColor),
       surfaceTintColor: Colors.transparent,
     ),
-    timePickerTheme: const TimePickerThemeData(
-      backgroundColor: Color(0xFF24242C),
-      hourMinuteColor: Color(0xFF1C1C1A),
-      hourMinuteTextColor: Color(0xFFEDEDF0),
-      dayPeriodTextColor: Color(0xFFEDEDF0),
-      dialHandColor: Color(0xFFF5A9B8),
-      dialBackgroundColor: Color(0xFF1C1C1A),
-      dialTextColor: Color(0xFFEDEDF0),
-      entryModeIconColor: Color(0xFFF5A9B8),
+    timePickerTheme: TimePickerThemeData(
+      backgroundColor: const Color(0xFF24242C),
+      hourMinuteColor: const Color(0xFF1C1C1A),
+      hourMinuteTextColor: const Color(0xFFEDEDF0),
+      dayPeriodTextColor: const Color(0xFFEDEDF0),
+      dialHandColor: primaryColor,
+      dialBackgroundColor: const Color(0xFF1C1C1A),
+      dialTextColor: const Color(0xFFEDEDF0),
+      entryModeIconColor: primaryColor,
     ),
     // ── 提示框 ──
     snackBarTheme: SnackBarThemeData(
@@ -495,10 +499,10 @@ ThemeData _buildDarkTheme() {
       ),
     ),
     // ── TabBar ──
-    tabBarTheme: const TabBarThemeData(
-      labelColor: Color(0xFFF5A9B8),
-      unselectedLabelColor: Color(0xFF6B6B76),
-      indicatorColor: Color(0xFFF5A9B8),
+    tabBarTheme: TabBarThemeData(
+      labelColor: primaryColor,
+      unselectedLabelColor: const Color(0xFF6B6B76),
+      indicatorColor: primaryColor,
     ),
   );
 }
@@ -528,8 +532,8 @@ class _TransToolboxAppState extends State<TransToolboxApp> {
         return MaterialApp(
           title: 'Trans Prism',
           debugShowCheckedModeBanner: false,
-          theme: _buildLightTheme(),
-          darkTheme: _buildDarkTheme(),
+          theme: _buildLightTheme(_themeService.themeColor),
+          darkTheme: _buildDarkTheme(_themeService.themeColor),
           themeMode: _themeService.themeMode,
           home: AppRootController(themeService: _themeService),
         );
@@ -866,12 +870,12 @@ class OnboardingScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF24242C).withOpacity(0.9)
-              : Colors.white.withOpacity(0.9),
+              ? const Color(0xFF24242C).withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -880,7 +884,7 @@ class OnboardingScreen extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: color.withOpacity(0.2),
+              backgroundColor: color.withValues(alpha: 0.2),
               child: Icon(icon, color: color),
             ),
             const SizedBox(width: 16),
@@ -1076,7 +1080,7 @@ class _MainDashboardState extends State<MainDashboard> {
                               ),
                             ),
                             value: _moduleVisibility[key] ?? true,
-                            activeColor: const Color(0xFFF5A9B8),
+                            activeThumbColor: widget.themeService.themeColor,
                             onChanged: (value) {
                               // ── 实时预览：直接更新首页 State ──
                               setState(() {
@@ -1103,7 +1107,7 @@ class _MainDashboardState extends State<MainDashboard> {
                             if (ctx.mounted) Navigator.pop(ctx, true);
                           },
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFF5A9B8),
+                            backgroundColor: widget.themeService.themeColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -1194,8 +1198,8 @@ class _MainDashboardState extends State<MainDashboard> {
   Widget _buildPillNav(bool isDark, Color textColor, Color unselectedColor) {
     // 通透底色：半透明 + 模糊感（无硬边框）
     final bgColor = isDark
-        ? const Color(0xFF24242C).withOpacity(0.92)
-        : Colors.white.withOpacity(0.88);
+        ? const Color(0xFF24242C).withValues(alpha: 0.92)
+        : Colors.white.withValues(alpha: 0.88);
 
     // 细线图标（outlined）+ 选中态填充图标
     final destinations = [
@@ -1224,7 +1228,7 @@ class _MainDashboardState extends State<MainDashboard> {
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
               ),
@@ -1246,7 +1250,7 @@ class _MainDashboardState extends State<MainDashboard> {
                         isSelected ? dest.selectedIcon : dest.icon,
                         size: 22,
                         color: isSelected
-                            ? const Color(0xFFF5A9B8)
+                            ? widget.themeService.themeColor
                             : unselectedColor,
                       ),
                       const SizedBox(height: 3),
@@ -1257,7 +1261,7 @@ class _MainDashboardState extends State<MainDashboard> {
                           fontWeight:
                               isSelected ? FontWeight.w600 : FontWeight.w400,
                           color: isSelected
-                              ? const Color(0xFFF5A9B8)
+                              ? widget.themeService.themeColor
                               : unselectedColor,
                           height: 1.2,
                         ),
@@ -1320,8 +1324,10 @@ class _MainDashboardState extends State<MainDashboard> {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFFF5A9B8).withOpacity(0.15)
-                          : const Color(0xFFF5A9B8).withOpacity(0.08),
+                          ? widget.themeService.themeColor
+                              .withValues(alpha: 0.15)
+                          : widget.themeService.themeColor
+                              .withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -1421,7 +1427,7 @@ class HomeTab extends StatelessWidget {
               height: 3,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5A9B8),
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(1.5),
               ),
             ),
@@ -1642,7 +1648,7 @@ class HomeTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.18 : 0.035),
+              color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.035),
               blurRadius: 24,
               offset: const Offset(0, 6),
             ),
@@ -1814,6 +1820,7 @@ class _ProfileTabState extends State<ProfileTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final themeService = widget.themeService;
     final secondaryTextColor =
         isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86);
     final cardBorderColor =
@@ -1836,7 +1843,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.transgender,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '性别认同',
               subtitle: GenderIdentity.label(widget.genderIdentity),
               onTap: () => _showGenderBottomSheet(context),
@@ -1853,7 +1860,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: _themeModeIcon(widget.themeService.themeMode),
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '主题模式',
               subtitle: _themeModeLabel(widget.themeService.themeMode, isDark),
               trailing: Row(
@@ -1896,7 +1903,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.backup_rounded,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '旧版数据导出（迁移专用）',
               subtitle: '导出所有本地数据为 JSON 备份文件',
               onTap: () => _handleExportData(context),
@@ -1905,7 +1912,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.unarchive_rounded,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '新版数据导入',
               subtitle: '从备份 JSON 文件恢复数据到本机',
               onTap: () => _handleImportData(context),
@@ -1914,7 +1921,63 @@ class _ProfileTabState extends State<ProfileTab> {
         ),
         const SizedBox(height: 24),
 
-        // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// 主题色选择
+// ═══════════════════════════════════════════════
+        Text(
+          '主题色',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDark ? const Color(0xFF8A8A8E) : const Color(0xFF8A8A86),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ListenableBuilder(
+          listenable: themeService,
+          builder: (context, _) {
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                buildColorOption(
+                  context,
+                  color: const Color(0xFFF5A9B8),
+                  name: '跨旗粉',
+                  isSelected: themeService.themeColor.toARGB32() ==
+                      const Color(0xFFF5A9B8).toARGB32(),
+                  onTap: () =>
+                      themeService.setThemeColor(const Color(0xFFF5A9B8)),
+                  isDark: isDark,
+                ),
+                buildColorOption(
+                  context,
+                  color: const Color(0xFF5BCEFA),
+                  name: '跨旗蓝',
+                  isSelected: themeService.themeColor.toARGB32() ==
+                      const Color(0xFF5BCEFA).toARGB32(),
+                  onTap: () =>
+                      themeService.setThemeColor(const Color(0xFF5BCEFA)),
+                  isDark: isDark,
+                ),
+                buildColorOption(
+                  context,
+                  color: const Color(0xFFD97757),
+                  name: 'Claude橙',
+                  isSelected: themeService.themeColor.toARGB32() ==
+                      const Color(0xFFD97757).toARGB32(),
+                  onTap: () =>
+                      themeService.setThemeColor(const Color(0xFFD97757)),
+                  strikethrough: true,
+                  isDark: isDark,
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+
+// ═══════════════════════════════════════════════
         //   关于与支持
         // ═══════════════════════════════════════════════
         _buildSectionHeader('关于与支持', isDark: isDark),
@@ -1926,7 +1989,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.info_outline,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '关于',
               subtitle: '应用信息与第三方开源许可',
               onTap: () {
@@ -1940,7 +2003,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.system_update_rounded,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '检查更新',
               subtitle: '手动检测是否有新版本可用',
               onTap: () => _handleCheckUpdate(context),
@@ -1949,7 +2012,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.description_outlined,
-              leadingColor: const Color(0xFFF5A9B8),
+              leadingColor: themeService.themeColor,
               title: '免责声明',
               subtitle: '医疗、数据与开源许可声明',
               onTap: () {
@@ -2116,7 +2179,7 @@ class _ProfileTabState extends State<ProfileTab> {
               SizedBox(
                 width: 110,
                 child: DropdownButtonFormField<String>(
-                  value: _prefixOptions.containsKey(widget.namePrefix)
+                  initialValue: _prefixOptions.containsKey(widget.namePrefix)
                       ? widget.namePrefix
                       : '__custom__',
                   decoration: InputDecoration(
@@ -2228,6 +2291,66 @@ class _ProfileTabState extends State<ProfileTab> {
     );
   }
 
+  Widget buildColorOption(
+    BuildContext context, {
+    required Color color,
+    required String name,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    bool strikethrough = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected
+                    ? (isDark ? Colors.white : Colors.black)
+                    : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: [
+                if (isSelected)
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 12,
+              color: isSelected
+                  ? (isDark ? Colors.white : Colors.black)
+                  : (isDark
+                      ? const Color(0xFF8A8A8E)
+                      : const Color(0xFF8A8A86)),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              decoration: strikethrough ? TextDecoration.lineThrough : null,
+              decorationColor: isSelected
+                  ? (isDark ? Colors.white : Colors.black)
+                  : (isDark
+                      ? const Color(0xFF8A8A8E)
+                      : const Color(0xFF8A8A86)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ════════════════════════════════════════════════════════════
   //  性别认同 BottomSheet
   // ════════════════════════════════════════════════════════════
@@ -2287,14 +2410,15 @@ class _ProfileTabState extends State<ProfileTab> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: selected
-                            ? const BorderSide(
-                                color: Color(0xFFF5A9B8),
+                            ? BorderSide(
+                                color: widget.themeService.themeColor,
                                 width: 1.5,
                               )
                             : BorderSide.none,
                       ),
                       tileColor: selected
-                          ? const Color(0xFFF5A9B8).withOpacity(0.06)
+                          ? widget.themeService.themeColor
+                              .withValues(alpha: 0.06)
                           : (isDark
                               ? const Color(0xFF24242C)
                               : Colors.grey.shade50),
@@ -2305,7 +2429,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                 ? Icons.male
                                 : Icons.transgender,
                         color: selected
-                            ? const Color(0xFFF5A9B8)
+                            ? widget.themeService.themeColor
                             : (isDark
                                 ? Colors.grey.shade400
                                 : Colors.grey.shade500),
@@ -2317,16 +2441,16 @@ class _ProfileTabState extends State<ProfileTab> {
                           fontWeight:
                               selected ? FontWeight.w700 : FontWeight.w500,
                           color: selected
-                              ? const Color(0xFFF5A9B8)
+                              ? widget.themeService.themeColor
                               : (isDark
                                   ? const Color(0xFFEDEDF0)
                                   : const Color(0xFF333333)),
                         ),
                       ),
                       trailing: selected
-                          ? const Icon(
+                          ? Icon(
                               Icons.check_circle,
-                              color: Color(0xFFF5A9B8),
+                              color: widget.themeService.themeColor,
                               size: 22,
                             )
                           : null,
@@ -2400,7 +2524,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   ctx: ctx,
                   mode: ThemeMode.dark,
                   icon: Icons.dark_mode,
-                  iconColor: const Color(0xFFF5A9B8),
+                  iconColor: widget.themeService.themeColor,
                   label: '深色模式',
                   desc: '始终使用深色外观',
                   selected: widget.themeService.themeMode == ThemeMode.dark,
@@ -2436,10 +2560,12 @@ class _ProfileTabState extends State<ProfileTab> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: selected
-            ? const BorderSide(color: Color(0xFFF5A9B8), width: 1.5)
+            ? BorderSide(color: widget.themeService.themeColor, width: 1.5)
             : BorderSide.none,
       ),
-      tileColor: selected ? const Color(0xFFF5A9B8).withOpacity(0.06) : null,
+      tileColor: selected
+          ? widget.themeService.themeColor.withValues(alpha: 0.06)
+          : null,
       leading: Icon(icon, color: iconColor, size: 24),
       title: Text(
         label,
@@ -2453,7 +2579,8 @@ class _ProfileTabState extends State<ProfileTab> {
         style: const TextStyle(fontSize: 12, color: Colors.grey),
       ),
       trailing: selected
-          ? const Icon(Icons.check_circle, color: Color(0xFFF5A9B8), size: 22)
+          ? Icon(Icons.check_circle,
+              color: widget.themeService.themeColor, size: 22)
           : null,
       onTap: () {
         widget.themeService.setThemeMode(mode);

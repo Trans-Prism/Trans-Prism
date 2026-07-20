@@ -174,7 +174,9 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
                       strokeWidth: 4,
                       backgroundColor: trackColor,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isWarning ? warningColor : const Color(0xFFF5A9B8),
+                        isWarning
+                            ? warningColor
+                            : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),

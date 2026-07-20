@@ -77,15 +77,18 @@ class UpdateDialog extends StatelessWidget {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5A9B8).withOpacity(0.12),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'v$version',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFF5A9B8),
+                        color: Theme.of(context).colorScheme.primary,
                         letterSpacing: 0.3,
                       ),
                     ),

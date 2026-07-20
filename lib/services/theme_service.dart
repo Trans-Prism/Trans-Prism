@@ -6,10 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 将用户的亮/暗/系统跟随主题选择持久化到 SharedPreferences。
 class ThemeService extends ChangeNotifier {
   static const String _prefsKey = 'theme_mode';
+  static const String _colorPrefsKey = 'theme_color';
 
   ThemeMode _themeMode = ThemeMode.system;
+  Color _themeColor = const Color(0xFFF5A9B8); // 默认跨旗粉
 
   ThemeMode get themeMode => _themeMode;
+  Color get themeColor => _themeColor;
 
   /// 是否处于暗色模式（基于当前 themeMode 判断）
   bool get isDarkMode {
@@ -24,10 +27,16 @@ class ThemeService extends ChangeNotifier {
   /// 加载持久化的主题偏好
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_prefsKey);
-    if (saved != null) {
-      _themeMode = _themeModeFromString(saved);
+    final savedMode = prefs.getString(_prefsKey);
+    if (savedMode != null) {
+      _themeMode = _themeModeFromString(savedMode);
     }
+
+    final savedColor = prefs.getInt(_colorPrefsKey);
+    if (savedColor != null) {
+      _themeColor = Color(savedColor);
+    }
+
     notifyListeners();
   }
 
@@ -38,6 +47,15 @@ class ThemeService extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsKey, _themeModeToString(mode));
+  }
+
+  /// 设置主题色并持久化
+  Future<void> setThemeColor(Color color) async {
+    _themeColor = color;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_colorPrefsKey, color.value);
   }
 
   /// 切换亮/暗（如果当前是 system 则切换到亮）
