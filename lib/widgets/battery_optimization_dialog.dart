@@ -55,7 +55,7 @@ class _BatteryOptimizationDialogBodyState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final surfaceColor = isDark ? const Color(0xFF24242C) : Colors.white;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(
@@ -222,7 +222,7 @@ class _BatteryOptimizationDialogBodyState
           height: 28,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
+              colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
             ),
             borderRadius: BorderRadius.circular(14),
           ),

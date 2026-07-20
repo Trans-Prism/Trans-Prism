@@ -36,16 +36,16 @@ class F0Meter extends StatelessWidget {
             ? const Color(0xFF8E8E93)
             : Colors.grey;
     final titleColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final noteColor =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
     final helperColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFFBDBDBD);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -194,13 +194,13 @@ class PitchHistoryChart extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final data = f0History;
     final axisColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFFBDBDBD);
 
     return Container(
       height: 180,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[50],
+        color: isDark ? const Color(0xFF24242C) : Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

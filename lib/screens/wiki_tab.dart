@@ -109,7 +109,7 @@ class _WikiTabState extends State<WikiTab> {
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.download_for_offline, color: Color(0xFF5BCEFA)),
+            Icon(Icons.download_for_offline, color: Color(0xFFF5A9B8)),
             SizedBox(width: 8),
             Text('离线版下载'),
           ],
@@ -132,7 +132,7 @@ class _WikiTabState extends State<WikiTab> {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF5BCEFA),
+              backgroundColor: const Color(0xFFF5A9B8),
             ),
             child: const Text('不再提示'),
           ),
@@ -295,9 +295,11 @@ class _WikiTabState extends State<WikiTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       children: [
         // ── 根据身份显示对应 Wiki ──
         if (widget.identity == 'mtf') ...[
@@ -315,14 +317,17 @@ class _WikiTabState extends State<WikiTab> {
           _buildWikiTile('RLE.Wiki', '现实生活体验与社会过渡指南', Icons.book),
           _buildWikiTile('MioMtFWiki', '社区驱动的跨性别知识项目', Icons.auto_stories),
         ],
-        const Divider(height: 32),
+        const SizedBox(height: 32),
         Padding(
-          padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
           child: Text(
             '其他参考资源',
             style: TextStyle(
-              color: isDark ? Colors.grey.shade500 : Colors.grey,
+              color: secondaryColor,
               fontSize: 13,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              height: 1.4,
             ),
           ),
         ),
@@ -430,7 +435,7 @@ class _WikiTabState extends State<WikiTab> {
               child: CupertinoSwitch(
                 value: switchValue,
                 onChanged: (v) => _handleOfflineToggle(wikiType!, v),
-                activeColor: const Color(0xFF5BCEFA),
+                activeColor: const Color(0xFFF5A9B8),
               ),
             ),
           ),
@@ -442,23 +447,32 @@ class _WikiTabState extends State<WikiTab> {
           color: isDark ? Colors.grey.shade600 : null);
     }
 
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+          color: isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5),
+          width: 0.5,
+        ),
       ),
       child: ListTile(
-        leading: GradientIcon(icon, size: 28),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Icon(icon, size: 22, color: secondaryColor),
         title: Text(displayTitle,
             style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? const Color(0xFFF5F5F7) : null)),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+                color: textColor)),
         subtitle: Text(effectiveSubtitle,
-            style: TextStyle(
-                fontSize: 12, color: isDark ? Colors.grey.shade400 : null)),
+            style: TextStyle(fontSize: 13, height: 1.4, color: secondaryColor)),
         trailing: trailing,
         onTap: () => _openWikiReader(context, displayTitle),
       ),

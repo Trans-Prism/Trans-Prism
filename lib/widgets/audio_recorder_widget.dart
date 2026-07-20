@@ -168,7 +168,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF616161);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF616161);
     final helperTextColor =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFF757575);
     final completedBg =
@@ -204,7 +204,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
               value: progress,
               minHeight: 6,
               backgroundColor:
-                  isDark ? const Color(0xFF2C2C2E) : Colors.grey[200],
+                  isDark ? const Color(0xFF24242C) : Colors.grey[200],
               valueColor:
                   const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
             ),

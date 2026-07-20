@@ -12,7 +12,7 @@ class DisclaimerViewScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Scaffold(
       appBar: AppBar(

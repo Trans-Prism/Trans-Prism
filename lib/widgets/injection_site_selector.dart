@@ -140,7 +140,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     final templateId = await showDialog<String>(
       context: context,
@@ -165,7 +165,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Material(
                     color:
-                        isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+                        isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -177,7 +177,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                           children: [
                             const Icon(
                               Icons.swap_horiz_rounded,
-                              color: Color(0xFF5BCEFA),
+                              color: Color(0xFFF5A9B8),
                               size: 22,
                             ),
                             const SizedBox(width: 12),
@@ -195,7 +195,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF5BCEFA).withOpacity(0.1),
+                                color: const Color(0xFFF5A9B8).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -203,7 +203,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF5BCEFA),
+                                  color: Color(0xFFF5A9B8),
                                 ),
                               ),
                             ),
@@ -297,7 +297,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
               const Icon(
                 Icons.swap_horiz_rounded,
                 size: 14,
-                color: Color(0xFF5BCEFA),
+                color: Color(0xFFF5A9B8),
               ),
               const SizedBox(width: 4),
               Text(
@@ -316,7 +316,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                   '更换',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF5BCEFA),
+                    color: Color(0xFFF5A9B8),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -333,7 +333,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                   const Icon(
                     Icons.auto_awesome,
                     size: 13,
-                    color: Color(0xFF5BCEFA),
+                    color: Color(0xFFF5A9B8),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -341,7 +341,7 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF5BCEFA),
+                      color: Color(0xFFF5A9B8),
                     ),
                   ),
                 ],
@@ -367,22 +367,22 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
                           size: 14,
                           color: isSelected
                               ? Colors.white
-                              : const Color(0xFF5BCEFA),
+                              : const Color(0xFFF5A9B8),
                         ),
                       ),
                     Text(site),
                   ],
                 ),
                 selected: isSelected,
-                selectedColor: const Color(0xFF5BCEFA),
+                selectedColor: const Color(0xFFF5A9B8),
                 backgroundColor:
-                    isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+                    isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
                 labelStyle: TextStyle(
                   fontSize: 13,
                   fontWeight: isRecommended ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? Colors.white
-                      : (isDark ? const Color(0xFFF5F5F7) : null),
+                      : (isDark ? const Color(0xFFEDEDF0) : null),
                 ),
                 side: BorderSide.none,
                 shape: RoundedRectangleBorder(
@@ -413,14 +413,14 @@ class _InjectionSiteSelectorState extends State<InjectionSiteSelector> {
         icon: Icon(
           Icons.add_rounded,
           size: 16,
-          color: _bindingInProgress ? Colors.grey : const Color(0xFF5BCEFA),
+          color: _bindingInProgress ? Colors.grey : const Color(0xFFF5A9B8),
         ),
         label: Text(
           _bindingInProgress ? '加载中...' : '开启注射部位轮换（仅限注射剂）',
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: _bindingInProgress ? Colors.grey : const Color(0xFF5BCEFA),
+            color: _bindingInProgress ? Colors.grey : const Color(0xFFF5A9B8),
           ),
         ),
         style: TextButton.styleFrom(

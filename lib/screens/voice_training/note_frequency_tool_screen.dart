@@ -338,14 +338,14 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final resultBg = isDark ? const Color(0xFF1E4D4F) : const Color(0xFFE0F7FA);
     final resultFg = isDark ? const Color(0xFF80DEEA) : const Color(0xFF00838F);
     final errorFg = isDark ? const Color(0xFFFF8A80) : const Color(0xFFC62828);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -454,9 +454,9 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
   Widget _buildReferenceTable() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF616161);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF616161);
     const references = [
       {'range': '男性说话嗓音', 'min': '85', 'max': '180'},
       {'range': '女性说话嗓音', 'min': '165', 'max': '255'},
@@ -469,7 +469,7 @@ class _NoteFrequencyToolScreenState extends State<NoteFrequencyToolScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

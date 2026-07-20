@@ -99,7 +99,7 @@ class _TVQGSurveyScreenState extends State<TVQGSurveyScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark ? const Color(0xFF24242C) : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -143,16 +143,16 @@ class _TVQGSurveyScreenState extends State<TVQGSurveyScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final item = _items[index];
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Card(
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE),
+          color: isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE),
         ),
       ),
       child: Padding(
@@ -219,7 +219,7 @@ class _TVQGSurveyScreenState extends State<TVQGSurveyScreen> {
     final inactiveValue =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
     final inactiveLabel =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF8E8E93);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93);
     return Expanded(
       child: InkWell(
         onTap: () {
@@ -232,7 +232,7 @@ class _TVQGSurveyScreenState extends State<TVQGSurveyScreen> {
             color: isSelected
                 ? const Color(0xFF7B1FA2).withOpacity(0.15)
                 : isDark
-                    ? const Color(0xFF2C2C2E)
+                    ? const Color(0xFF24242C)
                     : Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
             border: Border.all(

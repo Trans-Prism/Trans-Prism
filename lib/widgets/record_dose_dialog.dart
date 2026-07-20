@@ -118,9 +118,9 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
     final drug = widget.drug;
 
@@ -157,12 +157,12 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5BCEFA).withOpacity(0.1),
+                    color: const Color(0xFFF5A9B8).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.medication_liquid_outlined,
-                    color: Color(0xFF5BCEFA),
+                    color: Color(0xFFF5A9B8),
                     size: 22,
                   ),
                 ),
@@ -291,7 +291,7 @@ class _RecordDoseDialogState extends State<RecordDoseDialog> {
                     child: FilledButton.icon(
                       onPressed: _submitting ? null : _confirmDose,
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF5BCEFA),
+                        backgroundColor: const Color(0xFFF5A9B8),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

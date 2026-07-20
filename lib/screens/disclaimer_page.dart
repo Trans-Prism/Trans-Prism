@@ -152,20 +152,18 @@ class _DisclaimerPageState extends State<DisclaimerPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── 标题 ──
-                    Icon(Icons.gavel,
-                        size: 48, color: theme.colorScheme.primary),
+                    // ── 标题（Claude 风格克制） ──
+                    Icon(Icons.gavel_outlined,
+                        size: 36, color: theme.iconTheme.color),
                     const SizedBox(height: 16),
                     Text(
                       '免责与使用声明',
-                      style: theme.textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.displayMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '在使用本应用前，请您仔细阅读以下全部声明。',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: Colors.grey.shade700),
+                      style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 24),
 

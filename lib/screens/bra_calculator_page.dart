@@ -139,21 +139,21 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
 
     // ── 动态色板 ──
     final scaffoldBg = isDark ? Colors.black : Colors.grey[50]!;
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final cardBg = isDark ? const Color(0xFF24242C) : Colors.white;
     final primaryText = isDark ? Colors.white : Colors.black;
     final secondaryText = isDark ? Colors.white54 : Colors.black45;
     final tertiaryText =
-        isDark ? const Color(0xFF636366) : const Color(0xFF8E8E93);
+        isDark ? const Color(0xFF6B6B76) : const Color(0xFF8E8E93);
     final inputFill = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.black.withValues(alpha: 0.04);
     final hintColor = isDark ? Colors.white54 : Colors.black38;
     final iconColor = isDark ? Colors.white : Colors.black;
     final dividerColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFC6C6C8);
+        isDark ? const Color(0xFF333338) : const Color(0xFFC6C6C8);
     final buttonBg = isDark ? Colors.white : Colors.black;
     final buttonText = isDark ? Colors.black : Colors.white;
-    final brandBlue = const Color(0xFF5BCEFA);
+    final brandBlue = const Color(0xFFF5A9B8);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -425,7 +425,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     final needsBra = result.needsBra;
     final sizeDisplay = result.fullSize.isNotEmpty ? result.fullSize : '--';
     final privacyBg =
-        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
+        isDark ? const Color(0xFF24242C) : const Color(0xFFF2F2F7);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
@@ -440,7 +440,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                 height: 88,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
+                    colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -548,7 +548,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
   }
 
   Widget _dr(String label, String value, Color primaryText, Color tertiaryText,
-      {bool accent = false, Color accentColor = const Color(0xFF5BCEFA)}) {
+      {bool accent = false, Color accentColor = const Color(0xFFF5A9B8)}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -567,7 +567,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7),
+        color: isDark ? const Color(0xFF333338) : const Color(0xFFF2F2F7),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(text,
@@ -584,10 +584,10 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     if (!mounted) return;
 
     final bg = isDark ? Colors.black : Colors.grey[50]!;
-    final card = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final card = isDark ? const Color(0xFF24242C) : Colors.white;
     final text = isDark ? Colors.white : Colors.black;
     final secondary = isDark ? Colors.white54 : Colors.black45;
-    final brandBlue = const Color(0xFF5BCEFA);
+    final brandBlue = const Color(0xFFF5A9B8);
 
     showModalBottomSheet(
       context: context,
@@ -650,7 +650,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                                                 Navigator.pop(dCtx, false),
                                             child: const Text('取消',
                                                 style: TextStyle(
-                                                    color: Color(0xFF5BCEFA)))),
+                                                    color: Color(0xFFF5A9B8)))),
                                         TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(dCtx, true),
@@ -715,7 +715,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                                               style: const TextStyle(
                                                   fontSize: 17,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF5BCEFA)))),
+                                                  color: Color(0xFFF5A9B8)))),
                                     ),
                                     const SizedBox(width: 14),
                                     Expanded(

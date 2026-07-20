@@ -39,7 +39,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Scaffold(
       appBar: AppBar(
@@ -97,10 +97,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildInfoCard() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -146,7 +146,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildInfoRow(IconData icon, String primary, String? secondary) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -185,10 +185,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildDepartmentAndTags() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -217,7 +217,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5BCEFA).withOpacity(0.08),
+                    color: const Color(0xFFF5A9B8).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -225,7 +225,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF5BCEFA),
+                      color: Color(0xFFF5A9B8),
                     ),
                   ),
                 );
@@ -277,10 +277,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildDoctorsSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -323,7 +323,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildDoctorTile(MedicalDoctor doctor) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -331,8 +331,8 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF5BCEFA).withOpacity(0.1),
-            child: const Icon(Icons.person, size: 20, color: Color(0xFF5BCEFA)),
+            backgroundColor: const Color(0xFFF5A9B8).withOpacity(0.1),
+            child: const Icon(Icons.person, size: 20, color: Color(0xFFF5A9B8)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -381,10 +381,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildNotesSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -430,10 +430,10 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
   Widget _buildSourceLink() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -497,7 +497,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -507,7 +507,7 @@ class _InstitutionDetailScreenState extends State<InstitutionDetailScreen> {
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+          color: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
         ),
         child: Center(
           child: Column(

@@ -245,15 +245,15 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   Widget _buildSetupPage() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final infoTitle =
         isDark ? const Color(0xFF80DEEA) : const Color(0xFF00838F);
     final infoText = isDark ? const Color(0xFFB2EBF2) : const Color(0xFF006064);
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
     final borderColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -321,7 +321,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                         color: isSelected
                             ? const Color(0xFF14B8A6)
                             : isDark
-                                ? const Color(0xFF3A3A3C)
+                                ? const Color(0xFF333338)
                                 : Colors.grey[300],
                       ),
                     ),
@@ -446,7 +446,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   Widget _buildPracticePage() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final mutedText =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     final progress = _currentTargetIndex / _mode.patternOffsets.length;
@@ -460,7 +460,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
             value: progress,
             minHeight: 6,
             backgroundColor:
-                isDark ? const Color(0xFF2C2C2E) : Colors.grey[200],
+                isDark ? const Color(0xFF24242C) : Colors.grey[200],
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
           ),
         ),
@@ -485,7 +485,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 32),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            color: isDark ? const Color(0xFF24242C) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -524,7 +524,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            color: isDark ? const Color(0xFF24242C) : Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -579,7 +579,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark ? const Color(0xFF24242C) : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -612,7 +612,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                     : isCurrent
                         ? const Color(0xFF14B8A6)
                         : isDark
-                            ? const Color(0xFF2C2C2E)
+                            ? const Color(0xFF24242C)
                             : Colors.grey[200],
               ),
               child: Center(
@@ -690,7 +690,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                       ? const Color(0xFF4CAF50)
                       : const Color(0xFFF44336),
                   border: Border.all(
-                      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                      color: isDark ? const Color(0xFF24242C) : Colors.white,
                       width: 2),
                   boxShadow: [
                     BoxShadow(
@@ -722,9 +722,9 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
   Widget _buildResultPage() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final accuracy = _totalAttempts > 0
         ? (_successfulHits / _totalAttempts * 100).round()
         : 0;
@@ -786,14 +786,14 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
                         ? const Color(0xFF173522)
                         : const Color(0xFFE8F5E9)
                     : isDark
-                        ? const Color(0xFF2C2C2E)
+                        ? const Color(0xFF24242C)
                         : Colors.grey[100],
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: hit
                       ? const Color(0xFF4CAF50)
                       : isDark
-                          ? const Color(0xFF3A3A3C)
+                          ? const Color(0xFF333338)
                           : Colors.grey[300]!,
                 ),
               ),
@@ -844,7 +844,7 @@ class _ScalePracticeScreenState extends State<ScalePracticeScreen> {
             style: TextStyle(
                 fontSize: 14,
                 color: isDark
-                    ? const Color(0xFFAEAEB2)
+                    ? const Color(0xFF8E8E96)
                     : const Color(0xFF616161))),
         Text(value,
             style: TextStyle(

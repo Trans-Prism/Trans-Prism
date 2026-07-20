@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,110 +42,259 @@ void main() {
   runApp(const TransToolboxApp());
 }
 
-/// 构建亮色主题
+/// 构建亮色主题 — 温润纸张 · 呼吸感
+///
+/// 设计 Token：
+///   surface       #F9F8F6  燕麦暖纸底（消除临床感）
+///   card          #FFFFFF  仅柔弥散阴影，无边框
+///   text-primary  #333333  深灰（非刺眼纯黑）
+///   text-secondary#8A8A86  细腻浅灰
+///   accent        #F5A9B8  跨性别旗帜粉（品牌色）
 ThemeData _buildLightTheme() {
   return ThemeData(
-    scaffoldBackgroundColor: const Color(0xFFFAFAFC),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF5BCEFA),
-      primary: const Color(0xFF5BCEFA),
-      secondary: const Color(0xFFF5A9B8),
-      surface: const Color(0xFFFAFAFC),
+    scaffoldBackgroundColor: const Color(0xFFF9F8F6),
+    colorScheme: const ColorScheme(
       brightness: Brightness.light,
+      primary: Color(0xFFF5A9B8),
+      onPrimary: Color(0xFF3A1A22),
+      secondary: Color(0xFFF5A9B8),
+      onSecondary: Color(0xFF3A1A22),
+      surface: Color(0xFFF9F8F6),
+      onSurface: Color(0xFF333333),
+      error: Color(0xFFC44A4A),
+      onError: Colors.white,
+    ),
+    textTheme: const TextTheme(
+      displayLarge: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF333333),
+        height: 1.2,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF333333),
+        height: 1.25,
+        letterSpacing: -0.3,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF333333),
+        height: 1.35,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF333333),
+        height: 1.4,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFF4A4A4A),
+        height: 1.6,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFF6A6A66),
+        height: 1.6,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFF9A9A96),
+        height: 1.5,
+      ),
+      labelLarge: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF8A8A86),
+        height: 1.4,
+        letterSpacing: 0.5,
+      ),
+      labelSmall: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF8E8E96),
+        height: 1.3,
+        letterSpacing: 0.3,
+      ),
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xFFF9F8F6),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF1D1D1F),
-        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF333333),
+        fontSize: 22,
+        height: 1.3,
+        letterSpacing: -0.2,
       ),
+      iconTheme: IconThemeData(color: Color(0xFF333333)),
+      actionsIconTheme: IconThemeData(color: Color(0xFF333333)),
     ),
+    iconTheme: const IconThemeData(color: Color(0xFF8A8A86)),
     cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(16),
       ),
       color: Colors.white,
+      margin: EdgeInsets.zero,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F8F6),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       indicatorColor: Colors.transparent,
+      height: 64,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF5BCEFA),
+            color: Color(0xFFF5A9B8),
+            height: 1.3,
           );
         }
-        return const TextStyle(fontSize: 11, color: Color(0xFF86868B));
+        return const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF8A8A86),
+          height: 1.3,
+        );
       }),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: Color(0xFFF5A9B8), size: 24);
+        }
+        return const IconThemeData(color: Color(0xFF8A8A86), size: 24);
+      }),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: Color(0xFFE8E8E5),
+      thickness: 0.5,
+      space: 1,
     ),
     useMaterial3: true,
   );
 }
 
-/// 构建暗色主题
+/// 构建暗色主题 — 温润暖夜 · 呼吸感
 ThemeData _buildDarkTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color(0xFF0F0F12),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF5BCEFA),
-      primary: const Color(0xFF5BCEFA),
-      secondary: const Color(0xFFF5A9B8),
-      surface: const Color(0xFF1C1C1E),
+    scaffoldBackgroundColor: const Color(0xFF1C1C1A),
+    colorScheme: const ColorScheme(
       brightness: Brightness.dark,
+      primary: Color(0xFFF5A9B8),
+      onPrimary: Color(0xFF3A1A22),
+      secondary: Color(0xFFF5A9B8),
+      onSecondary: Color(0xFF3A1A22),
+      surface: Color(0xFF1C1C1A),
+      onSurface: Color(0xFFEDEDF0),
+      error: Color(0xFFE57373),
+      onError: Color(0xFF1A1A1A),
     ),
     // ── 文字主题 ──
     textTheme: const TextTheme(
-      titleLarge: TextStyle(color: Color(0xFFF5F5F7)),
-      titleMedium: TextStyle(color: Color(0xFFF5F5F7)),
-      titleSmall: TextStyle(color: Color(0xFFF5F5F7)),
-      bodyLarge: TextStyle(color: Color(0xFFF5F5F7)),
-      bodyMedium: TextStyle(color: Color(0xFFF5F5F7)),
-      bodySmall: TextStyle(color: Color(0xFFAEAEB2)),
-      labelLarge: TextStyle(color: Color(0xFFF5F5F7)),
-      labelMedium: TextStyle(color: Color(0xFFAEAEB2)),
-      labelSmall: TextStyle(color: Color(0xFF636366)),
+      displayLarge: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFFEDEDF0),
+        height: 1.2,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFFEDEDF0),
+        height: 1.25,
+        letterSpacing: -0.3,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFFEDEDF0),
+        height: 1.35,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFFEDEDF0),
+        height: 1.4,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFFEDEDF0),
+        height: 1.6,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFFC8C8CC),
+        height: 1.6,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: Color(0xFF7A7A82),
+        height: 1.5,
+      ),
+      labelLarge: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF7A7A82),
+        height: 1.4,
+        letterSpacing: 0.5,
+      ),
+      labelSmall: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF6B6B76),
+        height: 1.3,
+        letterSpacing: 0.3,
+      ),
     ),
     // ── AppBar ──
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xFF1C1C1A),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
-        fontWeight: FontWeight.w800,
-        color: Color(0xFFF5F5F7),
-        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFFEDEDF0),
+        fontSize: 22,
+        height: 1.3,
+        letterSpacing: -0.2,
       ),
-      iconTheme: IconThemeData(color: Color(0xFFAEAEB2)),
-      actionsIconTheme: IconThemeData(color: Color(0xFFAEAEB2)),
+      iconTheme: IconThemeData(color: Color(0xFFEDEDF0)),
+      actionsIconTheme: IconThemeData(color: Color(0xFFEDEDF0)),
     ),
     // ── 图标主题 ──
-    iconTheme: const IconThemeData(color: Color(0xFFAEAEB2)),
-    primaryIconTheme: const IconThemeData(color: Color(0xFF5BCEFA)),
-    // ── 卡片 ──
+    iconTheme: const IconThemeData(color: Color(0xFF8E8E96)),
+    primaryIconTheme: const IconThemeData(color: Color(0xFFEDEDF0)),
+    // ── 卡片（去边框，仅柔弥散阴影） ──
     cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFF3A3A3C)),
+        borderRadius: BorderRadius.circular(16),
       ),
-      color: const Color(0xFF1C1C1E),
+      color: const Color(0xFF24242C),
+      margin: EdgeInsets.zero,
     ),
     // ── 底部导航栏 ──
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: const Color(0xFF1C1C1A),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       indicatorColor: Colors.transparent,
@@ -152,116 +303,116 @@ ThemeData _buildDarkTheme() {
           return const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF5BCEFA),
+            color: Color(0xFFF5A9B8),
           );
         }
-        return const TextStyle(fontSize: 11, color: Color(0xFF636366));
+        return const TextStyle(fontSize: 11, color: Color(0xFF6B6B76));
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: Color(0xFF5BCEFA));
+          return const IconThemeData(color: Color(0xFFF5A9B8));
         }
-        return const IconThemeData(color: Color(0xFF636366));
+        return const IconThemeData(color: Color(0xFF6B6B76));
       }),
     ),
     // ── 底部应用栏 ──
-    bottomAppBarTheme: const BottomAppBarThemeData(color: Color(0xFF1C1C1E)),
+    bottomAppBarTheme: const BottomAppBarThemeData(color: Color(0xFF1C1C1A)),
     // ── 对话框 ──
     dialogTheme: DialogThemeData(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: const Color(0xFF24242C),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       titleTextStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: Color(0xFFF5F5F7),
+        color: Color(0xFFEDEDF0),
       ),
-      contentTextStyle: const TextStyle(fontSize: 14, color: Color(0xFFAEAEB2)),
+      contentTextStyle: const TextStyle(fontSize: 14, color: Color(0xFF8E8E96)),
     ),
     // ── 输入框 ──
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2C2C2E),
+      fillColor: const Color(0xFF24242C),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF3A3A3C)),
+        borderSide: const BorderSide(color: Color(0xFF333338)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF3A3A3C)),
+        borderSide: const BorderSide(color: Color(0xFF333338)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF5BCEFA)),
+        borderSide: const BorderSide(color: Color(0xFFF5A9B8)),
       ),
-      labelStyle: const TextStyle(color: Color(0xFFAEAEB2)),
-      hintStyle: const TextStyle(color: Color(0xFF636366)),
+      labelStyle: const TextStyle(color: Color(0xFF8E8E96)),
+      hintStyle: const TextStyle(color: Color(0xFF6B6B76)),
     ),
     // ── 下拉菜单 ──
     dropdownMenuTheme: DropdownMenuThemeData(
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF2C2C2E),
+        fillColor: const Color(0xFF24242C),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3A3A3C)),
+          borderSide: const BorderSide(color: Color(0xFF333338)),
         ),
       ),
     ),
     // ── 弹出菜单 ──
     popupMenuTheme: PopupMenuThemeData(
-      color: const Color(0xFF2C2C2E),
+      color: const Color(0xFF24242C),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      textStyle: const TextStyle(color: Color(0xFFF5F5F7), fontSize: 14),
+      textStyle: const TextStyle(color: Color(0xFFEDEDF0), fontSize: 14),
     ),
     // ── 菜单按钮 ──
     menuTheme: MenuThemeData(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(const Color(0xFF2C2C2E)),
+        backgroundColor: WidgetStateProperty.all(const Color(0xFF24242C)),
       ),
     ),
     // ── 开关 ──
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF5BCEFA);
+          return const Color(0xFFF5A9B8);
         }
         return Colors.grey.shade500;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF5BCEFA).withOpacity(0.3);
+          return const Color(0xFFF5A9B8).withOpacity(0.3);
         }
-        return const Color(0xFF3A3A3C);
+        return const Color(0xFF333338);
       }),
     ),
     // ── Chip ──
     chipTheme: ChipThemeData(
-      backgroundColor: const Color(0xFF2C2C2E),
-      labelStyle: const TextStyle(color: Color(0xFFF5F5F7)),
-      secondaryLabelStyle: const TextStyle(color: Color(0xFFAEAEB2)),
+      backgroundColor: const Color(0xFF24242C),
+      labelStyle: const TextStyle(color: Color(0xFFEDEDF0)),
+      secondaryLabelStyle: const TextStyle(color: Color(0xFF8E8E96)),
       side: BorderSide.none,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     // ── 按钮 ──
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        foregroundColor: const Color(0xFFF5F5F7),
-        backgroundColor: const Color(0xFF5BCEFA),
+        foregroundColor: const Color(0xFFEDEDF0),
+        backgroundColor: const Color(0xFFF5A9B8),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: const Color(0xFF5BCEFA),
+        backgroundColor: const Color(0xFFF5A9B8),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: const Color(0xFF5BCEFA)),
+      style: TextButton.styleFrom(foregroundColor: const Color(0xFFF5A9B8)),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFFF5F5F7),
-        side: const BorderSide(color: Color(0xFF3A3A3C)),
+        foregroundColor: const Color(0xFFEDEDF0),
+        side: const BorderSide(color: Color(0xFF333338)),
       ),
     ),
     // ── 复选框、单选按钮 ──
@@ -269,75 +420,75 @@ ThemeData _buildDarkTheme() {
       checkColor: WidgetStateProperty.all(Colors.white),
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF5BCEFA);
+          return const Color(0xFFF5A9B8);
         }
-        return const Color(0xFF3A3A3C);
+        return const Color(0xFF333338);
       }),
     ),
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF5BCEFA);
+          return const Color(0xFFF5A9B8);
         }
-        return const Color(0xFFAEAEB2);
+        return const Color(0xFF8E8E96);
       }),
     ),
     // ── 进度条 ──
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: Color(0xFF5BCEFA),
-      circularTrackColor: Color(0xFF3A3A3C),
-      linearTrackColor: Color(0xFF3A3A3C),
+      color: Color(0xFFF5A9B8),
+      circularTrackColor: Color(0xFF333338),
+      linearTrackColor: Color(0xFF333338),
     ),
     // ── 分隔线 ──
-    dividerTheme: const DividerThemeData(color: Color(0xFF3A3A3C), space: 1),
+    dividerTheme: const DividerThemeData(color: Color(0xFF333338), space: 1),
     // ── 时间选择器、日期选择器 ──
     datePickerTheme: DatePickerThemeData(
-      backgroundColor: const Color(0xFF2C2C2E),
-      headerBackgroundColor: const Color(0xFF1C1C1E),
-      headerForegroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: const Color(0xFF24242C),
+      headerBackgroundColor: const Color(0xFF1C1C1A),
+      headerForegroundColor: const Color(0xFFEDEDF0),
       dayForegroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return Colors.white;
         }
-        return const Color(0xFFF5F5F7);
+        return const Color(0xFFEDEDF0);
       }),
       dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF5BCEFA);
+          return const Color(0xFFF5A9B8);
         }
         return null;
       }),
-      todayForegroundColor: WidgetStateProperty.all(const Color(0xFF5BCEFA)),
+      todayForegroundColor: WidgetStateProperty.all(const Color(0xFFF5A9B8)),
       surfaceTintColor: Colors.transparent,
     ),
     timePickerTheme: const TimePickerThemeData(
-      backgroundColor: Color(0xFF2C2C2E),
-      hourMinuteColor: Color(0xFF1C1C1E),
-      hourMinuteTextColor: Color(0xFFF5F5F7),
-      dayPeriodTextColor: Color(0xFFF5F5F7),
-      dialHandColor: Color(0xFF5BCEFA),
-      dialBackgroundColor: Color(0xFF1C1C1E),
-      dialTextColor: Color(0xFFF5F5F7),
-      entryModeIconColor: Color(0xFF5BCEFA),
+      backgroundColor: Color(0xFF24242C),
+      hourMinuteColor: Color(0xFF1C1C1A),
+      hourMinuteTextColor: Color(0xFFEDEDF0),
+      dayPeriodTextColor: Color(0xFFEDEDF0),
+      dialHandColor: Color(0xFFF5A9B8),
+      dialBackgroundColor: Color(0xFF1C1C1A),
+      dialTextColor: Color(0xFFEDEDF0),
+      entryModeIconColor: Color(0xFFF5A9B8),
     ),
     // ── 提示框 ──
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: const Color(0xFF2C2C2E),
-      contentTextStyle: const TextStyle(color: Color(0xFFF5F5F7)),
+      backgroundColor: const Color(0xFF24242C),
+      contentTextStyle: const TextStyle(color: Color(0xFFEDEDF0)),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     // ── 工具提示 ──
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2E),
+        color: const Color(0xFF24242C),
         borderRadius: BorderRadius.circular(8),
       ),
-      textStyle: const TextStyle(color: Color(0xFFF5F5F7), fontSize: 12),
+      textStyle: const TextStyle(color: Color(0xFFEDEDF0), fontSize: 12),
     ),
     // ── BottomSheet ──
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Color(0xFF1C1C1E),
+      backgroundColor: Color(0xFF1C1C1A),
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -345,9 +496,9 @@ ThemeData _buildDarkTheme() {
     ),
     // ── TabBar ──
     tabBarTheme: const TabBarThemeData(
-      labelColor: Color(0xFF5BCEFA),
-      unselectedLabelColor: Color(0xFF636366),
-      indicatorColor: Color(0xFF5BCEFA),
+      labelColor: Color(0xFFF5A9B8),
+      unselectedLabelColor: Color(0xFF6B6B76),
+      indicatorColor: Color(0xFFF5A9B8),
     ),
   );
 }
@@ -429,8 +580,8 @@ class _AppRootControllerState extends State<AppRootController> {
     await NotificationService().requestPermission();
 
     // 3. 批量请求所有关键保活权限（通知 + 精确闹钟 + 忽略电池优化）
-    final permResult = await PermissionManager()
-        .requestAllCriticalPermissions();
+    final permResult =
+        await PermissionManager().requestAllCriticalPermissions();
     debugPrint('📋 [main] 权限请求总览: $permResult');
   }
 
@@ -461,12 +612,12 @@ class _AppRootControllerState extends State<AppRootController> {
     debugPrint('🔍 搜索"🦈": ${emojiResult.map((r) => r.displayName).toList()}');
 
     // 测试 5：getSvgPath fallback
-    final transSym = svc.searchResources('trans symbol').first;
+    final transSym = svc.searchResources('trans symbol').firstOrNull;
     debugPrint(
-      '📁 trans_symbol twemoji path: ${transSym.getSvgPath(preferredStyle: "twemoji")}',
+      '📁 trans_symbol twemoji path: ${transSym?.getSvgPath(preferredStyle: "twemoji") ?? 'N/A'}',
     );
     debugPrint(
-      '📁 trans_symbol openmoji fallback: ${transSym.getSvgPath(preferredStyle: "openmoji")}',
+      '📁 trans_symbol openmoji fallback: ${transSym?.getSvgPath(preferredStyle: "openmoji") ?? 'N/A'}',
     );
 
     // 测试 6：无结果
@@ -591,9 +742,8 @@ class _AppRootControllerState extends State<AppRootController> {
       return OnboardingScreen(onSelect: _handleIdentitySelection);
     }
 
-    final displayName = _namePrefix.isEmpty
-        ? _greetingName
-        : '$_namePrefix. $_greetingName';
+    final displayName =
+        _namePrefix.isEmpty ? _greetingName : '$_namePrefix. $_greetingName';
 
     return MainDashboard(
       genderIdentity: _genderIdentity!,
@@ -626,10 +776,10 @@ class OnboardingScreen extends StatelessWidget {
                 ? [
                     const Color(0xFF1a1a2e),
                     const Color(0xFF16213e),
-                    const Color(0xFF0F0F12),
+                    const Color(0xFF1C1C1A),
                   ]
                 : [
-                    const Color(0xFF5BCEFA),
+                    const Color(0xFFF5A9B8),
                     const Color(0xFFF5A9B8),
                     Colors.white,
                   ],
@@ -678,7 +828,7 @@ class OnboardingScreen extends StatelessWidget {
                   title: 'FtM (跨性别男性)',
                   subtitle: '展现男性特质 / 获取 FtM 实用指南',
                   icon: Icons.male,
-                  color: const Color(0xFF5BCEFA),
+                  color: const Color(0xFFF5A9B8),
                   onTap: () => onSelect(GenderIdentity.ftm),
                   isDark: isDark,
                 ),
@@ -716,7 +866,7 @@ class OnboardingScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF2C2C2E).withOpacity(0.9)
+              ? const Color(0xFF24242C).withOpacity(0.9)
               : Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -846,9 +996,8 @@ class _MainDashboardState extends State<MainDashboard> {
   ///   4. 回滚：下滑/遮罩关闭（未点击保存）→ 恢复 [originalConfig] → 无痕回滚
   Future<void> _showHomeModuleSettings() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? const Color(0xFFF5F5F7)
-        : const Color(0xFF1D1D1F);
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     // ── 1. 快照：深拷贝当前配置 ──
     final originalConfig = Map<String, bool>.from(_moduleVisibility);
@@ -927,7 +1076,7 @@ class _MainDashboardState extends State<MainDashboard> {
                               ),
                             ),
                             value: _moduleVisibility[key] ?? true,
-                            activeColor: const Color(0xFF5BCEFA),
+                            activeColor: const Color(0xFFF5A9B8),
                             onChanged: (value) {
                               // ── 实时预览：直接更新首页 State ──
                               setState(() {
@@ -954,7 +1103,7 @@ class _MainDashboardState extends State<MainDashboard> {
                             if (ctx.mounted) Navigator.pop(ctx, true);
                           },
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF5BCEFA),
+                            backgroundColor: const Color(0xFFF5A9B8),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -988,103 +1137,137 @@ class _MainDashboardState extends State<MainDashboard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? const Color(0xFFF5F5F7)
-        : const Color(0xFF1D1D1F);
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+
+    final unselectedColor =
+        isDark ? const Color(0xFF6B6B76) : const Color(0xFF8A8A86);
 
     return Scaffold(
       // ── 根据当前 Tab 显示不同的 AppBar ──
       appBar: _buildAppBar(textColor, isDark),
-      body: IndexedStack(
-        index: _currentIndex,
+      extendBody: true,
+      body: Stack(
         children: [
-          // 0: 首页 (Home)
-          HomeTab(
-            genderIdentity: widget.genderIdentity,
-            greetingDisplayName: widget.greetingDisplayName,
-            moduleVisibility: _moduleVisibility,
+          // 主内容区（留出底部空间避免被 Pill Bar 遮挡）
+          Padding(
+            padding: const EdgeInsets.only(bottom: 88),
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                // 0: 首页 (Home)
+                HomeTab(
+                  genderIdentity: widget.genderIdentity,
+                  greetingDisplayName: widget.greetingDisplayName,
+                  moduleVisibility: _moduleVisibility,
+                ),
+                // 1: 百科 (Wiki)
+                WikiTab(identity: widget.genderIdentity),
+                // 2: 工作台 (Workspace)
+                WorkspaceTab(genderIdentity: widget.genderIdentity),
+                // 3: 我的 (Profile)
+                ProfileTab(
+                  genderIdentity: widget.genderIdentity,
+                  onIdentityChanged: widget.onIdentityChanged,
+                  greetingName: widget.greetingName,
+                  namePrefix: widget.namePrefix,
+                  onGreetingNameChanged: widget.onGreetingNameChanged,
+                  onNamePrefixChanged: widget.onNamePrefixChanged,
+                  themeService: widget.themeService,
+                ),
+              ],
+            ),
           ),
-          // 1: 百科 (Wiki)
-          WikiTab(identity: widget.genderIdentity),
-          // 2: 工作台 (Workspace)
-          WorkspaceTab(genderIdentity: widget.genderIdentity),
-          // 3: 我的 (Profile)
-          ProfileTab(
-            genderIdentity: widget.genderIdentity,
-            onIdentityChanged: widget.onIdentityChanged,
-            greetingName: widget.greetingName,
-            namePrefix: widget.namePrefix,
-            onGreetingNameChanged: widget.onGreetingNameChanged,
-            onNamePrefixChanged: widget.onNamePrefixChanged,
-            themeService: widget.themeService,
+          // ── 悬浮胶囊导航栏 ──
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 8,
+            left: 16,
+            right: 16,
+            child: _buildPillNav(isDark, textColor, unselectedColor),
           ),
         ],
       ),
-      bottomNavigationBar: Theme(
-        data: Theme.of(context).copyWith(
-          splashFactory: NoSplash.splashFactory,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-        ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) =>
-              setState(() => _currentIndex = index),
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          indicatorColor: Colors.transparent,
-          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          destinations: [
-            NavigationDestination(
-              icon: Icon(
-                Icons.home_outlined,
-                color: isDark
-                    ? const Color(0xFF636366)
-                    : const Color(0xFFC7C7CC),
+    );
+  }
+
+  /// 温润通透悬浮胶囊导航栏 — 去色块，细线图标 + 强调色加粗
+  Widget _buildPillNav(bool isDark, Color textColor, Color unselectedColor) {
+    // 通透底色：半透明 + 模糊感（无硬边框）
+    final bgColor = isDark
+        ? const Color(0xFF24242C).withOpacity(0.92)
+        : Colors.white.withOpacity(0.88);
+
+    // 细线图标（outlined）+ 选中态填充图标
+    final destinations = [
+      (icon: Icons.home_outlined, selectedIcon: Icons.home, label: '首页'),
+      (
+        icon: Icons.menu_book_outlined,
+        selectedIcon: Icons.menu_book,
+        label: '资料库'
+      ),
+      (
+        icon: Icons.grid_view_outlined,
+        selectedIcon: Icons.grid_view,
+        label: '工作台'
+      ),
+      (icon: Icons.person_outline, selectedIcon: Icons.person, label: '我的'),
+    ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
               ),
-              selectedIcon: const Icon(Icons.home, color: Color(0xFF5BCEFA)),
-              label: '首页',
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.menu_book_outlined,
-                color: isDark
-                    ? const Color(0xFF636366)
-                    : const Color(0xFFC7C7CC),
-              ),
-              selectedIcon: const Icon(
-                Icons.menu_book_rounded,
-                color: Color(0xFF5BCEFA),
-              ),
-              label: '资料库',
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.grid_view_outlined,
-                color: isDark
-                    ? const Color(0xFF636366)
-                    : const Color(0xFFC7C7CC),
-              ),
-              selectedIcon: const Icon(
-                Icons.grid_view_rounded,
-                color: Color(0xFF5BCEFA),
-              ),
-              label: '工作台',
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.person_outline,
-                color: isDark
-                    ? const Color(0xFF636366)
-                    : const Color(0xFFC7C7CC),
-              ),
-              selectedIcon: const Icon(
-                Icons.person_rounded,
-                color: Color(0xFF5BCEFA),
-              ),
-              label: '我的',
-            ),
-          ],
+            ],
+          ),
+          child: Row(
+            children: List.generate(destinations.length, (index) {
+              final dest = destinations[index];
+              final isSelected = _currentIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _currentIndex = index),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 细线图标 → 选中态填充图标 + 强调色
+                      Icon(
+                        isSelected ? dest.selectedIcon : dest.icon,
+                        size: 22,
+                        color: isSelected
+                            ? const Color(0xFFF5A9B8)
+                            : unselectedColor,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        dest.label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                          color: isSelected
+                              ? const Color(0xFFF5A9B8)
+                              : unselectedColor,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -1137,8 +1320,8 @@ class _MainDashboardState extends State<MainDashboard> {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF5BCEFA).withOpacity(0.15)
-                          : const Color(0xFF5BCEFA).withOpacity(0.08),
+                          ? const Color(0xFFF5A9B8).withOpacity(0.15)
+                          : const Color(0xFFF5A9B8).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -1198,9 +1381,8 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? const Color(0xFFF5F5F7)
-        : const Color(0xFF1D1D1F);
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     // 判断模块可见性
     final showGreeting =
@@ -1224,28 +1406,46 @@ class HomeTab extends StatelessWidget {
     // HRT 标题：只要药物存量或血药浓度任一可见就显示
     final showHrtSection = showMedStock || showPkSim;
 
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       children: [
-        // ── 问候区 ──
+        // ── 问候区（签名时刻：品牌粉短线 + 标题） ──
         if (showGreeting) ...[
-          Text(
-            '你好，$greetingDisplayName 👋',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: textColor,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: 28,
+              height: 3,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5A9B8),
+                borderRadius: BorderRadius.circular(1.5),
+              ),
             ),
           ),
-          const SizedBox(height: 4),
+          Text(
+            '你好，$greetingDisplayName',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              height: 1.2,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             '欢迎回到你的稳态空间',
             style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.grey.shade500 : Colors.grey[500],
+              fontSize: 15,
+              height: 1.6,
+              color: secondaryColor,
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 36),
         ],
 
         // ── HRT 追踪提醒 ──
@@ -1429,30 +1629,29 @@ class HomeTab extends StatelessWidget {
     required bool isDark,
     required VoidCallback onTap,
   }) {
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF24242C) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 1,
-          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(isDark ? 0.18 : 0.035),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
-            // 统一渐变图标（品牌色浅蓝→粉紫）
-            GradientIcon(icon, size: 40),
+            // 单色克制图标（跟随主题）
+            Icon(icon, size: 24, color: secondaryColor),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -1462,20 +1661,20 @@ class HomeTab extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
                       color: isDark
-                          ? const Color(0xFFF5F5F7)
-                          : const Color(0xFF1D1D1F),
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? const Color(0xFF98989E)
-                          : const Color(0xFF999999),
+                      fontSize: 13,
+                      height: 1.45,
+                      color: secondaryColor,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1485,8 +1684,8 @@ class HomeTab extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-              size: 22,
+              color: secondaryColor,
+              size: 20,
             ),
           ],
         ),
@@ -1540,8 +1739,7 @@ class _ProfileTabState extends State<ProfileTab> {
   void initState() {
     super.initState();
     _greetingController = TextEditingController(text: widget.greetingName);
-    _customPrefix =
-        !_prefixOptions.containsKey(widget.namePrefix) &&
+    _customPrefix = !_prefixOptions.containsKey(widget.namePrefix) &&
         widget.namePrefix.isNotEmpty;
     _customPrefixController = TextEditingController(
       text: _customPrefix ? widget.namePrefix : '',
@@ -1614,16 +1812,13 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? const Color(0xFFF5F5F7)
-        : const Color(0xFF1D1D1F);
-    final secondaryTextColor = isDark
-        ? const Color(0xFF98989E)
-        : const Color(0xFF86868B);
-    final cardBorderColor = isDark
-        ? Colors.grey.shade800
-        : Colors.grey.shade200;
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryTextColor =
+        isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86);
+    final cardBorderColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+    final cardBg = isDark ? const Color(0xFF1C1C1A) : Colors.white;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
@@ -1641,7 +1836,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.transgender,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '性别认同',
               subtitle: GenderIdentity.label(widget.genderIdentity),
               onTap: () => _showGenderBottomSheet(context),
@@ -1658,7 +1853,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: _themeModeIcon(widget.themeService.themeMode),
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '主题模式',
               subtitle: _themeModeLabel(widget.themeService.themeMode, isDark),
               trailing: Row(
@@ -1701,7 +1896,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.backup_rounded,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '旧版数据导出（迁移专用）',
               subtitle: '导出所有本地数据为 JSON 备份文件',
               onTap: () => _handleExportData(context),
@@ -1710,7 +1905,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.unarchive_rounded,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '新版数据导入',
               subtitle: '从备份 JSON 文件恢复数据到本机',
               onTap: () => _handleImportData(context),
@@ -1731,7 +1926,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.info_outline,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '关于',
               subtitle: '应用信息与第三方开源许可',
               onTap: () {
@@ -1745,7 +1940,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.system_update_rounded,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '检查更新',
               subtitle: '手动检测是否有新版本可用',
               onTap: () => _handleCheckUpdate(context),
@@ -1754,7 +1949,7 @@ class _ProfileTabState extends State<ProfileTab> {
             _buildSettingsTile(
               isDark: isDark,
               leadingIcon: Icons.description_outlined,
-              leadingColor: const Color(0xFF5BCEFA),
+              leadingColor: const Color(0xFFF5A9B8),
               title: '免责声明',
               subtitle: '医疗、数据与开源许可声明',
               onTap: () {
@@ -1788,7 +1983,7 @@ class _ProfileTabState extends State<ProfileTab> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: isDark ? const Color(0xFF636366) : const Color(0xFF8E8E93),
+          color: isDark ? const Color(0xFF6B6B76) : const Color(0xFF8E8E93),
           letterSpacing: 0.5,
         ),
       ),
@@ -1840,7 +2035,7 @@ class _ProfileTabState extends State<ProfileTab> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+          color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10),
         ),
         child: GradientIcon(leadingIcon, size: 20),
@@ -1850,18 +2045,17 @@ class _ProfileTabState extends State<ProfileTab> {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+          color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
           fontSize: 12,
-          color: isDark ? const Color(0xFF98989E) : const Color(0xFF86868B),
+          color: isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86),
         ),
       ),
-      trailing:
-          trailing ??
+      trailing: trailing ??
           Icon(
             Icons.chevron_right,
             size: 20,
@@ -1928,9 +2122,8 @@ class _ProfileTabState extends State<ProfileTab> {
                   decoration: InputDecoration(
                     labelText: '前缀',
                     filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : Colors.grey.shade50,
+                    fillColor:
+                        isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -1977,7 +2170,7 @@ class _ProfileTabState extends State<ProfileTab> {
                       labelText: '自定义',
                       filled: true,
                       fillColor: isDark
-                          ? const Color(0xFF2C2C2E)
+                          ? const Color(0xFF24242C)
                           : Colors.grey.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -2007,9 +2200,8 @@ class _ProfileTabState extends State<ProfileTab> {
                   decoration: InputDecoration(
                     labelText: '称呼（默认"伙伴"）',
                     filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : Colors.grey.shade50,
+                    fillColor:
+                        isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -2072,8 +2264,8 @@ class _ProfileTabState extends State<ProfileTab> {
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: isDark
-                        ? const Color(0xFFF5F5F7)
-                        : const Color(0xFF1D1D1F),
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -2083,7 +2275,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     fontSize: 13,
                     color: isDark
                         ? const Color(0xFF98989E)
-                        : const Color(0xFF86868B),
+                        : const Color(0xFF8A8A86),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -2096,46 +2288,45 @@ class _ProfileTabState extends State<ProfileTab> {
                         borderRadius: BorderRadius.circular(12),
                         side: selected
                             ? const BorderSide(
-                                color: Color(0xFF5BCEFA),
+                                color: Color(0xFFF5A9B8),
                                 width: 1.5,
                               )
                             : BorderSide.none,
                       ),
                       tileColor: selected
-                          ? const Color(0xFF5BCEFA).withOpacity(0.06)
+                          ? const Color(0xFFF5A9B8).withOpacity(0.06)
                           : (isDark
-                                ? const Color(0xFF2C2C2E)
-                                : Colors.grey.shade50),
+                              ? const Color(0xFF24242C)
+                              : Colors.grey.shade50),
                       leading: Icon(
                         id == GenderIdentity.mtf
                             ? Icons.female
                             : id == GenderIdentity.ftm
-                            ? Icons.male
-                            : Icons.transgender,
+                                ? Icons.male
+                                : Icons.transgender,
                         color: selected
-                            ? const Color(0xFF5BCEFA)
+                            ? const Color(0xFFF5A9B8)
                             : (isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade500),
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade500),
                       ),
                       title: Text(
                         GenderIdentity.label(id),
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
                           color: selected
-                              ? const Color(0xFF5BCEFA)
+                              ? const Color(0xFFF5A9B8)
                               : (isDark
-                                    ? const Color(0xFFF5F5F7)
-                                    : const Color(0xFF1D1D1F)),
+                                  ? const Color(0xFFEDEDF0)
+                                  : const Color(0xFF333333)),
                         ),
                       ),
                       trailing: selected
                           ? const Icon(
                               Icons.check_circle,
-                              color: Color(0xFF5BCEFA),
+                              color: Color(0xFFF5A9B8),
                               size: 22,
                             )
                           : null,
@@ -2190,8 +2381,8 @@ class _ProfileTabState extends State<ProfileTab> {
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: isDark
-                        ? const Color(0xFFF5F5F7)
-                        : const Color(0xFF1D1D1F),
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -2209,7 +2400,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   ctx: ctx,
                   mode: ThemeMode.dark,
                   icon: Icons.dark_mode,
-                  iconColor: const Color(0xFF5BCEFA),
+                  iconColor: const Color(0xFFF5A9B8),
                   label: '深色模式',
                   desc: '始终使用深色外观',
                   selected: widget.themeService.themeMode == ThemeMode.dark,
@@ -2245,10 +2436,10 @@ class _ProfileTabState extends State<ProfileTab> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: selected
-            ? const BorderSide(color: Color(0xFF5BCEFA), width: 1.5)
+            ? const BorderSide(color: Color(0xFFF5A9B8), width: 1.5)
             : BorderSide.none,
       ),
-      tileColor: selected ? const Color(0xFF5BCEFA).withOpacity(0.06) : null,
+      tileColor: selected ? const Color(0xFFF5A9B8).withOpacity(0.06) : null,
       leading: Icon(icon, color: iconColor, size: 24),
       title: Text(
         label,
@@ -2262,7 +2453,7 @@ class _ProfileTabState extends State<ProfileTab> {
         style: const TextStyle(fontSize: 12, color: Colors.grey),
       ),
       trailing: selected
-          ? const Icon(Icons.check_circle, color: Color(0xFF5BCEFA), size: 22)
+          ? const Icon(Icons.check_circle, color: Color(0xFFF5A9B8), size: 22)
           : null,
       onTap: () {
         widget.themeService.setThemeMode(mode);

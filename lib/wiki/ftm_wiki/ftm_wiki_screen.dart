@@ -236,12 +236,12 @@ class _FtmWikiScreenState extends State<FtmWikiScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   color:
-                                      const Color(0xFF5BCEFA).withOpacity(0.12),
+                                      const Color(0xFFF5A9B8).withOpacity(0.12),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                   Icons.menu_book_rounded,
-                                  color: Color(0xFF5BCEFA),
+                                  color: Color(0xFFF5A9B8),
                                   size: 20,
                                 ),
                               ),
@@ -298,7 +298,7 @@ class _FtmWikiScreenState extends State<FtmWikiScreen> {
                                   child: FilledButton(
                                     onPressed: _dismissHintForever,
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: const Color(0xFF5BCEFA),
+                                      backgroundColor: const Color(0xFFF5A9B8),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),

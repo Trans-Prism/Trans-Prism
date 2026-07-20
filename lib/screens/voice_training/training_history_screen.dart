@@ -53,11 +53,11 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final emptyIconColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE0E0E0);
+        isDark ? const Color(0xFF333338) : const Color(0xFFE0E0E0);
     final emptyTitleColor =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF757575);
     final emptyTextColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFFBDBDBD);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFFBDBDBD);
     return Scaffold(
       appBar: AppBar(
         title: const Text('训练记录'),
@@ -142,13 +142,13 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   Widget _buildEventCard(VoiceEvent event) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final tertiaryText =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     final borderColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE);
     Color color;
     String title;
     String subtitle;
@@ -240,7 +240,7 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                       color: color,
                       border: Border.all(
                           color:
-                              isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                              isDark ? const Color(0xFF24242C) : Colors.white,
                           width: 2),
                       boxShadow: [
                         BoxShadow(color: color.withOpacity(0.3), blurRadius: 4)
@@ -259,7 +259,7 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  color: isDark ? const Color(0xFF24242C) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: borderColor),
                   boxShadow: [

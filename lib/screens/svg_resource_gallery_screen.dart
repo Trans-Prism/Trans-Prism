@@ -81,7 +81,7 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
   void _showStylePicker(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     showModalBottomSheet(
       context: context,
@@ -125,13 +125,13 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                       borderRadius: BorderRadius.circular(12),
                       side: selected
                           ? const BorderSide(
-                              color: Color(0xFF5BCEFA), width: 1.5)
+                              color: Color(0xFFF5A9B8), width: 1.5)
                           : BorderSide.none,
                     ),
                     tileColor: selected
-                        ? const Color(0xFF5BCEFA).withOpacity(0.06)
+                        ? const Color(0xFFF5A9B8).withOpacity(0.06)
                         : (isDark
-                            ? const Color(0xFF2C2C2E)
+                            ? const Color(0xFF24242C)
                             : Colors.grey.shade50),
                     title: Text(
                       entry.value,
@@ -139,12 +139,12 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                         fontSize: 15,
                         fontWeight:
                             selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? const Color(0xFF5BCEFA) : textColor,
+                        color: selected ? const Color(0xFFF5A9B8) : textColor,
                       ),
                     ),
                     trailing: selected
                         ? const Icon(Icons.check_circle,
-                            color: Color(0xFF5BCEFA), size: 22)
+                            color: Color(0xFFF5A9B8), size: 22)
                         : null,
                     onTap: () {
                       setState(() => _preferredStyle = entry.key);
@@ -164,7 +164,7 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Scaffold(
       appBar: AppBar(
@@ -195,8 +195,8 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                             onChanged: _performSearch,
                             style: TextStyle(
                               color: isDark
-                                  ? const Color(0xFFF5F5F7)
-                                  : const Color(0xFF1D1D1F),
+                                  ? const Color(0xFFEDEDF0)
+                                  : const Color(0xFF333333),
                               fontSize: 14,
                             ),
                           ),
@@ -208,7 +208,7 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                         child: CupertinoButton(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           color: isDark
-                              ? const Color(0xFF2C2C2E)
+                              ? const Color(0xFF24242C)
                               : const Color(0xFFF0F0F5),
                           borderRadius: BorderRadius.circular(10),
                           onPressed: () => _showStylePicker(context),
@@ -219,8 +219,8 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                                 Icons.style,
                                 size: 16,
                                 color: isDark
-                                    ? const Color(0xFFF5F5F7)
-                                    : const Color(0xFF1D1D1F),
+                                    ? const Color(0xFFEDEDF0)
+                                    : const Color(0xFF333333),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -230,8 +230,8 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: isDark
-                                      ? const Color(0xFFF5F5F7)
-                                      : const Color(0xFF1D1D1F),
+                                      ? const Color(0xFFEDEDF0)
+                                      : const Color(0xFF333333),
                                 ),
                               ),
                             ],
@@ -286,7 +286,7 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: isDark
-                                            ? const Color(0xFF636366)
+                                            ? const Color(0xFF6B6B76)
                                             : const Color(0xFF8E8E93),
                                       ),
                                     ),
@@ -322,7 +322,7 @@ class _SvgResourceGalleryScreenState extends State<SvgResourceGalleryScreen> {
       text,
       style: TextStyle(
         fontSize: 11,
-        color: isDark ? const Color(0xFF48484A) : const Color(0xFFAEAEB2),
+        color: isDark ? const Color(0xFF48484A) : const Color(0xFF8E8E96),
       ),
     );
   }
@@ -421,7 +421,7 @@ class _SvgResourceCard extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: isDark
-                      ? const Color(0xFF98989E)
+                      ? const Color(0xFF8E8E96)
                       : const Color(0xFF8E8E93),
                 ),
                 maxLines: 1,

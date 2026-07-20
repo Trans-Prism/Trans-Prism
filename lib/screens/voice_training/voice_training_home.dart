@@ -99,7 +99,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -148,7 +148,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -194,7 +194,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -229,7 +229,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -270,7 +270,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
           const SizedBox(height: 12),
@@ -302,7 +302,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final chevronColor =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     return InkWell(
@@ -311,7 +311,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF24242C) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -335,7 +335,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon,
-                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  color: isDark ? const Color(0xFF24242C) : Colors.white,
                   size: 22),
             ),
             const SizedBox(width: 16),
@@ -349,8 +349,8 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: isDark
-                          ? const Color(0xFFF5F5F7)
-                          : const Color(0xFF1D1D1F),
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -465,7 +465,7 @@ class VoiceTrainingHomeScreen extends StatelessWidget {
   void _showCloudServices(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(

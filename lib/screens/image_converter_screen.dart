@@ -70,9 +70,8 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? const Color(0xFFF5F5F7)
-        : const Color(0xFF1D1D1F);
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Scaffold(
       appBar: AppBar(
@@ -141,7 +140,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5BCEFA).withOpacity(0.12),
+                  color: const Color(0xFFF5A9B8).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
@@ -150,7 +149,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                     Icon(
                       Icons.folder_open_outlined,
                       size: 18,
-                      color: Color(0xFF5BCEFA),
+                      color: Color(0xFFF5A9B8),
                     ),
                     SizedBox(width: 6),
                     Text(
@@ -158,7 +157,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF5BCEFA),
+                        color: Color(0xFFF5A9B8),
                       ),
                     ),
                   ],
@@ -209,7 +208,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7),
+        color: isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -237,7 +236,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
           Icon(
             _isSvgInput ? Icons.code : Icons.image_outlined,
             size: 16,
-            color: isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93),
+            color: isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93),
           ),
           const SizedBox(width: 6),
           Expanded(
@@ -246,9 +245,8 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: isDark
-                    ? const Color(0xFF98989E)
-                    : const Color(0xFF8E8E93),
+                color:
+                    isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -257,7 +255,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
             fileSizeStr,
             style: TextStyle(
               fontSize: 11,
-              color: isDark ? const Color(0xFF636366) : const Color(0xFFAEAEB2),
+              color: isDark ? const Color(0xFF8A8A86) : const Color(0xFF8E8E96),
             ),
           ),
           const SizedBox(width: 8),
@@ -269,7 +267,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
             child: Icon(
               Icons.close_rounded,
               size: 18,
-              color: isDark ? const Color(0xFF636366) : const Color(0xFFAEAEB2),
+              color: isDark ? const Color(0xFF8A8A86) : const Color(0xFF8E8E96),
             ),
           ),
         ],
@@ -282,9 +280,8 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
   // ════════════════════════════════════════════════════════════
 
   Widget _buildControlBoard(bool isDark) {
-    final secondaryTextColor = isDark
-        ? const Color(0xFF98989E)
-        : const Color(0xFF8E8E93);
+    final secondaryTextColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93);
     const labelWidth = 60.0;
 
     return Container(
@@ -342,7 +339,7 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                                 : (_) => setState(() => _selectedFormat = f),
                             visualDensity: VisualDensity.compact,
                             selectedColor: const Color(
-                              0xFF5BCEFA,
+                              0xFFF5A9B8,
                             ).withOpacity(0.15),
                             disabledColor: isDark
                                 ? Colors.white.withOpacity(0.03)
@@ -350,20 +347,20 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
                             labelStyle: TextStyle(
                               color: disabled
                                   ? (isDark
-                                        ? Colors.grey.shade700
-                                        : Colors.grey.shade300)
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade300)
                                   : sel
-                                  ? const Color(0xFF5BCEFA)
-                                  : secondaryTextColor,
+                                      ? const Color(0xFFF5A9B8)
+                                      : secondaryTextColor,
                             ),
                             side: BorderSide(
                               color: disabled
                                   ? Colors.transparent
                                   : sel
-                                  ? const Color(0xFF5BCEFA)
-                                  : (isDark
-                                        ? Colors.grey.shade700
-                                        : Colors.grey.shade300),
+                                      ? const Color(0xFFF5A9B8)
+                                      : (isDark
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade300),
                             ),
                           );
                         }).toList(),
@@ -455,71 +452,71 @@ class _ImageConverterScreenState extends State<ImageConverterScreen> {
   // ════════════════════════════════════════════════════════════
 
   Widget _buildBottomActionRow(bool isDark) {
-    const themeColor = Color(0xFF5BCEFA);
+    const themeColor = Color(0xFFF5A9B8);
 
     Widget buildFileButton() => SizedBox(
-      height: 44,
-      child: OutlinedButton.icon(
-        onPressed: _isExporting ? null : _handleExportToFile,
-        icon: _isExporting
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.folder_open_outlined, size: 18),
-        label: const Text(
-          '保存到文件',
-          style: TextStyle(fontSize: 14),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: themeColor,
-          side: BorderSide(color: themeColor.withOpacity(0.3)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          height: 44,
+          child: OutlinedButton.icon(
+            onPressed: _isExporting ? null : _handleExportToFile,
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.folder_open_outlined, size: 18),
+            label: const Text(
+              '保存到文件',
+              style: TextStyle(fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: themeColor,
+              side: BorderSide(color: themeColor.withOpacity(0.3)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
 
     Widget buildAlbumButton() => SizedBox(
-      height: 44,
-      child: FilledButton.icon(
-        onPressed: _isExporting ? null : _handleExportToAlbum,
-        icon: _isExporting
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Icon(Icons.download_rounded, size: 18),
-        label: const Text(
-          '保存到相册',
-          style: TextStyle(fontSize: 14),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        style: FilledButton.styleFrom(
-          backgroundColor: themeColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          height: 44,
+          child: FilledButton.icon(
+            onPressed: _isExporting ? null : _handleExportToAlbum,
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.download_rounded, size: 18),
+            label: const Text(
+              '保存到相册',
+              style: TextStyle(fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: themeColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         border: Border(
           top: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+            color: isDark ? Color(0xFF333338) : Color(0xFFE5E5E5),
           ),
         ),
       ),

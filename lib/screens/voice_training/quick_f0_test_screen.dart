@@ -142,9 +142,9 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final effectiveMinF0 = _minF0 == double.infinity ? null : _minF0;
 
     return Scaffold(
@@ -170,7 +170,7 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                color: isDark ? const Color(0xFF24242C) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -349,7 +349,7 @@ class _QuickF0TestScreenState extends State<QuickF0TestScreen> {
     final isDisabled = onPressed == null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final disabledBg =
-        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF24242C) : const Color(0xFFEEEEEE);
     final disabledFg =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFFBDBDBD);
     return Material(

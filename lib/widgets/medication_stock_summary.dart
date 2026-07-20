@@ -59,15 +59,17 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
 
   Widget _buildShimmerCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColor =
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
+    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-          width: 1,
-        ),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 0.5),
       ),
       child: Row(
         children: [
@@ -76,7 +78,7 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
             height: 84,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+              color: shimmerColor,
             ),
           ),
           const SizedBox(width: 24),
@@ -87,7 +89,7 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
                 width: 60,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  color: shimmerColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -96,7 +98,7 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
                 width: 100,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  color: shimmerColor,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -110,7 +112,16 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
   Widget _buildSummaryCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
+    final trackColor =
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
+    final warningColor =
+        isDark ? const Color(0xFFE57373) : const Color(0xFFC44A4A);
 
     double totalStockPercentage = 0;
     int minRunwayDays = 999;
@@ -134,30 +145,21 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
     }
 
     if (minRunwayDays == 999) minRunwayDays = 0;
+    final isWarning = minRunwayDays <= 3 && _drugs.isNotEmpty;
 
     return InkWell(
       onTap: () => _openDashboard(context),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: 0.5),
         ),
         child: Row(
           children: [
-            // ── 环形进度 ──
+            // ── 环形进度（细环克制） ──
             SizedBox(
               width: 84,
               height: 84,
@@ -169,18 +171,18 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
                     height: 84,
                     child: CircularProgressIndicator(
                       value: totalStockPercentage,
-                      strokeWidth: 7,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFFF5A9B8),
+                      strokeWidth: 4,
+                      backgroundColor: trackColor,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isWarning ? warningColor : const Color(0xFFF5A9B8),
                       ),
                     ),
                   ),
                   Text(
                     '${(totalStockPercentage * 100).toInt()}%',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                       color: textColor,
                     ),
                   ),
@@ -196,52 +198,51 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
                   Text(
                     '安全续航',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
+                      fontSize: 13,
+                      color: secondaryColor,
                       fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         '$minRunwayDays',
                         style: TextStyle(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w900,
-                          color: minRunwayDays <= 3
-                              ? Colors.red.shade400
-                              : textColor,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w700,
+                          color: isWarning ? warningColor : textColor,
                           height: 1.0,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.only(bottom: 6),
                         child: Text(
                           '天',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade500,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: secondaryColor,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     _drugs.isEmpty
                         ? '暂无药物记录，点击添加'
-                        : (minRunwayDays <= 3 ? '⚠️ 库存紧张，请及时补仓' : '你的稳态库存量充足'),
+                        : (isWarning ? '库存紧张，请及时补仓' : '你的稳态库存量充足'),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
+                      height: 1.4,
                       color: _drugs.isEmpty
-                          ? Colors.grey.shade400
-                          : (minRunwayDays <= 3
-                              ? Colors.red.shade400
-                              : Colors.grey.shade400),
+                          ? secondaryColor
+                          : (isWarning ? warningColor : secondaryColor),
                     ),
                   ),
                 ],
@@ -250,8 +251,8 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
             // ── 箭头 ──
             Icon(
               Icons.chevron_right,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-              size: 22,
+              color: secondaryColor,
+              size: 20,
             ),
           ],
         ),

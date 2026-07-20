@@ -239,11 +239,11 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
   Widget _buildStepIndicator() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final inactiveStepColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -281,7 +281,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
   Widget _buildCurrentStep() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,9 +447,9 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
     final step = _currentStepConfig;
     final instructionTextColor =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF424242);
-    final taskCardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final taskCardColor = isDark ? const Color(0xFF24242C) : Colors.white;
     final taskCardBorder =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE);
     final activeCardColor =
         isDark ? const Color(0xFF3A2A18) : const Color(0xFFFFF3E0);
     final activeCardBorder =
@@ -463,9 +463,9 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
     final taskTextColor =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF424242);
     final inactiveStepBg =
-        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE0E0E0);
+        isDark ? const Color(0xFF24242C) : const Color(0xFFE0E0E0);
     final inactiveStepText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +475,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F5F5),
+            color: isDark ? const Color(0xFF24242C) : const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -592,7 +592,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
     final textColor =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF424242);
     final inactiveBorder =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE0E0E0);
+        isDark ? const Color(0xFF333338) : const Color(0xFFE0E0E0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -721,13 +721,13 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
   Widget _buildCompletionStep() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryText =
         isDark ? const Color(0xFFE5E5EA) : const Color(0xFF616161);
     final mutedText =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final borderColor =
-        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEEEEEE);
+        isDark ? const Color(0xFF333338) : const Color(0xFFEEEEEE);
     final tealText = isDark ? const Color(0xFF80DEEA) : const Color(0xFF00897B);
     final successText =
         isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
@@ -789,7 +789,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            color: isDark ? const Color(0xFF24242C) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor),
           ),
@@ -831,7 +831,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark ? const Color(0xFF24242C) : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: borderColor),
             ),
@@ -859,7 +859,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark ? const Color(0xFF24242C) : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border:
                   Border.all(color: const Color(0xFF14B8A6).withOpacity(0.3)),
@@ -971,9 +971,9 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
   Widget _metricRow(String label, String value) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelColor =
-        isDark ? const Color(0xFFAEAEB2) : const Color(0xFF757575);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF757575);
     final valueColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 1),
       child: Row(children: [
@@ -1031,7 +1031,7 @@ class _VoiceTestWizardScreenState extends State<VoiceTestWizardScreen> {
   Widget _resultRow(String label, String value, IconData icon) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelColor =
-        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFE5E5EA) : const Color(0xFF333333);
     final accent = isDark ? const Color(0xFFE1BEE7) : const Color(0xFF7B1FA2);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),

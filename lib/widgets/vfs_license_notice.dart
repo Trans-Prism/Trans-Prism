@@ -77,7 +77,7 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
     return Card(
       margin: const EdgeInsets.only(top: 8, bottom: 24),
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade50,
+      color: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -102,7 +102,7 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: isDark
-                            ? const Color(0xFFF5F5F7)
+                            ? const Color(0xFFEDEDF0)
                             : Colors.grey.shade800),
                   ),
                 ),

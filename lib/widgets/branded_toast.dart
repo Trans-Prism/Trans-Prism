@@ -188,8 +188,12 @@ class _BrandedToastWidgetState extends State<_BrandedToastWidget>
 
   @override
   Widget build(BuildContext context) {
-    // 默认使用 Trans 蓝粉渐变
-    final effectiveBg = widget.backgroundColor;
+    // Claude 风格：默认深色浮层，无渐变
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBg =
+        isDark ? const Color(0xFF333333) : const Color(0xFF24242C);
+    final effectiveBg = widget.backgroundColor ?? defaultBg;
+    final isCustomColor = widget.backgroundColor != null;
 
     return Positioned(
       top: MediaQuery.of(context).padding.top + 8,
@@ -205,22 +209,16 @@ class _BrandedToastWidgetState extends State<_BrandedToastWidget>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                gradient: effectiveBg == null
-                    ? const LinearGradient(
-                        colors: [Color(0xFF5BCEFA), Color(0xFFF5A9B8)],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      )
-                    : null,
                 color: effectiveBg,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF5BCEFA).withOpacity(0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(12),
+                border: isCustomColor
+                    ? null
+                    : Border.all(
+                        color: isDark
+                            ? const Color(0xFF333338)
+                            : const Color(0xFF333338),
+                        width: 0.5,
+                      ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -229,7 +227,7 @@ class _BrandedToastWidgetState extends State<_BrandedToastWidget>
                     Icon(
                       widget.icon,
                       color: Colors.white,
-                      size: 20,
+                      size: 18,
                     ),
                     const SizedBox(width: 10),
                   ],
@@ -239,8 +237,8 @@ class _BrandedToastWidgetState extends State<_BrandedToastWidget>
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
                       ),
                     ),
                   ),

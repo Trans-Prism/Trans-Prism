@@ -54,41 +54,32 @@ class _BatteryOptimizationGuideCardState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final cardBg = isDark ? const Color(0xFF24242C) : Colors.white;
     final cardBorderColor =
-        isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cardBorderColor),
+        side: BorderSide(color: cardBorderColor, width: 0.5),
       ),
       color: cardBg,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── 标题行 ──
             Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF5BCEFA).withOpacity(0.15)
-                        : const Color(0xFF5BCEFA).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: GradientIcon(
-                      Icons.notifications_active_rounded,
-                      size: 22,
-                    ),
-                  ),
+                Icon(
+                  Icons.notifications_active_outlined,
+                  size: 22,
+                  color: secondaryColor,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -101,16 +92,16 @@ class _BatteryOptimizationGuideCardState
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: textColor,
+                          height: 1.3,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         '确保系统不拦截您的用药提醒',
                         style: TextStyle(
                           fontSize: 13,
-                          color: isDark
-                              ? const Color(0xFF98989E)
-                              : const Color(0xFF86868B),
+                          height: 1.4,
+                          color: secondaryColor,
                         ),
                       ),
                     ],
@@ -202,21 +193,28 @@ class _BatteryOptimizationGuideCardState
     required String deniedLabel,
     required VoidCallback onDeniedTap,
   }) {
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final okColor = isDark ? const Color(0xFF6BBE7A) : const Color(0xFF4CAF50);
+    final warnColor =
+        isDark ? const Color(0xFFE57373) : const Color(0xFFC44A4A);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: granted ? null : onDeniedTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
             children: [
               // 状态图标
               Icon(
-                granted ? Icons.check_circle : Icons.error_outline,
-                size: 22,
-                color:
-                    granted ? const Color(0xFF4CAF50) : const Color(0xFFE57373),
+                granted ? Icons.check_rounded : Icons.error_outline,
+                size: 20,
+                color: granted ? okColor : warnColor,
               ),
               const SizedBox(width: 12),
               // 标题
@@ -226,62 +224,42 @@ class _BatteryOptimizationGuideCardState
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: isDark
-                        ? const Color(0xFFF5F5F7)
-                        : const Color(0xFF1D1D1F),
+                    height: 1.3,
+                    color: textColor,
                   ),
                 ),
               ),
               // 状态文本 / 操作按钮
               if (granted)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    grantedLabel,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF4CAF50),
-                    ),
+                Text(
+                  grantedLabel,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: okColor,
                   ),
                 )
               else
                 GestureDetector(
                   onTap: onDeniedTap,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE57373).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: const Color(0xFFE57373).withOpacity(0.3),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        deniedLabel,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: warnColor,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          deniedLabel,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFE57373),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 10,
-                          color: Color(0xFFE57373),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: warnColor,
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -314,7 +292,7 @@ class _BatteryOptimizationGuideCardState
                 Icon(Icons.info_outline,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFFE5E5EA)
-                        : const Color(0xFF3A3A3C)),
+                        : const Color(0xFF333338)),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -335,7 +313,7 @@ class _BatteryOptimizationGuideCardState
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF5BCEFA),
+                  backgroundColor: const Color(0xFFF5A9B8),
                 ),
                 child: const Text('去系统设置'),
               ),
@@ -359,7 +337,7 @@ class _BatteryOptimizationGuideCardState
             Icon(Icons.power_settings_new_rounded,
                 color: Theme.of(context).brightness == Brightness.dark
                     ? const Color(0xFFE5E5EA)
-                    : const Color(0xFF3A3A3C)),
+                    : const Color(0xFF333338)),
             const SizedBox(width: 8),
             const Expanded(
               child: Text(
@@ -403,7 +381,7 @@ class _BatteryOptimizationGuideCardState
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF5BCEFA),
+              backgroundColor: const Color(0xFFF5A9B8),
             ),
             child: const Text('去系统设置'),
           ),
@@ -435,7 +413,7 @@ class _StepLabel extends StatelessWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF5BCEFA).withOpacity(0.15),
+            color: const Color(0xFFF5A9B8).withOpacity(0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
@@ -444,7 +422,7 @@ class _StepLabel extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF5BCEFA),
+                color: Color(0xFFF5A9B8),
               ),
             ),
           ),

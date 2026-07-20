@@ -75,12 +75,17 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── 脉冲图标 ──
+          // ── 脉冲图标（克制单色） ──
           AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, child) => Transform.scale(
@@ -88,29 +93,30 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
               child: child,
             ),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.12),
+                color: secondaryColor.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 widget.icon,
-                size: 34,
-                color: theme.colorScheme.primary,
+                size: 28,
+                color: secondaryColor,
               ),
             ),
           ),
           const SizedBox(height: 20),
 
-          // ── 主文字："少女祈祷中" + 动态点 ──
+          // ── 主文字 + 动态点 ──
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.primary,
-              letterSpacing: 1.2,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+              letterSpacing: 0.3,
+              height: 1.4,
             ),
             child: Text.rich(
               TextSpan(
@@ -118,7 +124,7 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                 children: [
                   TextSpan(
                     text: _dots,
-                    style: const TextStyle(letterSpacing: 2),
+                    style: const TextStyle(letterSpacing: 1),
                   ),
                 ],
               ),
@@ -132,7 +138,8 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
               widget.subtitle!,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey.shade500,
+                height: 1.4,
+                color: secondaryColor,
               ),
             ),
           ],

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// 优雅的品牌化版本更新弹窗
+/// 版本更新弹窗 — Claude 风格克制版
 ///
-/// 支持从 R2 边缘节点单一直链下载。
-/// 点击「立即更新」后通过系统浏览器打开下载链接。
+/// 去掉渐变 Header 与装饰性光点，改为纯文字标题 + 品牌色版本号标签。
+/// 整体视觉安静，让用户专注于「更新内容」本身。
 class UpdateDialog extends StatelessWidget {
   final String version;
   final String? releaseNotes;
@@ -40,6 +40,15 @@ class UpdateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
+    final notesBg = isDark ? const Color(0xFF191920) : const Color(0xFFFAFAF7);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -47,120 +56,79 @@ class UpdateDialog extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 360),
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 0.5),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            _buildTitle(),
-            _buildReleaseNotes(context),
-            _buildActions(context),
+            // ── 标题区：版本号标签 + 标题 ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 品牌色版本号小标签
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5A9B8).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'v$version',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF5A9B8),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    '发现新版本',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                      height: 1.25,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildReleaseNotes(context, secondaryColor, notesBg, borderColor),
+            _buildActions(context, textColor, secondaryColor, borderColor),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 28, bottom: 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF8ECAE6), Color(0xFFE8AEBF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.20),
-            ),
-            child: const Icon(
-              Icons.system_update_rounded,
-              size: 32,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildGlowDot(const Color(0xFF8ECAE6)),
-              const SizedBox(width: 6),
-              _buildGlowDot(const Color(0xFFE8AEBF)),
-              const SizedBox(width: 6),
-              _buildGlowDot(Colors.white70),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlowDot(Color color) {
-    return Container(
-      width: 5,
-      height: 5,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.6),
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
-      child: Text(
-        '发现新版本 $version',
-        style: const TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF1D1D1F),
-          letterSpacing: -0.2,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _buildReleaseNotes(BuildContext context) {
+  Widget _buildReleaseNotes(
+    BuildContext context,
+    Color secondaryColor,
+    Color notesBg,
+    Color borderColor,
+  ) {
     final notes = releaseNotes;
     if (notes == null || notes.trim().isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.fromLTRB(24, 8, 24, 16),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Text(
-          '快去下载最新版本体验新功能吧！',
+          '快去下载最新版本体验新功能吧。',
           style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF86868B),
             height: 1.5,
+            color: secondaryColor,
           ),
-          textAlign: TextAlign.center,
         ),
       );
     }
@@ -170,23 +138,29 @@ class UpdateDialog extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(24, 12, 24, 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F7),
-        borderRadius: BorderRadius.circular(16),
+        color: notesBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 0.5),
       ),
       child: SingleChildScrollView(
         child: Text(
           notes,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: Color(0xFF3A3A3C),
             height: 1.6,
+            color: secondaryColor,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildActions(BuildContext context) {
+  Widget _buildActions(
+    BuildContext context,
+    Color textColor,
+    Color secondaryColor,
+    Color borderColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: Row(
@@ -195,16 +169,16 @@ class UpdateDialog extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () => Navigator.of(context).pop(),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF86868B),
-                side: const BorderSide(color: Color(0xFFD1D1D6)),
+                foregroundColor: secondaryColor,
+                side: BorderSide(color: borderColor, width: 0.5),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: const Text(
                 '稍后再说',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -214,17 +188,19 @@ class UpdateDialog extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => _handleUpdateNow(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8ECAE6),
-                foregroundColor: Colors.white,
+                backgroundColor: textColor,
+                foregroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF191920)
+                    : Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: const Text(
                 '立即更新',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
           ),

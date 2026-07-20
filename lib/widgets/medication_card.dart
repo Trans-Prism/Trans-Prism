@@ -181,7 +181,7 @@ class _MedicationCardState extends State<MedicationCard> {
     if (_timeUntilNext.isNegative) return Colors.red.shade400;
     if (_timeUntilNext.inHours < 1) return Colors.red.shade400;
     if (_timeUntilNext.inDays < 1) return Colors.orange.shade400;
-    return const Color(0xFF5BCEFA);
+    return const Color(0xFFF5A9B8);
   }
 
   String get _nextDateText {
@@ -202,19 +202,14 @@ class _MedicationCardState extends State<MedicationCard> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+      padding: const EdgeInsets.fromLTRB(20, 20, 12, 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+          color: isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5),
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +246,7 @@ class _MedicationCardState extends State<MedicationCard> {
 
   Widget _buildHeader(bool isDark, Drug drug) {
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Row(
       children: [
@@ -286,7 +281,7 @@ class _MedicationCardState extends State<MedicationCard> {
             Switch(
               value: drug.reminderEnabled,
               onChanged: (val) => widget.onToggleReminder?.call(val),
-              activeColor: const Color(0xFF5BCEFA),
+              activeColor: const Color(0xFFF5A9B8),
             ),
             PopupMenuButton<String>(
               icon: Icon(
@@ -296,7 +291,7 @@ class _MedicationCardState extends State<MedicationCard> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              color: isDark ? const Color(0xFF24242C) : Colors.white,
               onSelected: (value) {
                 switch (value) {
                   case 'edit':
@@ -364,7 +359,7 @@ class _MedicationCardState extends State<MedicationCard> {
 
   Widget _buildCalendarRow(bool isDark) {
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final progress = _progressValue;
 
     return Row(
@@ -383,7 +378,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   strokeWidth: 3,
                   backgroundColor: Colors.grey.shade200,
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF5BCEFA),
+                    Color(0xFFF5A9B8),
                   ),
                 ),
               ),
@@ -434,7 +429,7 @@ class _MedicationCardState extends State<MedicationCard> {
           size: 16,
           color: isDark
               ? Colors.grey.shade500
-              : const Color(0xFF5BCEFA).withOpacity(0.7),
+              : const Color(0xFFF5A9B8).withOpacity(0.7),
         ),
         const SizedBox(width: 4),
         Text(
@@ -444,7 +439,7 @@ class _MedicationCardState extends State<MedicationCard> {
             fontWeight: FontWeight.w500,
             color: isDark
                 ? Colors.grey.shade400
-                : const Color(0xFF5BCEFA).withOpacity(0.7),
+                : const Color(0xFFF5A9B8).withOpacity(0.7),
           ),
         ),
       ],
@@ -458,7 +453,7 @@ class _MedicationCardState extends State<MedicationCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+        color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -475,7 +470,7 @@ class _MedicationCardState extends State<MedicationCard> {
               valueColor: AlwaysStoppedAnimation<Color>(
                 drug.runwayDays <= 3
                     ? Colors.red.shade300
-                    : const Color(0xFF5BCEFA),
+                    : const Color(0xFFF5A9B8),
               ),
             ),
           ),
@@ -552,7 +547,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF5BCEFA),
+                backgroundColor: const Color(0xFFF5A9B8),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

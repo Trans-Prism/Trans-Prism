@@ -108,7 +108,7 @@ class _MedicalDirectoryListScreenState
     };
     final color = switch (result.status) {
       SyncStatus.upToDate => Colors.green,
-      SyncStatus.updated => const Color(0xFF5BCEFA),
+      SyncStatus.updated => const Color(0xFFF5A9B8),
       SyncStatus.githubUnreachable => Colors.orange,
     };
     if (!mounted) return;
@@ -181,7 +181,7 @@ class _MedicalDirectoryListScreenState
           '友善医疗名录',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+            color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
           ),
         ),
         actions: [
@@ -209,7 +209,7 @@ class _MedicalDirectoryListScreenState
                       shape: BoxShape.circle,
                       color: switch (_syncResult!.status) {
                         SyncStatus.upToDate => Colors.green,
-                        SyncStatus.updated => const Color(0xFF5BCEFA),
+                        SyncStatus.updated => const Color(0xFFF5A9B8),
                         SyncStatus.githubUnreachable => Colors.orange,
                       },
                       border: Border.all(color: Colors.white, width: 1.5),
@@ -325,7 +325,7 @@ class _MedicalDirectoryListScreenState
                 )
               : null,
           filled: true,
-          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+          fillColor: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           border: OutlineInputBorder(
@@ -365,19 +365,19 @@ class _MedicalDirectoryListScreenState
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
             color: selected
                 ? Colors.white
-                : (isDark ? const Color(0xFF98989E) : const Color(0xFF86868B)),
+                : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86)),
           ),
         ),
         selected: selected,
         onSelected: (_) {
           setState(() => _selectedDepartment = selected ? '' : id);
         },
-        backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-        selectedColor: const Color(0xFF5BCEFA),
+        backgroundColor: isDark ? const Color(0xFF24242C) : Colors.white,
+        selectedColor: const Color(0xFFF5A9B8),
         checkmarkColor: Colors.white,
         side: BorderSide(
           color: selected
-              ? const Color(0xFF5BCEFA)
+              ? const Color(0xFFF5A9B8)
               : (isDark ? Colors.grey.shade700 : Colors.grey.shade200),
         ),
         shape: RoundedRectangleBorder(
@@ -487,7 +487,7 @@ class _MedicalDirectoryListScreenState
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
         ],
@@ -500,11 +500,11 @@ class _MedicalDirectoryListScreenState
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF24242C) : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-            color: isDark ? const Color(0xFF3A3A3C) : Colors.grey.shade200),
+            color: isDark ? const Color(0xFF333338) : Colors.grey.shade200),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -524,8 +524,8 @@ class _MedicalDirectoryListScreenState
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: isDark
-                            ? const Color(0xFFF5F5F7)
-                            : const Color(0xFF1D1D1F),
+                            ? const Color(0xFFEDEDF0)
+                            : const Color(0xFF333333),
                       ),
                     ),
                   ),
@@ -539,7 +539,7 @@ class _MedicalDirectoryListScreenState
                       color: institution.isFavorite
                           ? const Color(0xFFF5A9B8)
                           : (isDark
-                              ? const Color(0xFF636366)
+                              ? const Color(0xFF6B6B76)
                               : Colors.grey.shade300),
                     ),
                   ),
@@ -551,7 +551,7 @@ class _MedicalDirectoryListScreenState
                   Icon(Icons.location_on_outlined,
                       size: 13,
                       color: isDark
-                          ? const Color(0xFF636366)
+                          ? const Color(0xFF6B6B76)
                           : Colors.grey.shade400),
                   const SizedBox(width: 4),
                   Text(
@@ -559,7 +559,7 @@ class _MedicalDirectoryListScreenState
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark
-                          ? const Color(0xFF98989E)
+                          ? const Color(0xFF8E8E96)
                           : Colors.grey.shade500,
                     ),
                     maxLines: 1,
@@ -576,14 +576,14 @@ class _MedicalDirectoryListScreenState
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF5BCEFA).withOpacity(0.08),
+                      color: const Color(0xFFF5A9B8).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       d.label,
                       style: const TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF5BCEFA),
+                        color: Color(0xFFF5A9B8),
                       ),
                     ),
                   );
@@ -600,7 +600,7 @@ class _MedicalDirectoryListScreenState
                       style: TextStyle(
                         fontSize: 11,
                         color: isDark
-                            ? const Color(0xFF636366)
+                            ? const Color(0xFF6B6B76)
                             : Colors.grey.shade400,
                       ),
                     );

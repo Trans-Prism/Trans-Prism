@@ -183,7 +183,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7),
+            color: isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -225,7 +225,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
               width: 48,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                color: isDark ? const Color(0xFF24242C) : Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: selected
                     ? [
@@ -270,12 +270,12 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
           return Card(
             elevation: 0,
             color: selected
-                ? const Color(0xFF5BCEFA).withOpacity(0.1)
+                ? const Color(0xFFF5A9B8).withOpacity(0.1)
                 : Colors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
               side: selected
-                  ? const BorderSide(color: Color(0xFF5BCEFA))
+                  ? const BorderSide(color: Color(0xFFF5A9B8))
                   : BorderSide.none,
             ),
             child: InkWell(
@@ -321,7 +321,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
 
   Widget _buildTagsBlock(bool isDark) {
     final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93);
     final keywords = _currentResource.searchKeywords
         .where((kw) => kw != _currentResource.displayName)
         .toList();
@@ -359,7 +359,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
 
   Widget _buildControlBoard(bool isDark) {
     final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93);
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93);
     final isSvgFormat = _selectedFormat == 'svg';
     const labelWidth = 60.0;
 
@@ -413,15 +413,15 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
                                 setState(() => _currentStyle = style),
                             visualDensity: VisualDensity.compact,
                             selectedColor:
-                                const Color(0xFF5BCEFA).withOpacity(0.15),
+                                const Color(0xFFF5A9B8).withOpacity(0.15),
                             labelStyle: TextStyle(
                               color: selected
-                                  ? const Color(0xFF5BCEFA)
+                                  ? const Color(0xFFF5A9B8)
                                   : secondaryTextColor,
                             ),
                             side: BorderSide(
                               color: selected
-                                  ? const Color(0xFF5BCEFA)
+                                  ? const Color(0xFFF5A9B8)
                                   : (isDark
                                       ? Colors.grey.shade700
                                       : Colors.grey.shade300),
@@ -463,15 +463,15 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
                                 setState(() => _selectedFormat = f),
                             visualDensity: VisualDensity.compact,
                             selectedColor:
-                                const Color(0xFF5BCEFA).withOpacity(0.15),
+                                const Color(0xFFF5A9B8).withOpacity(0.15),
                             labelStyle: TextStyle(
                               color: sel
-                                  ? const Color(0xFF5BCEFA)
+                                  ? const Color(0xFFF5A9B8)
                                   : secondaryTextColor,
                             ),
                             side: BorderSide(
                               color: sel
-                                  ? const Color(0xFF5BCEFA)
+                                  ? const Color(0xFFF5A9B8)
                                   : (isDark
                                       ? Colors.grey.shade700
                                       : Colors.grey.shade300),
@@ -561,7 +561,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
   // ════════════════════════════════════════════════════════════
 
   Widget _buildBottomActionRow(bool isDark) {
-    const themeColor = Color(0xFF5BCEFA);
+    const themeColor = Color(0xFFF5A9B8);
     final isSvgFormat = _selectedFormat == 'svg';
 
     Widget buildFileButton() => SizedBox(
@@ -619,7 +619,7 @@ class _SvgPreviewScreenState extends State<SvgPreviewScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         border: Border(
           top: BorderSide(
               color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),

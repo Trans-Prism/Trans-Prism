@@ -78,7 +78,7 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
     return Card(
       margin: const EdgeInsets.only(top: 8, bottom: 24),
       elevation: 0,
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade50,
+      color: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -103,7 +103,7 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: isDark
-                            ? const Color(0xFFF5F5F7)
+                            ? const Color(0xFFEDEDF0)
                             : Colors.grey.shade800),
                   ),
                 ),
@@ -154,7 +154,7 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
                   TextSpan(
                     text: 'kitsumio.github.io/MioMtFWiki',
                     style: TextStyle(
-                      color: isDark ? const Color(0xFF5BCEFA) : Colors.blue,
+                      color: isDark ? const Color(0xFFF5A9B8) : Colors.blue,
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()

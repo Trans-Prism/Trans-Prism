@@ -37,53 +37,53 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF86868B);
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final cardBg = isDark ? const Color(0xFF24242C) : Colors.white;
     final cardBorderColor =
-        isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+        isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '关于',
           style: TextStyle(
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             color: textColor,
           ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         children: [
           // Logo 与标题区域
           Card(
             elevation: 0,
             color: cardBg,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: cardBorderColor),
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: cardBorderColor, width: 0.5),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
               child: Column(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                     child: Image.asset(
                       'assets/logo_foreground.png',
-                      width: 160,
+                      width: 140,
                       fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Trans Prism (TP) 🌈',
+                    'Trans Prism',
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
                       color: textColor,
                     ),
                   ),
@@ -92,6 +92,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     '为跨性别社群打造的全能工具箱',
                     style: TextStyle(
                       fontSize: 14,
+                      height: 1.5,
                       color: secondaryTextColor,
                     ),
                   ),
@@ -100,11 +101,11 @@ class _AboutScreenState extends State<AboutScreen> {
                     _appVersion,
                     style: TextStyle(
                       fontSize: 13,
-                      color:
-                          isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+                      height: 1.4,
+                      color: secondaryTextColor,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,15 +120,15 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.open_in_new,
-                            size: 14, color: Colors.blue.shade400),
+                        Icon(Icons.open_in_new_rounded,
+                            size: 14, color: const Color(0xFFF5A9B8)),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'https://github.com/Trans-Prism/Trans-Prism',
-                            style: TextStyle(
+                            'github.com/Trans-Prism/Trans-Prism',
+                            style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.blue.shade400,
+                              color: Color(0xFFF5A9B8),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -146,7 +147,7 @@ class _AboutScreenState extends State<AboutScreen> {
             color: cardBg,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: cardBorderColor),
+              side: BorderSide(color: cardBorderColor, width: 0.5),
             ),
             child: Padding(
               padding: const EdgeInsets.all(14),
@@ -708,7 +709,7 @@ class _SectionHeader extends StatelessWidget {
             width: 4,
             height: 18,
             decoration: BoxDecoration(
-              color: const Color(0xFF5BCEFA),
+              color: const Color(0xFFF5A9B8),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -718,7 +719,7 @@ class _SectionHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+              color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
             ),
           ),
         ],

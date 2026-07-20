@@ -38,8 +38,8 @@ class _ResourceLibraryScreenState extends State<ResourceLibraryScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
-    final themeColor = const Color(0xFF5BCEFA);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final themeColor = const Color(0xFFF5A9B8);
 
     // ── 与下方卡片边距完全对齐 (卡片使用 EdgeInsets.all(16)) ──
     const double contentPadding = 16;
@@ -49,7 +49,7 @@ class _ResourceLibraryScreenState extends State<ResourceLibraryScreen> {
     final Color segBg =
         isDark ? const Color(0xFF1A1A1E) : const Color(0xFFE8E8ED);
     // 滑块：微凸起质感深灰（绝不使用主题色）
-    final Color segThumb = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final Color segThumb = isDark ? const Color(0xFF24242C) : Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -91,7 +91,7 @@ class _ResourceLibraryScreenState extends State<ResourceLibraryScreen> {
                           color: _selectedSegment == 0
                               ? themeColor
                               : (isDark
-                                  ? const Color(0xFF636366)
+                                  ? const Color(0xFF6B6B76)
                                   : const Color(0xFF8E8E93)),
                         ),
                       ),
@@ -108,7 +108,7 @@ class _ResourceLibraryScreenState extends State<ResourceLibraryScreen> {
                           color: _selectedSegment == 1
                               ? themeColor
                               : (isDark
-                                  ? const Color(0xFF636366)
+                                  ? const Color(0xFF6B6B76)
                                   : const Color(0xFF8E8E93)),
                         ),
                       ),
@@ -221,7 +221,7 @@ class _WikiListTabState extends State<_WikiListTab> {
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.download_for_offline, color: Color(0xFF5BCEFA)),
+            Icon(Icons.download_for_offline, color: Color(0xFFF5A9B8)),
             SizedBox(width: 8),
             Text('离线版下载'),
           ],
@@ -244,7 +244,7 @@ class _WikiListTabState extends State<_WikiListTab> {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF5BCEFA),
+              backgroundColor: const Color(0xFFF5A9B8),
             ),
             child: const Text('不再提示'),
           ),
@@ -535,7 +535,7 @@ class _WikiListTabState extends State<_WikiListTab> {
             style: TextStyle(
               fontSize: 11,
               color: switchValue
-                  ? const Color(0xFF5BCEFA)
+                  ? const Color(0xFFF5A9B8)
                   : (isDark ? Colors.grey.shade500 : Colors.grey),
             ),
           ),
@@ -544,7 +544,7 @@ class _WikiListTabState extends State<_WikiListTab> {
             child: Switch(
               value: switchValue,
               onChanged: (v) => _handleOfflineToggle(wikiType!, v),
-              activeColor: const Color(0xFF5BCEFA),
+              activeColor: const Color(0xFFF5A9B8),
             ),
           ),
         ],
@@ -568,7 +568,7 @@ class _WikiListTabState extends State<_WikiListTab> {
         title: Text(displayTitle,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isDark ? const Color(0xFFF5F5F7) : null)),
+                color: isDark ? const Color(0xFFEDEDF0) : null)),
         subtitle: Text(effectiveSubtitle,
             style: TextStyle(
                 fontSize: 12, color: isDark ? Colors.grey.shade400 : null)),
@@ -689,7 +689,7 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
   void _showStylePicker(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     showModalBottomSheet(
       context: context,
@@ -733,13 +733,13 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                       borderRadius: BorderRadius.circular(12),
                       side: selected
                           ? const BorderSide(
-                              color: Color(0xFF5BCEFA), width: 1.5)
+                              color: Color(0xFFF5A9B8), width: 1.5)
                           : BorderSide.none,
                     ),
                     tileColor: selected
-                        ? const Color(0xFF5BCEFA).withOpacity(0.06)
+                        ? const Color(0xFFF5A9B8).withOpacity(0.06)
                         : (isDark
-                            ? const Color(0xFF2C2C2E)
+                            ? const Color(0xFF24242C)
                             : Colors.grey.shade50),
                     title: Text(
                       entry.value,
@@ -747,12 +747,12 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                         fontSize: 15,
                         fontWeight:
                             selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? const Color(0xFF5BCEFA) : textColor,
+                        color: selected ? const Color(0xFFF5A9B8) : textColor,
                       ),
                     ),
                     trailing: selected
                         ? const Icon(Icons.check_circle,
-                            color: Color(0xFF5BCEFA), size: 22)
+                            color: Color(0xFFF5A9B8), size: 22)
                         : null,
                     onTap: () {
                       setState(() => _preferredStyle = entry.key);
@@ -793,8 +793,8 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                     onChanged: _performSearch,
                     style: TextStyle(
                       color: isDark
-                          ? const Color(0xFFF5F5F7)
-                          : const Color(0xFF1D1D1F),
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
                       fontSize: 14,
                     ),
                   ),
@@ -807,7 +807,7 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                 child: CupertinoButton(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   color: isDark
-                      ? const Color(0xFF2C2C2E)
+                      ? const Color(0xFF24242C)
                       : const Color(0xFFF0F0F5),
                   borderRadius: BorderRadius.circular(10),
                   onPressed: () => _showStylePicker(context),
@@ -818,8 +818,8 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                         Icons.style,
                         size: 16,
                         color: isDark
-                            ? const Color(0xFFF5F5F7)
-                            : const Color(0xFF1D1D1F),
+                            ? const Color(0xFFEDEDF0)
+                            : const Color(0xFF333333),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -828,8 +828,8 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: isDark
-                              ? const Color(0xFFF5F5F7)
-                              : const Color(0xFF1D1D1F),
+                              ? const Color(0xFFEDEDF0)
+                              : const Color(0xFF333333),
                         ),
                       ),
                     ],
@@ -882,7 +882,7 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: isDark
-                                    ? const Color(0xFF636366)
+                                    ? const Color(0xFF6B6B76)
                                     : const Color(0xFF8E8E93),
                               ),
                             ),
@@ -917,7 +917,7 @@ class _SvgResourceTabState extends State<_SvgResourceTab> {
       text,
       style: TextStyle(
         fontSize: 11,
-        color: isDark ? const Color(0xFF48484A) : const Color(0xFFAEAEB2),
+        color: isDark ? const Color(0xFF48484A) : const Color(0xFF8E8E96),
       ),
     );
   }
@@ -1018,7 +1018,7 @@ class _SvgResourceCard extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: isDark
-                      ? const Color(0xFF98989E)
+                      ? const Color(0xFF8E8E96)
                       : const Color(0xFF8E8E93),
                 ),
                 maxLines: 1,

@@ -226,14 +226,14 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF0F0F12) : const Color(0xFFF2F2F7),
+          isDark ? const Color(0xFF1C1C1A) : const Color(0xFFF2F2F7),
       appBar: AppBar(
         title: Text(
           '激素换算器',
           style: TextStyle(
               fontWeight: FontWeight.w800,
               color:
-                  isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F)),
+                  isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333)),
         ),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -282,8 +282,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isDark
-                        ? const Color(0xFFF5F5F7)
-                        : const Color(0xFF1D1D1F))
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(18),
               ),
@@ -293,7 +293,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected
-                      ? (isDark ? const Color(0xFF1D1D1F) : Colors.white)
+                      ? (isDark ? const Color(0xFF333333) : Colors.white)
                       : const Color(0xFF8E8E93),
                 ),
               ),
@@ -333,7 +333,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
               child: const Icon(
                 Icons.swap_vert_rounded,
                 size: 18,
-                color: Color(0xFF636366),
+                color: Color(0xFF6B6B76),
               ),
             ),
           ),
@@ -363,20 +363,20 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
       decoration: BoxDecoration(
         color: isFocused
-            ? (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFEBEBED))
-            : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7)),
+            ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
+            : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
         borderRadius: BorderRadius.circular(20),
         boxShadow: isFocused
             ? [
                 BoxShadow(
-                  color: const Color(0xFF5BCEFA).withOpacity(0.06),
+                  color: const Color(0xFFF5A9B8).withOpacity(0.06),
                   blurRadius: 12,
                   spreadRadius: 0,
                 ),
@@ -391,7 +391,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93),
+              color: isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93),
               letterSpacing: 0.5,
             ),
           ),
@@ -456,7 +456,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           ? currentUnit
           : units.first.symbol,
       offset: const Offset(0, 44),
-      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7),
+      color: isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       onSelected: onChanged,
       itemBuilder: (context) => units.map((u) {
@@ -471,8 +471,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: isDark
-                      ? const Color(0xFFF5F5F7)
-                      : const Color(0xFF1D1D1F),
+                      ? const Color(0xFFEDEDF0)
+                      : const Color(0xFF333333),
                 ),
               ),
               if (u.isCommon) ...[
@@ -481,7 +481,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                   width: 6,
                   height: 6,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF5BCEFA),
+                    color: Color(0xFFF5A9B8),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -493,7 +493,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE8E8ED),
+          color: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -505,14 +505,14 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color:
-                    isDark ? const Color(0xFFC7C7CC) : const Color(0xFF636366),
+                    isDark ? const Color(0xFFC7C7CC) : const Color(0xFF6B6B76),
               ),
             ),
             const SizedBox(width: 4),
             Icon(Icons.keyboard_arrow_down_rounded,
                 size: 16,
                 color:
-                    isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93)),
+                    isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93)),
           ],
         ),
       ),
@@ -542,7 +542,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1D1D1F),
+              color: Color(0xFF333333),
             ),
           ),
         ),
@@ -605,22 +605,22 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final Color cardBg = isMatched
         ? palette.tintBg
         : dimmed
-            ? (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEBEBED))
-            : (isDark ? const Color(0xFF1C1C1E) : palette.bgNormal);
+            ? (isDark ? const Color(0xFF24242C) : const Color(0xFFEBEBED))
+            : (isDark ? const Color(0xFF24242C) : palette.bgNormal);
     final Color contentColor = isMatched
         ? palette.accent
-        : (isDark ? const Color(0xFF98989E) : const Color(0xFF8E8E93));
+        : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93));
     final Color labelColor = isMatched
         ? palette.onAccent
         : dimmed
-            ? (isDark ? const Color(0xFF636366) : const Color(0xFF999999))
-            : (isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F));
+            ? (isDark ? const Color(0xFF6B6B76) : const Color(0xFF999999))
+            : (isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333));
     final Color badgeBg = isMatched
         ? palette.accent.withOpacity(0.12)
-        : (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA));
+        : (isDark ? const Color(0xFF333338) : const Color(0xFFE5E5EA));
     final Color badgeTextColor = isMatched
         ? palette.accent
-        : (isDark ? const Color(0xFFAEAEB2) : const Color(0xFF999999));
+        : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF999999));
 
     return AnimatedScale(
       duration: const Duration(milliseconds: 350),
@@ -657,7 +657,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                 color: isMatched
                     ? palette.accent.withOpacity(0.18)
                     : (isDark
-                        ? const Color(0xFF3A3A3C)
+                        ? const Color(0xFF333338)
                         : const Color(0xFFE5E5EA)),
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -667,7 +667,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                 color: isMatched
                     ? palette.accent
                     : (isDark
-                        ? const Color(0xFF636366)
+                        ? const Color(0xFF6B6B76)
                         : const Color(0xFFB0B0B8)),
               ),
             ),
@@ -798,7 +798,7 @@ class _TransFlagPalette {
 
   /// FtM — Pastel Blue (#5BCEFA) 跨性别旗帜蓝色
   static const ftm = _TransFlagPalette(
-    solidBg: Color(0xFF5BCEFA),
+    solidBg: Color(0xFFF5A9B8),
     tintBg: Color(0x265BCEFA),
     bgNormal: Color(0x145BCEFA),
     bgMatched: Color(0x295BCEFA),

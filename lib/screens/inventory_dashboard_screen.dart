@@ -73,7 +73,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
         title: const Row(
           children: [
             Icon(Icons.notifications_active_rounded,
-                color: Color(0xFF5BCEFA), size: 28),
+                color: Color(0xFFF5A9B8), size: 28),
             SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -96,7 +96,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.check_circle_outline,
-                    size: 18, color: Color(0xFF5BCEFA)),
+                    size: 18, color: Color(0xFFF5A9B8)),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -131,7 +131,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF5BCEFA),
+              backgroundColor: const Color(0xFFF5A9B8),
             ),
             child: const Text('允许通知'),
           ),
@@ -323,7 +323,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     if (_isLoading) {
       return const Scaffold(
@@ -344,7 +344,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
       body: _drugs.isEmpty ? _buildEmptyState() : _buildContent(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addDrug,
-        backgroundColor: const Color(0xFF5BCEFA),
+        backgroundColor: const Color(0xFFF5A9B8),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text('添加药物'),
@@ -398,7 +398,7 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   Widget _buildContent() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     double totalStockPercentage = 0;
     int minRunwayDays = 999;
@@ -473,12 +473,12 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> {
   Widget _buildSummaryCard(double percentage, int runwayDays) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF24242C) : Colors.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
@@ -712,7 +712,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Container(
       decoration: BoxDecoration(
@@ -828,7 +828,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
               child: FilledButton(
                 onPressed: _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF5BCEFA),
+                  backgroundColor: const Color(0xFFF5A9B8),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
@@ -852,7 +852,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF5BCEFA).withOpacity(0.08),
+        color: const Color(0xFFF5A9B8).withOpacity(0.08),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -867,8 +867,8 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: isDark
-                        ? const Color(0xFFF5F5F7)
-                        : const Color(0xFF1D1D1F),
+                        ? const Color(0xFFEDEDF0)
+                        : const Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -887,7 +887,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           Switch(
             value: _isDiscreteMode,
             onChanged: (val) => setState(() => _isDiscreteMode = val),
-            activeColor: const Color(0xFF5BCEFA),
+            activeColor: const Color(0xFFF5A9B8),
           ),
         ],
       ),
@@ -897,7 +897,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   // ── 周期选择 ──
   Widget _buildCycleSection({required bool isDark}) {
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -918,7 +918,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+            color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -974,14 +974,14 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF5BCEFA)
+                            ? const Color(0xFFF5A9B8)
                             : (isDark
-                                ? const Color(0xFF3A3A3C)
+                                ? const Color(0xFF333338)
                                 : Colors.white.withOpacity(0.7)),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF5BCEFA)
+                              ? const Color(0xFFF5A9B8)
                               : (isDark
                                   ? Colors.grey.shade700
                                   : Colors.grey.shade200),
@@ -1010,7 +1010,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   // ── 下次给药时间 ──
   Widget _buildNextDoseSection({required bool isDark}) {
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final displayText = _nextDoseTime != null
         ? '${_nextDoseTime!.year}/${_nextDoseTime!.month}/${_nextDoseTime!.day}  '
             '${_nextDoseTime!.hour.toString().padLeft(2, '0')}:${_nextDoseTime!.minute.toString().padLeft(2, '0')}'
@@ -1032,7 +1032,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           ),
         ),
         Material(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+          color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
@@ -1046,7 +1046,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                   return Theme(
                     data: Theme.of(context).copyWith(
                       colorScheme: Theme.of(context).colorScheme.copyWith(
-                            primary: const Color(0xFF5BCEFA),
+                            primary: const Color(0xFFF5A9B8),
                           ),
                     ),
                     child: child!,
@@ -1064,7 +1064,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                   return Theme(
                     data: Theme.of(ctx).copyWith(
                       colorScheme: Theme.of(ctx).colorScheme.copyWith(
-                            primary: const Color(0xFF5BCEFA),
+                            primary: const Color(0xFFF5A9B8),
                           ),
                     ),
                     child: child!,
@@ -1091,7 +1091,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                     Icons.schedule_rounded,
                     size: 20,
                     color: _nextDoseTime != null
-                        ? const Color(0xFF5BCEFA)
+                        ? const Color(0xFFF5A9B8)
                         : Colors.grey.shade400,
                   ),
                   const SizedBox(width: 12),
@@ -1128,7 +1128,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
   // ── 每日提醒时间 ──
   Widget _buildTimeSection({required bool isDark}) {
     final textColor =
-        isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F);
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1149,7 +1149,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+            color: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1181,7 +1181,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                         });
                       },
                       backgroundColor:
-                          const Color(0xFF5BCEFA).withOpacity(0.08),
+                          const Color(0xFFF5A9B8).withOpacity(0.08),
                       side: BorderSide.none,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -1197,7 +1197,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                         Icon(
                           Icons.add_rounded,
                           size: 18,
-                          color: Color(0xFF5BCEFA),
+                          color: Color(0xFFF5A9B8),
                         ),
                         SizedBox(width: 4),
                         Text(
@@ -1205,7 +1205,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF5BCEFA),
+                            color: Color(0xFFF5A9B8),
                           ),
                         ),
                       ],
@@ -1220,7 +1220,7 @@ class _DrugFormSheetState extends State<_DrugFormSheet> {
                             data: Theme.of(context).copyWith(
                               colorScheme:
                                   Theme.of(context).colorScheme.copyWith(
-                                        primary: const Color(0xFF5BCEFA),
+                                        primary: const Color(0xFFF5A9B8),
                                       ),
                             ),
                             child: child!,
@@ -1281,7 +1281,7 @@ class _FilledField extends StatelessWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
-        color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+        color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
       ),
       decoration: InputDecoration(
         labelText: label,
@@ -1296,7 +1296,7 @@ class _FilledField extends StatelessWidget {
           color: Colors.grey.shade300,
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+        fillColor: isDark ? const Color(0xFF24242C) : Colors.grey.shade100,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,

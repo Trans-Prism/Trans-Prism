@@ -40,10 +40,13 @@ class ThemeHelper {
   Color get disabledColor =>
       isDark ? const Color(0xFF636366) : const Color(0xFFC7C7CC);
 
-  /// 品牌色（蓝色）
-  static const Color brandBlue = Color(0xFF5BCEFA);
+  /// 主题主色
+  Color get primaryColor => Theme.of(context).colorScheme.primary;
 
-  /// 品牌色（粉色）
+  /// 品牌色（蓝色）- 弃用，请使用 primaryColor
+  static const Color brandBlue = Color(0xFFF5A9B8);
+
+  /// 品牌色（粉色）- 弃用，请使用 primaryColor
   static const Color brandPink = Color(0xFFF5A9B8);
 
   /// 构建 AppBar 标题样式
