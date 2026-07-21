@@ -1,6 +1,5 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
 
@@ -32,7 +31,7 @@ class GlassPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = GlassTheme.of(context);
+    var tokens = GlassTheme.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -59,30 +58,35 @@ class GlassPill extends StatelessWidget {
       );
     }
 
-    // 液态玻璃胶囊：轻材质（更小模糊）
+    if (MediaQuery.of(context).accessibleNavigation) {
+      tokens = tokens.toReducedTransparency();
+    }
+
+    // 液态玻璃胶囊：轻材质（更小模糊，§12）
     final blur = (blurSigma ?? tokens.blurSigma) * 0.6;
     final bg = selected
         ? (selectedColor ?? theme.colorScheme.primary).withValues(alpha: 0.85)
         : (surfaceColor ?? tokens.surfaceColor);
+
+    final style =
+        tokens.toLiquidGlassStyle(cornerRadius: borderRadius).copyWith(
+              appearance: LiquidGlassAppearance(
+                color: bg,
+                saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+                blur: LiquidGlassBlur(sigmaX: blur, sigmaY: blur),
+              ),
+            );
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(borderRadius),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-            child: Container(
-              padding: padding,
-              decoration: BoxDecoration(
-                color: bg,
-                border: Border.all(color: tokens.borderColor, width: 0.5),
-                borderRadius: BorderRadius.circular(borderRadius),
-              ),
-              child: child,
-            ),
+        child: LiquidGlassLens(
+          style: style,
+          child: Padding(
+            padding: padding,
+            child: child,
           ),
         ),
       ),

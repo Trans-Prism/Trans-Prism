@@ -1,6 +1,5 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
 import '../theme/glass_tokens.dart';
@@ -8,8 +7,10 @@ import '../theme/glass_tokens.dart';
 /// 液态玻璃卡片 —— 双模自适应
 ///
 /// - **液态玻璃模式**（`GlassTokens.isEnabled == true`）：
-///   `ClipRRect` → `BackdropFilter(blur)` → 半透明表面 + 顶部 1px 高光边
-///   + 柔弥散阴影（§12 Materials & depth）。
+///   由 [`LiquidGlassLens`] 接管渲染——Impeller 下独立采样实时背景做
+///   Snell 折射 + 光学边框 + 模糊 + 着色（§12 Materials & depth），
+///   Skia/Web 无 [`LiquidGlassView`] 祖先时自动降级为 frosted（模糊+着色+边框）。
+///   彻底消除 v1 手写 `Stack`+`Positioned.fill` 的高度塌陷问题。
 /// - **简约风模式**（`isEnabled == false`）：
 ///   退化为实心白底/`#24242C` 底、无边框、原弥散阴影，
 ///   与既有 [`cardTheme`](Trans-Prism/lib/main.dart:145) 像素级一致。
@@ -43,15 +44,13 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var tokens = GlassTheme.of(context);
-    // 无障碍兜底：组件内部检测 accessibleNavigation（外层 MaterialApp 已注入 MediaQuery），
-    // 开启"减少动效/透明度"时玻璃面实心化（§14）。
+    // 无障碍兜底：开启"减少动效/透明度"时玻璃面实心化（§14）。
     if (tokens.isEnabled && MediaQuery.of(context).accessibleNavigation) {
       tokens = tokens.toReducedTransparency();
     }
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final radius = borderRadius ?? tokens.borderRadius;
 
-    final card = _buildSurface(context, tokens, isDark, radius);
+    final card = _buildSurface(context, tokens, radius);
 
     return Container(
       margin: margin,
@@ -72,7 +71,6 @@ class GlassCard extends StatelessWidget {
   Widget _buildSurface(
     BuildContext context,
     GlassTokens tokens,
-    bool isDark,
     double radius,
   ) {
     final bg = surfaceColor ?? tokens.surfaceColor;
@@ -97,93 +95,43 @@ class GlassCard extends StatelessWidget {
       );
     }
 
-    // 液态玻璃：强模糊 + 高透明表面 + 光泽渐变
-    // + 色散边缘 + 顶部高光边 + 柔弥散阴影（对照真实 iOS 截图）
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: [
-          BoxShadow(
-            color: tokens.shadowColor,
-            blurRadius: tokens.shadowBlur,
-            offset: tokens.shadowOffset,
+    // 液态玻璃：LiquidGlassLens 接管折射/模糊/边框/光泽。
+    // 阴影由外层 DecoratedBox 承载（渲染在 lens 之后方）。
+    // RepaintBoundary 隔离重绘区域（§D 性能优化）。
+    final style = tokens.toLiquidGlassStyle(cornerRadius: radius).copyWith(
+          appearance: LiquidGlassAppearance(
+            color: bg,
+            saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+            blur: LiquidGlassBlur(sigmaX: blur, sigmaY: blur),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Stack(
-          fit: StackFit.loose,
-          children: [
-            // 装饰层：Positioned.fill 铺满，不影响 Stack 高度
-            // 1. 背景模糊层
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: const SizedBox.expand(),
-              ),
-            ),
-            // 2. 半透明表面填充（~20% alpha，背景色彩透出）
-            Positioned.fill(child: ColoredBox(color: bg)),
-            // 3. 表面光泽渐变（顶部亮 → 底部透明）
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: tokens.sheenGradient,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // 4. 色散边缘（棱镜折射）
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: ChromaticEdgePainter(
-                    colors: tokens.chromaticEdgeColors,
-                    radius: radius,
-                    width: 0.8,
-                  ),
-                ),
-              ),
-            ),
-            // 5. 顶部 1px 高光边
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(radius),
-                    border: Border(
-                      top: BorderSide(
-                        width: 1.2,
-                        color: Colors.white.withValues(
-                          alpha: tokens.highlightEdgeAlpha,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // 6. 内容（决定 Stack/ClipRRect 的实际高度）
-            Padding(
-              padding: padding,
-              child: child,
+        );
+
+    return RepaintBoundary(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: [
+            BoxShadow(
+              color: tokens.shadowColor,
+              blurRadius: tokens.shadowBlur,
+              offset: tokens.shadowOffset,
             ),
           ],
+        ),
+        child: LiquidGlassLens(
+          style: style,
+          child: Padding(
+            padding: padding,
+            child: child,
+          ),
         ),
       ),
     );
   }
 }
 
-/// 色散边缘画笔 —— 沿圆角矩形边缘绘制多色渐变线，模拟棱镜色散。
-///
-/// 公开类，供 [GlassNav] 等其他玻璃组件复用。
+/// 色散边缘画笔 —— v1 手写实现，保留以兼容历史导入（liquid 模式现由
+/// [`LiquidGlassLens`] 的光学边框接管，此类不再被组件使用）。
 class ChromaticEdgePainter extends CustomPainter {
   final List<Color> colors;
   final double radius;

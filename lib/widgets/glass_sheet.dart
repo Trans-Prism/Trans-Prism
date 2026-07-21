@@ -1,13 +1,12 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
 
 /// 液态玻璃 BottomSheet 容器 —— 双模自适应
 ///
 /// 用于包装 `showModalBottomSheet` 的 builder 内容。提供：
-/// - 拖拽条 + 顶部高光边 + 背景模糊（液态模式）
+/// - 拖拽条 + 顶部圆角玻璃面（液态模式，由 [`LiquidGlassLens`] 接管折射/模糊）
 /// - 简约风退化：实色圆角顶 Sheet（与既有 [`bottomSheetTheme`](Trans-Prism/lib/main.dart:494) 一致）
 ///
 /// 用法：
@@ -37,7 +36,7 @@ class GlassSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = GlassTheme.of(context);
+    var tokens = GlassTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // 简约风退化：实色 Sheet
@@ -52,34 +51,26 @@ class GlassSheet extends StatelessWidget {
       );
     }
 
+    if (MediaQuery.of(context).accessibleNavigation) {
+      tokens = tokens.toReducedTransparency();
+    }
+
     // 液态玻璃 Sheet
     final blur = blurSigma ?? tokens.blurSigma;
     final bg = surfaceColor ?? tokens.surfaceColor;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          decoration: BoxDecoration(
+    final style = tokens.toLiquidGlassStyle(cornerRadius: topRadius).copyWith(
+          appearance: LiquidGlassAppearance(
             color: bg,
-            border: Border.all(color: tokens.borderColor, width: 0.5),
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(topRadius)),
+            saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+            blur: LiquidGlassBlur(sigmaX: blur, sigmaY: blur),
           ),
-          foregroundDecoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(topRadius)),
-            border: Border(
-              top: BorderSide(
-                width: 1,
-                color:
-                    Colors.white.withValues(alpha: tokens.highlightEdgeAlpha),
-              ),
-            ),
-          ),
-          child: _content(context),
-        ),
+        );
+
+    return RepaintBoundary(
+      child: LiquidGlassLens(
+        style: style,
+        child: _content(context),
       ),
     );
   }

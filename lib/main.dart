@@ -1,6 +1,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -537,7 +538,8 @@ ThemeData _buildLiquidLightTheme(Color primaryColor) {
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Colors.transparent,
+      // 半透明玻璃色：原生 Card 在 liquid 模式下有可见容器（GlassCard 接管真玻璃）
+      color: const Color(0xCCFFFFFF),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -550,14 +552,16 @@ ThemeData _buildLiquidLightTheme(Color primaryColor) {
       indicatorColor: Colors.transparent,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Colors.transparent,
+      // 半透明玻璃色：原生 BottomSheet 有可见容器，隔绝底层视觉穿透
+      backgroundColor: Color(0xF0FFFFFF),
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: Colors.transparent,
+      // 半透明玻璃色：原生 AlertDialog 有可见容器，隔绝底层文字穿透
+      backgroundColor: const Color(0xF0FFFFFF),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -587,7 +591,7 @@ ThemeData _buildLiquidDarkTheme(Color primaryColor) {
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Colors.transparent,
+      color: const Color(0xCC24242C),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -600,20 +604,36 @@ ThemeData _buildLiquidDarkTheme(Color primaryColor) {
       indicatorColor: Colors.transparent,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xF024242C),
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xF024242C),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
     ),
   );
+}
+
+/// liquid 模式滚动行为：禁用 Android stretch overscroll。
+///
+/// liquid_glass_easy 的 BackdropFilter 透镜在 Android 的 stretch overscroll
+/// 隔离合成层内无法采样实时背景，会在滚动边缘渲染黑色。禁用 overscroll 指示
+/// 即可让透镜在滚动全程正确折射（包文档明确建议）。
+class _NoOverscrollScrollBehavior extends MaterialScrollBehavior {
+  const _NoOverscrollScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    // 不绘制任何 overscroll 指示器（stretch/发光均禁用）。
+    return child;
+  }
 }
 
 /// 根应用 — StatefulWidget 以响应 ThemeService 的变化
@@ -654,6 +674,10 @@ class _TransToolboxAppState extends State<TransToolboxApp> {
           child: MaterialApp(
             title: 'Trans Prism',
             debugShowCheckedModeBanner: false,
+            // liquid 模式禁用 Android stretch overscroll：BackdropFilter 透镜
+            // 在 overscroll 隔离层内会渲染黑色（liquid_glass_easy 已知约束）。
+            scrollBehavior:
+                isLiquid ? const _NoOverscrollScrollBehavior() : null,
             theme: isLiquid
                 ? _buildLiquidLightTheme(_themeService.themeColor)
                 : _buildLightTheme(_themeService.themeColor),
@@ -1354,110 +1378,70 @@ class _MainDashboardState extends State<MainDashboard> {
     ];
 
     if (isLiquid) {
-      // 液态玻璃：Stack 多层（模糊 + 饱和度 + 表面 + 光泽 + 色散 + 高光边 + 内容）
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: tokens.shadowColor,
-              blurRadius: tokens.shadowBlur,
-              offset: tokens.shadowOffset,
+      // 液态玻璃：LiquidGlassLens 接管折射/模糊/光学边框（Impeller 独立采样
+      // 实时背景），彻底消除 v1 Stack+StackFit.passthrough+SizedBox.expand
+      // 的高度塌陷（导航栏消失）问题。
+      final style = tokens.toLiquidGlassStyle(cornerRadius: 32).copyWith(
+            appearance: LiquidGlassAppearance(
+              color: bgColor,
+              saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+              blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: Stack(
-            fit: StackFit.passthrough,
-            children: [
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                child: const SizedBox.expand(),
+          );
+      return RepaintBoundary(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: tokens.shadowColor,
+                blurRadius: tokens.shadowBlur,
+                offset: tokens.shadowOffset,
               ),
-              ColoredBox(
-                color: bgColor,
-                child: const SizedBox.expand(),
-              ),
-              IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: tokens.sheenGradient,
-                    ),
-                  ),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              IgnorePointer(
-                child: CustomPaint(
-                  painter: ChromaticEdgePainter(
-                    colors: tokens.chromaticEdgeColors,
-                    radius: 32,
-                    width: 0.8,
-                  ),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border(
-                      top: BorderSide(
-                        width: 1.2,
-                        color: Colors.white.withValues(
-                          alpha: tokens.highlightEdgeAlpha,
-                        ),
-                      ),
-                    ),
-                  ),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              SizedBox(
-                height: 60,
-                child: Row(
-                  children: List.generate(destinations.length, (index) {
-                    final dest = destinations[index];
-                    final isSelected = _currentIndex == index;
-                    return Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = index),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              isSelected ? dest.selectedIcon : dest.icon,
-                              size: 22,
+            ],
+          ),
+          child: LiquidGlassLens(
+            style: style,
+            child: SizedBox(
+              height: 60,
+              child: Row(
+                children: List.generate(destinations.length, (index) {
+                  final dest = destinations[index];
+                  final isSelected = _currentIndex == index;
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _currentIndex = index),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isSelected ? dest.selectedIcon : dest.icon,
+                            size: 22,
+                            color: isSelected
+                                ? widget.themeService.themeColor
+                                : unselectedColor,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            dest.label,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                               color: isSelected
                                   ? widget.themeService.themeColor
                                   : unselectedColor,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              dest.label,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? widget.themeService.themeColor
-                                    : unselectedColor,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  );
+                }),
               ),
-            ],
+            ),
           ),
         ),
       );

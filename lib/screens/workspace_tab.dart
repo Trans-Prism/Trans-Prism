@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
+import '../theme/glass_theme.dart';
 import '../widgets/gradient_icon.dart';
 import 'bra_calculator_page.dart';
 import 'hormone_converter_screen.dart';
@@ -319,8 +321,89 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final secondaryColor =
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
-    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
+    final tokens = GlassTheme.of(context);
+    final isLiquid = tokens.isEnabled;
 
+    // 卡片内容（图标 + 标题 + 副标题）
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ── 圆底图标（Claude 风格） ──
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF333338) : const Color(0xFFEFEFEF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon,
+                size: iconSize > 26 ? 20 : iconSize.clamp(16, 20),
+                color: secondaryColor),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                    height: 1.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.3,
+                    color: secondaryColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // 液态玻璃：LiquidGlassLens 接管折射/模糊/光学边框（通透轻盈，§12），
+    // 彻底消除 v1 高度塌陷/截断问题。
+    if (isLiquid) {
+      final style = tokens.toLiquidGlassStyle(cornerRadius: 16);
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: RepaintBoundary(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: tokens.shadowColor,
+                  blurRadius: tokens.shadowBlur,
+                  offset: tokens.shadowOffset,
+                ),
+              ],
+            ),
+            child: LiquidGlassLens(style: style, child: content),
+          ),
+        ),
+      );
+    }
+
+    // 简约风：实心卡片 + 弥散阴影（保持既有外观）
+    final cardColor = isDark ? const Color(0xFF24242C) : Colors.white;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -340,7 +423,6 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── 圆底图标（Claude 风格） ──
             Container(
               width: 36,
               height: 36,

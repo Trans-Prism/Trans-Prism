@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 /// 液态玻璃（Liquid Glass）主题 Token
 ///
@@ -124,12 +125,12 @@ class GlassTokens {
   static const GlassTokens liquidLight = GlassTokens(
     isEnabled: true,
     blurSigma: 30,
-    surfaceColor: Color(0x33FFFFFF), // ~20% 白
-    borderColor: Color(0x66FFFFFF), // ~40% 亮边
+    surfaceColor: Color(0x66FFFFFF), // ~40% 白（通透感，§12 高透明度白底）
+    borderColor: Color(0x80FFFFFF), // ~50% 亮边
     borderRadius: 20,
-    shadowColor: Color(0x24000000), // ~14% 阴影
-    shadowBlur: 30,
-    shadowOffset: Offset(0, 10),
+    shadowColor: Color(0x14000000), // ~8% 极轻阴影（液态玻璃应轻盈）
+    shadowBlur: 20,
+    shadowOffset: Offset(0, 6),
     highlightEdgeAlpha: 0.7,
     scrimColor: Color(0x40000000), // ~25% 压暗
     sheenGradient: [
@@ -153,12 +154,12 @@ class GlassTokens {
   static const GlassTokens liquidDark = GlassTokens(
     isEnabled: true,
     blurSigma: 35,
-    surfaceColor: Color(0x401C1C1E), // ~25% 深灰
-    borderColor: Color(0x55FFFFFF), // 亮边在暗色上更明显
+    surfaceColor: Color(0x551C1C1E), // ~33% 深灰（暗色玻璃略厚但仍通透）
+    borderColor: Color(0x66FFFFFF), // 亮边在暗色上更明显
     borderRadius: 20,
-    shadowColor: Color(0x50000000),
-    shadowBlur: 36,
-    shadowOffset: Offset(0, 12),
+    shadowColor: Color(0x28000000), // ~16% 轻阴影
+    shadowBlur: 24,
+    shadowOffset: Offset(0, 8),
     highlightEdgeAlpha: 0.6,
     scrimColor: Color(0x66000000), // ~40% 压暗
     sheenGradient: [
@@ -224,5 +225,46 @@ class GlassTokens {
   }) {
     if (!isLiquid) return isDark ? minimalDark : minimalLight;
     return isDark ? liquidDark : liquidLight;
+  }
+
+  // ──────────────────────────────────────────────────────────
+  //  liquid_glass_easy 适配（ADR-010 变更）
+  // ──────────────────────────────────────────────────────────
+  // 将本 Token 映射为 [`LiquidGlassStyle`]，供 `GlassXxx` 组件在 liquid
+  // 模式下传给 [`LiquidGlassLens`]。色散/光泽/饱和度等手写效果现由包的
+  // 光学边框（OpticalBorder）+ Snell 折射（OpticalRefraction）接管。
+  //
+  // Impeller 下 [`LiquidGlassLens`] 独立采样实时背景（全折射）；
+  // Skia/Web 无 [`LiquidGlassView`] 祖先时自动降级为 frosted（模糊+着色+边框）。
+  LiquidGlassStyle toLiquidGlassStyle({double? cornerRadius}) {
+    final radius = cornerRadius ?? borderRadius;
+    return LiquidGlassStyle(
+      shape: LiquidGlassShape.continuousRoundedRectangle(
+        cornerRadius: radius,
+        borderWidth: 1.2,
+        lightIntensity: 0.6 + highlightEdgeAlpha * 0.8,
+        lightDirection: 90, // 光从上方打来（§12）
+        borderType: OpticalBorder(
+          borderSaturation: saturationBoost.clamp(0.0, 3.0),
+          ambientIntensity: 1.0,
+          borderSolidity: 0.35,
+        ),
+      ),
+      appearance: LiquidGlassAppearance(
+        color: surfaceColor,
+        saturation: saturationBoost.clamp(0.0, 3.0),
+        blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
+      ),
+      refraction: const LiquidGlassRefraction(
+        distortion: 0.07,
+        distortionWidth: 28,
+        chromaticAberration: 0.002,
+        refractionType: OpticalRefraction(
+          refraction: 1.5,
+          refractionWidth: 24,
+          depth: 0.6,
+        ),
+      ),
+    );
   }
 }

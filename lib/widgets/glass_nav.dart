@@ -1,17 +1,14 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
-import 'glass_card.dart' show ChromaticEdgePainter;
 
 /// 液态玻璃底部导航 —— 双模自适应
 ///
-/// - **液态玻璃模式**：浮动胶囊形玻璃条，与屏幕底边留间距，
-///   选中项用品牌色 + 轻微放大（弹簧手感由调用方在 onDestinationSelected
-///   触发重建实现）。
+/// - **液态玻璃模式**：浮动胶囊形玻璃条，由 [`LiquidGlassLens`] 接管折射/
+///   模糊/光学边框（Impeller 独立采样实时背景）。选中项用品牌色 + 轻微放大。
 /// - **简约风模式**：退化为与 [`navigationBarTheme`](Trans-Prism/lib/main.dart:153)
-///   一致的实色 NavigationBar。
+///   一致的实色 [`NavigationBar`]。
 class GlassNav extends StatelessWidget {
   const GlassNav({
     super.key,
@@ -32,7 +29,7 @@ class GlassNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = GlassTheme.of(context);
+    var tokens = GlassTheme.of(context);
     final theme = Theme.of(context);
 
     // 简约风退化：直接用主题 NavigationBar
@@ -45,100 +42,57 @@ class GlassNav extends StatelessWidget {
       );
     }
 
+    if (MediaQuery.of(context).accessibleNavigation) {
+      tokens = tokens.toReducedTransparency();
+    }
+
     // 液态玻璃：浮动胶囊条
     final blur = blurSigma ?? tokens.blurSigma;
     final bg = surfaceColor ?? tokens.surfaceColor;
     final primary = theme.colorScheme.primary;
 
+    final style = tokens.toLiquidGlassStyle(cornerRadius: 28).copyWith(
+          appearance: LiquidGlassAppearance(
+            color: bg,
+            saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+            blur: LiquidGlassBlur(sigmaX: blur, sigmaY: blur),
+          ),
+        );
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: tokens.shadowColor,
-                blurRadius: tokens.shadowBlur,
-                offset: tokens.shadowOffset,
+        child: RepaintBoundary(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: tokens.shadowColor,
+                  blurRadius: tokens.shadowBlur,
+                  offset: tokens.shadowOffset,
+                ),
+              ],
+            ),
+            child: LiquidGlassLens(
+              style: style,
+              child: SizedBox(
+                height: height,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < destinations.length; i++)
+                      Expanded(
+                        child: _GlassNavItem(
+                          destination: destinations[i],
+                          selected: i == selectedIndex,
+                          primaryColor: primary,
+                          onTap: () => onDestinationSelected(i),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Stack(
-              fit: StackFit.passthrough,
-              children: [
-                // 1. 背景模糊
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                  child: const SizedBox.expand(),
-                ),
-                // 3. 半透明表面
-                ColoredBox(
-                  color: bg,
-                  child: const SizedBox.expand(),
-                ),
-                // 4. 光泽渐变
-                IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: tokens.sheenGradient,
-                      ),
-                    ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-                // 5. 色散边缘
-                IgnorePointer(
-                  child: CustomPaint(
-                    painter: ChromaticEdgePainter(
-                      colors: tokens.chromaticEdgeColors,
-                      radius: 28,
-                      width: 0.8,
-                    ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-                // 6. 顶部高光边
-                IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border(
-                        top: BorderSide(
-                          width: 1.2,
-                          color: Colors.white.withValues(
-                            alpha: tokens.highlightEdgeAlpha,
-                          ),
-                        ),
-                      ),
-                    ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-                // 7. 导航内容
-                SizedBox(
-                  height: height,
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < destinations.length; i++)
-                        Expanded(
-                          child: _GlassNavItem(
-                            destination: destinations[i],
-                            selected: i == selectedIndex,
-                            primaryColor: primary,
-                            onTap: () => onDestinationSelected(i),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ], // Stack children
             ),
           ),
         ),

@@ -52,6 +52,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 显式启用 Impeller 渲染引擎：对 BackdropFilter/liquid_glass 着色器路径有原生优化，
+             减少 liquid glass 主题卡顿（ADR-010 变更）。 -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="true" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

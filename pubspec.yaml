@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.5.6
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.6.2 <4.0.0'
 
 dependencies:
   flutter:
@@ -15,6 +15,9 @@ dependencies:
   cupertino_icons: ^1.0.6
   fl_chart: ^0.69.2
   flutter_markdown: ^0.7.6
+  # 液态玻璃（Liquid Glass）渲染 —— 替代手写 BackdropFilter+CustomPaintt，
+  # 提供折射/放大/模糊的实时玻璃透镜效果，纯 Dart 无原生插件（ADR-010 变更）。
+  liquid_glass_easy: ^3.3.1
   
   # --- 本地存储与文件处理 ---
   shared_preferences: ^2.2.3
