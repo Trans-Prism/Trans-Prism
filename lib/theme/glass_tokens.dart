@@ -125,7 +125,7 @@ class GlassTokens {
   static const GlassTokens liquidLight = GlassTokens(
     isEnabled: true,
     blurSigma: 30,
-    surfaceColor: Color(0x66FFFFFF), // ~40% 白（通透感，§12 高透明度白底）
+    surfaceColor: Color(0x55FFFFFF), // ~33% 白（更通透，§12 高透明度白底）
     borderColor: Color(0x80FFFFFF), // ~50% 亮边
     borderRadius: 20,
     shadowColor: Color(0x14000000), // ~8% 极轻阴影（液态玻璃应轻盈）
@@ -154,7 +154,7 @@ class GlassTokens {
   static const GlassTokens liquidDark = GlassTokens(
     isEnabled: true,
     blurSigma: 35,
-    surfaceColor: Color(0x551C1C1E), // ~33% 深灰（暗色玻璃略厚但仍通透）
+    surfaceColor: Color(0x401C1C1E), // ~25% 深灰（更通透，暗色玻璃略厚但仍通透）
     borderColor: Color(0x66FFFFFF), // 亮边在暗色上更明显
     borderRadius: 20,
     shadowColor: Color(0x28000000), // ~16% 轻阴影
@@ -256,13 +256,13 @@ class GlassTokens {
         blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
       ),
       refraction: const LiquidGlassRefraction(
-        distortion: 0.07,
-        distortionWidth: 28,
-        chromaticAberration: 0.002,
+        distortion: 0.1,
+        distortionWidth: 30,
+        chromaticAberration: 0.014, // 提升色散，让边缘彩色折射可见
         refractionType: OpticalRefraction(
           refraction: 1.5,
-          refractionWidth: 24,
-          depth: 0.6,
+          refractionWidth: 28,
+          depth: 0.65,
         ),
       ),
     );

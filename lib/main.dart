@@ -1,7 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -33,6 +32,7 @@ import 'widgets/loading_indicator.dart';
 import 'widgets/medication_stock_summary.dart';
 import 'widgets/glass_sheet.dart';
 import 'widgets/glass_surface.dart';
+import 'widgets/liquid_glass_nav.dart';
 import 'widgets/update_dialog.dart';
 import 'widgets/battery_optimization_guide_card.dart';
 import 'storage/disclaimer_repository.dart';
@@ -1378,72 +1378,15 @@ class _MainDashboardState extends State<MainDashboard> {
     ];
 
     if (isLiquid) {
-      // 液态玻璃：LiquidGlassLens 接管折射/模糊/光学边框（Impeller 独立采样
-      // 实时背景），彻底消除 v1 Stack+StackFit.passthrough+SizedBox.expand
-      // 的高度塌陷（导航栏消失）问题。
-      final style = tokens.toLiquidGlassStyle(cornerRadius: 32).copyWith(
-            appearance: LiquidGlassAppearance(
-              color: bgColor,
-              saturation: tokens.saturationBoost.clamp(0.0, 3.0),
-              blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
-            ),
-          );
-      return RepaintBoundary(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: tokens.shadowColor,
-                blurRadius: tokens.shadowBlur,
-                offset: tokens.shadowOffset,
-              ),
-            ],
-          ),
-          child: LiquidGlassLens(
-            style: style,
-            child: SizedBox(
-              height: 60,
-              child: Row(
-                children: List.generate(destinations.length, (index) {
-                  final dest = destinations[index];
-                  final isSelected = _currentIndex == index;
-                  return Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => setState(() => _currentIndex = index),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isSelected ? dest.selectedIcon : dest.icon,
-                            size: 22,
-                            color: isSelected
-                                ? widget.themeService.themeColor
-                                : unselectedColor,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            dest.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? widget.themeService.themeColor
-                                  : unselectedColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ),
-        ),
+      // iOS 26 风格 Liquid Glass 导航：可拖动玻璃指示块 + 无极滑动 + 松手吸附。
+      // 详见 LiquidGlassNav（按下放大、拖动跟随、松手吸附最近项）。
+      return LiquidGlassNav(
+        currentIndex: _currentIndex,
+        onChanged: (i) => setState(() => _currentIndex = i),
+        destinations: destinations,
+        tokens: tokens,
+        themeColor: widget.themeService.themeColor,
+        unselectedColor: unselectedColor,
       );
     }
 
