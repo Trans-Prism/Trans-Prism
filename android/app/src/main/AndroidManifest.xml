@@ -52,11 +52,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- 显式启用 Impeller 渲染引擎：对 BackdropFilter/liquid_glass 着色器路径有原生优化，
-             减少 liquid glass 主题卡顿（ADR-010 变更）。 -->
+        <!-- Impeller 已禁用 (2026-07-22)：liquid_glass_easy v3.3.1 的 _skia.frag
+             着色器使用了 #include 预处理指令，Impeller 编译器 impellerc 不兼容。
+             回退到 Skia 后端以确保着色器编译正常。
+             待 liquid_glass_easy 发布 Impeller 兼容版本后可重新启用。 -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="true" />
+            android:value="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

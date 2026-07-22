@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../services/bra_calculator.dart';
 import '../services/growth_record_service.dart';
+import '../widgets/glass_surface.dart';
 
 /// 罩杯计算器 — 完整 Light/Dark 自适应 · iOS 风格
 class BraCalculatorPage extends StatefulWidget {
@@ -372,36 +373,33 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
               children: [
                 title,
                 const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: inputFill,
+                GlassSurface(
+                  solidColor: inputFill,
+                  borderRadius: 12,
+                  shadow: false,
+                  padding: EdgeInsets.zero,
+                  child: TextField(
+                    controller: controller,
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                    ],
+                    decoration: InputDecoration(
+                      hintText: hint,
+                      hintStyle: TextStyle(fontSize: 14, color: hintColor),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
                     ),
-                    child: TextField(
-                      controller: controller,
-                      textAlign: TextAlign.center,
-                      textAlignVertical: TextAlignVertical.center,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$'))
-                      ],
-                      decoration: InputDecoration(
-                        hintText: hint,
-                        hintStyle: TextStyle(fontSize: 14, color: hintColor),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 16),
-                      ),
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: primaryText),
-                    ),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: primaryText),
                   ),
                 ),
               ],
@@ -427,122 +425,119 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     final privacyBg =
         isDark ? const Color(0xFF24242C) : const Color(0xFFF2F2F7);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        color: cardBg,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            if (needsBra) ...[
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                    child: Text(sizeDisplay,
-                        style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white))),
-              ),
-              const SizedBox(height: 10),
-              Text('中国内衣尺码 (CN)',
-                  style: TextStyle(fontSize: 12, color: secondaryText)),
-              const SizedBox(height: 10),
-              // ── US / EU 双 Tag ──
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (result.usSize.isNotEmpty)
-                    _capsuleTag('俗称  ${result.usSize}', isDark),
-                  if (result.usSize.isNotEmpty && result.euSize.isNotEmpty)
-                    const SizedBox(width: 10),
-                  if (result.euSize.isNotEmpty)
-                    _capsuleTag('欧洲  ${result.euSize}', isDark),
-                ],
-              ),
-            ] else ...[
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF81C784).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(Icons.eco_rounded,
-                    size: 36, color: Color(0xFF81C784)),
-              ),
-              const SizedBox(height: 10),
-              Text(result.message ?? '',
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF81C784))),
-            ],
-            const SizedBox(height: 16),
-            Divider(height: 1, thickness: 0.5, color: dividerColor),
-            const SizedBox(height: 14),
-            _dr('下胸围均值', '${result.underbustAvg.toStringAsFixed(1)} cm',
-                primaryText, tertiaryText),
-            const SizedBox(height: 8),
-            _dr('上胸围均值', '${result.overbustAvg.toStringAsFixed(1)} cm',
-                primaryText, tertiaryText),
-            const SizedBox(height: 8),
-            _dr('胸围差', '${result.difference.toStringAsFixed(1)} cm',
-                primaryText, tertiaryText,
-                accent: needsBra, accentColor: brandBlue),
-            if (needsBra) ...[
-              const SizedBox(height: 8),
-              _dr('底围（取整）', '${result.bandSize} cm', primaryText, tertiaryText)
-            ],
-            if (result.message != null && needsBra) ...[
-              const SizedBox(height: 14),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                    color: brandBlue.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8)),
-                child: Row(
-                  children: [
-                    Icon(Icons.lightbulb_outline, size: 14, color: brandBlue),
-                    const SizedBox(width: 6),
-                    Flexible(
-                        child: Text(result.message!,
-                            style: TextStyle(fontSize: 12, color: brandBlue))),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
+    return GlassSurface(
+      solidColor: cardBg,
+      borderRadius: 14,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          if (needsBra) ...[
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              width: 88,
+              height: 88,
               decoration: BoxDecoration(
-                  color: privacyBg, borderRadius: BorderRadius.circular(10)),
-              child: const Row(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Center(
+                  child: Text(sizeDisplay,
+                      style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white))),
+            ),
+            const SizedBox(height: 10),
+            Text('中国内衣尺码 (CN)',
+                style: TextStyle(fontSize: 12, color: secondaryText)),
+            const SizedBox(height: 10),
+            // ── US / EU 双 Tag ──
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (result.usSize.isNotEmpty)
+                  _capsuleTag('俗称  ${result.usSize}', isDark),
+                if (result.usSize.isNotEmpty && result.euSize.isNotEmpty)
+                  const SizedBox(width: 10),
+                if (result.euSize.isNotEmpty)
+                  _capsuleTag('欧洲  ${result.euSize}', isDark),
+              ],
+            ),
+          ] else ...[
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFF81C784).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.eco_rounded,
+                  size: 36, color: Color(0xFF81C784)),
+            ),
+            const SizedBox(height: 10),
+            Text(result.message ?? '',
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF81C784))),
+          ],
+          const SizedBox(height: 16),
+          Divider(height: 1, thickness: 0.5, color: dividerColor),
+          const SizedBox(height: 14),
+          _dr('下胸围均值', '${result.underbustAvg.toStringAsFixed(1)} cm',
+              primaryText, tertiaryText),
+          const SizedBox(height: 8),
+          _dr('上胸围均值', '${result.overbustAvg.toStringAsFixed(1)} cm',
+              primaryText, tertiaryText),
+          const SizedBox(height: 8),
+          _dr('胸围差', '${result.difference.toStringAsFixed(1)} cm', primaryText,
+              tertiaryText,
+              accent: needsBra, accentColor: brandBlue),
+          if (needsBra) ...[
+            const SizedBox(height: 8),
+            _dr('底围（取整）', '${result.bandSize} cm', primaryText, tertiaryText)
+          ],
+          if (result.message != null && needsBra) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                  color: brandBlue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Row(
                 children: [
-                  Icon(Icons.lock_outline, size: 13, color: Color(0xFF81C784)),
-                  SizedBox(width: 8),
+                  Icon(Icons.lightbulb_outline, size: 14, color: brandBlue),
+                  const SizedBox(width: 6),
                   Flexible(
-                    child: Text('运算及记录均在您的设备本地完成，绝不会收集或上传任何数据。',
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF8E8E93))),
-                  ),
+                      child: Text(result.message!,
+                          style: TextStyle(fontSize: 12, color: brandBlue))),
                 ],
               ),
             ),
           ],
-        ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+                color: privacyBg, borderRadius: BorderRadius.circular(10)),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_outline, size: 13, color: Color(0xFF81C784)),
+                SizedBox(width: 8),
+                Flexible(
+                  child: Text('运算及记录均在您的设备本地完成，绝不会收集或上传任何数据。',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF8E8E93))),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

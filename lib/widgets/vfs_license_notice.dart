@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'glass_surface.dart';
+
 /// 嗓音训练模块的开源许可证声明
 ///
 /// 遵循 VFS Tracker 项目的 CC BY-NC-SA 4.0 许可证。
@@ -74,16 +76,12 @@ class _VfsLicenseNoticeState extends State<VfsLicenseNotice> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
-      margin: const EdgeInsets.only(top: 8, bottom: 24),
-      elevation: 0,
-      color: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
-      ),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      child: GlassSurface(
+        solidColor: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
+        borderColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+        borderRadius: 12,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

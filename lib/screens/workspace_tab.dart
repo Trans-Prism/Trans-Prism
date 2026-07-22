@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
+import '../widgets/glass_surface.dart';
 import '../widgets/gradient_icon.dart';
 import 'bra_calculator_page.dart';
 import 'hormone_converter_screen.dart';
@@ -186,26 +187,42 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
         // ====== 顶部无边框静谧搜索条 ======
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-          child: TextField(
-            onChanged: (val) {
-              setState(() {
-                _searchQuery = val;
-              });
-            },
-            style: TextStyle(color: textColor, fontSize: 15),
-            decoration: InputDecoration(
-              hintText: '搜索功能或工具...',
-              hintStyle: TextStyle(color: secondaryColor, fontSize: 15),
-              prefixIcon:
-                  Icon(Icons.search_rounded, color: secondaryColor, size: 20),
-              filled: true,
-              fillColor: searchBgColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
+          child: GlassSurface(
+            // 简约风：searchBgColor 实色底；液态玻璃：LiquidGlassLens 接管，
+            // TextField 填充透明以露出玻璃材质。
+            solidColor: searchBgColor,
+            borderRadius: 14,
+            shadow: false,
+            padding: EdgeInsets.zero,
+            child: TextField(
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+              style: TextStyle(color: textColor, fontSize: 15),
+              decoration: InputDecoration(
+                hintText: '搜索功能或工具...',
+                hintStyle: TextStyle(color: secondaryColor, fontSize: 15),
+                prefixIcon:
+                    Icon(Icons.search_rounded, color: secondaryColor, size: 20),
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
         ),
@@ -272,6 +289,7 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
   }
 
   /// 构建液态无界分类胶囊（Claude 风格：去边框，淡灰底）
+  /// 液态玻璃模式下由 GlassSurface 接管折射/模糊；简约风退化为实色胶囊。
   Widget _buildCategoryPill(String title,
       {required bool isSelected,
       required bool isDark,
@@ -280,27 +298,23 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
     final unselectedBg =
         isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC);
-    return GestureDetector(
+    return GlassSurface(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark ? Colors.white : const Color(0xFF333333))
-              : unselectedBg,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected
-                  ? (isDark ? Colors.black : Colors.white)
-                  : defaultSecondary,
-            ),
+      solidColor: isSelected
+          ? (isDark ? Colors.white : const Color(0xFF333333))
+          : unselectedBg,
+      borderRadius: 20,
+      shadow: false,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected
+                ? (isDark ? Colors.black : Colors.white)
+                : defaultSecondary,
           ),
         ),
       ),

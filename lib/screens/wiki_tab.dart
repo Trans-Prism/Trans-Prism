@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/wiki_config.dart';
 import '../services/wiki_offline_service.dart';
 import '../services/wiki_update_manager.dart';
+import '../widgets/glass_surface.dart';
 import '../widgets/gradient_icon.dart';
 import '../widgets/wiki_license_notice.dart';
 import 'offline_wiki_screen.dart';
@@ -452,29 +453,27 @@ class _WikiTabState extends State<WikiTab> {
     final secondaryColor =
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5),
-          width: 0.5,
+      child: GlassSurface(
+        borderRadius: 12,
+        borderColor: isDark ? const Color(0xFF333338) : const Color(0xFFE5E5E5),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          leading: Icon(icon, size: 22, color: secondaryColor),
+          title: Text(displayTitle,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
+                  color: textColor)),
+          subtitle: Text(effectiveSubtitle,
+              style:
+                  TextStyle(fontSize: 13, height: 1.4, color: secondaryColor)),
+          trailing: trailing,
+          onTap: () => _openWikiReader(context, displayTitle),
         ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Icon(icon, size: 22, color: secondaryColor),
-        title: Text(displayTitle,
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                height: 1.3,
-                color: textColor)),
-        subtitle: Text(effectiveSubtitle,
-            style: TextStyle(fontSize: 13, height: 1.4, color: secondaryColor)),
-        trailing: trailing,
-        onTap: () => _openWikiReader(context, displayTitle),
       ),
     );
   }

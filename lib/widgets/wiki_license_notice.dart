@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'glass_surface.dart';
+
 /// Wiki 页面底部的开源协议声明
 ///
 /// 支持一键关闭：本次会话隐藏 或 永久隐藏
@@ -75,16 +77,12 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
-      margin: const EdgeInsets.only(top: 8, bottom: 24),
-      elevation: 0,
-      color: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
-      ),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      child: GlassSurface(
+        solidColor: isDark ? const Color(0xFF24242C) : Colors.grey.shade50,
+        borderColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+        borderRadius: 12,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

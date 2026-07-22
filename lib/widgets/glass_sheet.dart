@@ -68,9 +68,13 @@ class GlassSheet extends StatelessWidget {
         );
 
     return RepaintBoundary(
-      child: LiquidGlassLens(
-        style: style,
-        child: _content(context),
+      child: ClipRRect(
+        // 裁剪玻璃面到顶部圆角矩形，消除 BackdropFilter 矩形溢出伪影
+        borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
+        child: LiquidGlassLens(
+          style: style,
+          child: _content(context),
+        ),
       ),
     );
   }

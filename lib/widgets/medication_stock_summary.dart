@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/drug_model.dart';
 import '../screens/inventory_dashboard_screen.dart';
+import 'glass_surface.dart';
 
 /// =============================================================================
 /// MedicationStockSummary — 药物存量摘要卡片
@@ -147,117 +148,112 @@ class _MedicationStockSummaryState extends State<MedicationStockSummary> {
     if (minRunwayDays == 999) minRunwayDays = 0;
     final isWarning = minRunwayDays <= 3 && _drugs.isNotEmpty;
 
-    return InkWell(
+    return GlassSurface(
+      solidColor: cardColor,
+      borderColor: borderColor,
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       onTap: () => _openDashboard(context),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: 0.5),
-        ),
-        child: Row(
-          children: [
-            // ── 环形进度（细环克制） ──
-            SizedBox(
-              width: 84,
-              height: 84,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 84,
-                    height: 84,
-                    child: CircularProgressIndicator(
-                      value: totalStockPercentage,
-                      strokeWidth: 4,
-                      backgroundColor: trackColor,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isWarning
-                            ? warningColor
-                            : Theme.of(context).colorScheme.primary,
+      child: Row(
+        children: [
+          // ── 环形进度（细环克制） ──
+          SizedBox(
+            width: 84,
+            height: 84,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 84,
+                  height: 84,
+                  child: CircularProgressIndicator(
+                    value: totalStockPercentage,
+                    strokeWidth: 4,
+                    backgroundColor: trackColor,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isWarning
+                          ? warningColor
+                          : Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${(totalStockPercentage * 100).toInt()}%',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 24),
+          // ── 文字信息 ──
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '安全续航',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: secondaryColor,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '$minRunwayDays',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w700,
+                        color: isWarning ? warningColor : textColor,
+                        height: 1.0,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                  ),
-                  Text(
-                    '${(totalStockPercentage * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 24),
-            // ── 文字信息 ──
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '安全续航',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: secondaryColor,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '$minRunwayDays',
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        '天',
                         style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
-                          color: isWarning ? warningColor : textColor,
-                          height: 1.0,
-                          letterSpacing: -0.5,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: secondaryColor,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          '天',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _drugs.isEmpty
-                        ? '暂无药物记录，点击添加'
-                        : (isWarning ? '库存紧张，请及时补仓' : '你的稳态库存量充足'),
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.4,
-                      color: _drugs.isEmpty
-                          ? secondaryColor
-                          : (isWarning ? warningColor : secondaryColor),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _drugs.isEmpty
+                      ? '暂无药物记录，点击添加'
+                      : (isWarning ? '库存紧张，请及时补仓' : '你的稳态库存量充足'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.4,
+                    color: _drugs.isEmpty
+                        ? secondaryColor
+                        : (isWarning ? warningColor : secondaryColor),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // ── 箭头 ──
-            Icon(
-              Icons.chevron_right,
-              color: secondaryColor,
-              size: 20,
-            ),
-          ],
-        ),
+          ),
+          // ── 箭头 ──
+          Icon(
+            Icons.chevron_right,
+            color: secondaryColor,
+            size: 20,
+          ),
+        ],
       ),
     );
   }

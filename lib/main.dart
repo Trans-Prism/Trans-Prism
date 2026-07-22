@@ -31,8 +31,8 @@ import 'services/theme_service.dart';
 import 'widgets/gradient_icon.dart';
 import 'widgets/loading_indicator.dart';
 import 'widgets/medication_stock_summary.dart';
-import 'widgets/glass_card.dart';
 import 'widgets/glass_sheet.dart';
+import 'widgets/glass_surface.dart';
 import 'widgets/update_dialog.dart';
 import 'widgets/battery_optimization_guide_card.dart';
 import 'storage/disclaimer_repository.dart';
@@ -1571,44 +1571,36 @@ class _MainDashboardState extends State<MainDashboard> {
           ? [
               Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: GestureDetector(
+                child: GlassSurface(
                   onTap: _showHomeModuleSettings,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? widget.themeService.themeColor
-                              .withValues(alpha: 0.15)
-                          : widget.themeService.themeColor
-                              .withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.dashboard_customize_rounded,
-                          size: 16,
+                  solidColor: widget.themeService.themeColor
+                      .withValues(alpha: isDark ? 0.15 : 0.08),
+                  borderRadius: 20,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shadow: false,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.dashboard_customize_rounded,
+                        size: 16,
+                        color: isDark
+                            ? const Color(0xFF7DD9FB)
+                            : const Color(0xFF00A2DF),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '自定义',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           color: isDark
                               ? const Color(0xFF7DD9FB)
                               : const Color(0xFF00A2DF),
                         ),
-                        const SizedBox(width: 5),
-                        Text(
-                          '自定义',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? const Color(0xFF7DD9FB)
-                                : const Color(0xFF00A2DF),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1898,10 +1890,13 @@ class HomeTab extends StatelessWidget {
     final secondaryColor =
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
 
-    // 使用 GlassCard：简约风下退化为白底/#24242C + 弥散阴影（与原外观一致），
-    // 液态玻璃模式下自动呈现半透明 + 模糊 + 高光边材质。
-    return GlassCard(
+    // 使用 GlassSurface：与全域卡片（_buildSettingsTile / MedicationStockSummary）
+    // 统一玻璃材质与阴影。GlassCard 的 Material(clipBehavior: antiAlias) 会裁掉
+    // boxShadow，导致首页卡片阴影弱于其他页面——改用 GlassSurface 后阴影不再被裁。
+    return GlassSurface(
       onTap: onTap,
+      solidColor: isDark ? const Color(0xFF24242C) : Colors.white,
+      borderRadius: 16,
       padding: const EdgeInsets.all(22),
       child: Row(
         children: [
@@ -1992,7 +1987,13 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   void initState() {
     super.initState();
-    _greetingController = TextEditingController(text: widget.greetingName);
+    // 默认称呼"伙伴"不再预填入输入框，而是作为占位符"默认：伙伴"显示；
+    // 仅当用户设过自定义称呼时才回填，便于区分默认值与自定义值。
+    _greetingController = TextEditingController(
+      text: (widget.greetingName.isEmpty || widget.greetingName == '伙伴')
+          ? ''
+          : widget.greetingName,
+    );
     _customPrefix = !_prefixOptions.containsKey(widget.namePrefix) &&
         widget.namePrefix.isNotEmpty;
     _customPrefixController = TextEditingController(
@@ -2322,85 +2323,69 @@ class _ProfileTabState extends State<ProfileTab> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF24242C) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.035),
-            blurRadius: 20,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF333338)
-                        : const Color(0xFFEFEFEF),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(leadingIcon, size: 20, color: secondaryColor),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                          color: isDark
-                              ? const Color(0xFFEDEDF0)
-                              : const Color(0xFF333333),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 11,
-                            height: 1.3,
-                            color: secondaryColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (trailing != null)
-                  trailing
-                else
-                  Icon(
-                    Icons.chevron_right,
-                    color: secondaryColor,
-                    size: 16,
-                  ),
-              ],
+      child: GlassSurface(
+        borderRadius: 16,
+        solidColor: isDark ? const Color(0xFF24242C) : Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF333338) : const Color(0xFFEFEFEF),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(leadingIcon, size: 20, color: secondaryColor),
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      color: isDark
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.3,
+                        color: secondaryColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (trailing != null)
+              trailing
+            else
+              Icon(
+                Icons.chevron_right,
+                color: secondaryColor,
+                size: 16,
+              ),
+          ],
         ),
       ),
     );
@@ -2435,102 +2420,182 @@ class _ProfileTabState extends State<ProfileTab> {
   ) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: GlassTheme.modalBarrierColor(context),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-              child: StatefulBuilder(
-                builder: (BuildContext context, StateSetter setModalState) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(2),
+        return GlassSheet(
+          showGrabHandle: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                child: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setModalState) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        '设置个人称呼',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: isDark
-                              ? const Color(0xFFEDEDF0)
-                              : const Color(0xFF333333),
+                        const SizedBox(height: 20),
+                        Text(
+                          '设置个人称呼',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: isDark
+                                ? const Color(0xFFEDEDF0)
+                                : const Color(0xFF333333),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '设置首页问候语中显示的称呼和名字前缀',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: isDark
-                              ? const Color(0xFF98989E)
-                              : const Color(0xFF8A8A86),
+                        const SizedBox(height: 4),
+                        Text(
+                          '设置首页问候语中显示的称呼和名字前缀',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark
+                                ? const Color(0xFF98989E)
+                                : const Color(0xFF8A8A86),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      // 前缀下拉
-                      DropdownButtonFormField<String>(
-                        initialValue:
-                            _prefixOptions.containsKey(widget.namePrefix)
-                                ? widget.namePrefix
-                                : '__custom__',
-                        decoration: InputDecoration(
-                          labelText: '前缀',
-                          filled: true,
-                          fillColor: isDark
+                        const SizedBox(height: 20),
+                        // 前缀选择（玻璃药丸，替代原生 DropdownButtonFormField）
+                        Builder(builder: (context) {
+                          final selectedKey =
+                              _prefixOptions.containsKey(widget.namePrefix)
+                                  ? widget.namePrefix
+                                  : '__custom__';
+                          final pillBg = isDark
                               ? const Color(0xFF24242C)
-                              : Colors.grey.shade50,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                              : Colors.grey.shade50;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  '前缀',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? const Color(0xFF98989E)
+                                        : const Color(0xFF8A8A86),
+                                  ),
+                                ),
+                              ),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: _prefixOptions.entries.map((e) {
+                                  final isSelected = e.key == selectedKey;
+                                  return GlassSurface(
+                                    onTap: () {
+                                      if (e.key == '__custom__') {
+                                        setModalState(
+                                            () => _customPrefix = true);
+                                      } else {
+                                        setModalState(
+                                            () => _customPrefix = false);
+                                        widget.onNamePrefixChanged(e.key);
+                                      }
+                                    },
+                                    solidColor: isSelected
+                                        ? widget.themeService.themeColor
+                                            .withValues(alpha: 0.12)
+                                        : pillBg,
+                                    borderColor: isSelected
+                                        ? widget.themeService.themeColor
+                                        : null,
+                                    borderRadius: 12,
+                                    shadow: false,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
+                                    child: Text(
+                                      e.value,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? widget.themeService.themeColor
+                                            : (isDark
+                                                ? const Color(0xFFEDEDF0)
+                                                : const Color(0xFF333333)),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          );
+                        }),
+                        if (_customPrefix) ...[
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _customPrefixController,
+                            decoration: InputDecoration(
+                              labelText: '自定义前缀',
+                              filled: true,
+                              fillColor: isDark
+                                  ? const Color(0xFF24242C)
+                                  : Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (v) {
+                              if (v.isNotEmpty) widget.onNamePrefixChanged(v);
+                            },
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                        ],
+                        const SizedBox(height: 12),
+                        // 称呼标签（与前缀标签左对齐、灰度风格一致）
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            '称呼',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isDark
+                                  ? const Color(0xFF98989E)
+                                  : const Color(0xFF8A8A86),
+                            ),
                           ),
                         ),
-                        items: _prefixOptions.entries
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e.key,
-                                child: Text(e.value),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) {
-                          if (v == null) return;
-                          if (v == '__custom__') {
-                            setModalState(() => _customPrefix = true);
-                          } else {
-                            setModalState(() => _customPrefix = false);
-                            widget.onNamePrefixChanged(v);
-                          }
-                        },
-                      ),
-                      if (_customPrefix) ...[
-                        const SizedBox(height: 12),
                         TextField(
-                          controller: _customPrefixController,
+                          controller: _greetingController,
                           decoration: InputDecoration(
-                            labelText: '自定义前缀',
+                            // 默认"伙伴"作为占位符（浅灰度），点击即清除并输入
+                            hintText: '默认：伙伴',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              color: isDark
+                                  ? const Color(0xFF6B6B76)
+                                  : const Color(0xFFB0B0B8),
+                            ),
                             filled: true,
                             fillColor: isDark
                                 ? const Color(0xFF24242C)
@@ -2545,54 +2610,33 @@ class _ProfileTabState extends State<ProfileTab> {
                             ),
                           ),
                           onChanged: (v) {
-                            if (v.isNotEmpty) widget.onNamePrefixChanged(v);
+                            // 空值回退默认"伙伴"，与非空自定义值统一上报
+                            widget.onGreetingNameChanged(v.isEmpty ? '伙伴' : v);
                           },
                         ),
-                      ],
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _greetingController,
-                        decoration: InputDecoration(
-                          labelText: '称呼（默认"伙伴"）',
-                          filled: true,
-                          fillColor: isDark
-                              ? const Color(0xFF24242C)
-                              : Colors.grey.shade50,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        onChanged: (v) {
-                          if (v.isNotEmpty) widget.onGreetingNameChanged(v);
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: FilledButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: widget.themeService.themeColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: FilledButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: widget.themeService.themeColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              '完成',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                           ),
-                          child: const Text(
-                            '完成',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -2642,110 +2686,116 @@ class _ProfileTabState extends State<ProfileTab> {
   void _showGenderBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: GlassTheme.modalBarrierColor(context),
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
+        return GlassSheet(
+          showGrabHandle: false,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  '选择性别认同',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? const Color(0xFFEDEDF0)
-                        : const Color(0xFF333333),
+                  const SizedBox(height: 20),
+                  Text(
+                    '选择性别认同',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isDark
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '修改后将立即更新首页推荐内容',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark
-                        ? const Color(0xFF98989E)
-                        : const Color(0xFF8A8A86),
+                  const SizedBox(height: 4),
+                  Text(
+                    '修改后将立即更新首页推荐内容',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? const Color(0xFF98989E)
+                          : const Color(0xFF8A8A86),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                ...GenderIdentity.values.map((id) {
-                  final selected = id == widget.genderIdentity;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: selected
-                            ? BorderSide(
-                                color: widget.themeService.themeColor,
-                                width: 1.5,
-                              )
-                            : BorderSide.none,
-                      ),
-                      tileColor: selected
-                          ? widget.themeService.themeColor
-                              .withValues(alpha: 0.06)
-                          : (isDark
-                              ? const Color(0xFF24242C)
-                              : Colors.grey.shade50),
-                      leading: Icon(
-                        id == GenderIdentity.mtf
-                            ? Icons.female
-                            : id == GenderIdentity.ftm
-                                ? Icons.male
-                                : Icons.transgender,
-                        color: selected
+                  const SizedBox(height: 20),
+                  ...GenderIdentity.values.map((id) {
+                    final selected = id == widget.genderIdentity;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: selected
+                              ? BorderSide(
+                                  color: widget.themeService.themeColor,
+                                  width: 1.5,
+                                )
+                              : BorderSide.none,
+                        ),
+                        tileColor: selected
                             ? widget.themeService.themeColor
+                                .withValues(alpha: 0.06)
                             : (isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade500),
-                      ),
-                      title: Text(
-                        GenderIdentity.label(id),
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
+                                ? const Color(0xFF24242C)
+                                : Colors.grey.shade50),
+                        leading: Icon(
+                          id == GenderIdentity.mtf
+                              ? Icons.female
+                              : id == GenderIdentity.ftm
+                                  ? Icons.male
+                                  : Icons.transgender,
                           color: selected
                               ? widget.themeService.themeColor
                               : (isDark
-                                  ? const Color(0xFFEDEDF0)
-                                  : const Color(0xFF333333)),
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade500),
                         ),
+                        title: Text(
+                          GenderIdentity.label(id),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w500,
+                            color: selected
+                                ? widget.themeService.themeColor
+                                : (isDark
+                                    ? const Color(0xFFEDEDF0)
+                                    : const Color(0xFF333333)),
+                          ),
+                        ),
+                        trailing: selected
+                            ? Icon(
+                                Icons.check_circle,
+                                color: widget.themeService.themeColor,
+                                size: 22,
+                              )
+                            : null,
+                        onTap: () {
+                          widget.onIdentityChanged(id);
+                          Navigator.pop(ctx);
+                        },
                       ),
-                      trailing: selected
-                          ? Icon(
-                              Icons.check_circle,
-                              color: widget.themeService.themeColor,
-                              size: 22,
-                            )
-                          : null,
-                      onTap: () {
-                        widget.onIdentityChanged(id);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                  );
-                }),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         );
@@ -2762,6 +2812,9 @@ class _ProfileTabState extends State<ProfileTab> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      // 液态模式下调浅遮罩，避免 LiquidGlassLens 折射到过暗的 scrim
+      // 导致整屏发暗（见 GlassTheme.modalBarrierColor 文档）。
+      barrierColor: GlassTheme.modalBarrierColor(context),
       isScrollControlled: true,
       builder: (context) {
         // 用 GlassSheet 包装：液态玻璃模式下呈半透明 + 模糊材质，
@@ -2910,70 +2963,76 @@ class _ProfileTabState extends State<ProfileTab> {
   void _showThemeBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: GlassTheme.modalBarrierColor(context),
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
+        return GlassSheet(
+          showGrabHandle: false,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  '选择主题模式',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? const Color(0xFFEDEDF0)
-                        : const Color(0xFF333333),
+                  const SizedBox(height: 20),
+                  Text(
+                    '选择主题模式',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isDark
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildThemeOption(
-                  ctx: ctx,
-                  mode: ThemeMode.light,
-                  icon: Icons.light_mode,
-                  iconColor: Colors.amber.shade600,
-                  label: '浅色模式',
-                  desc: '始终使用浅色外观',
-                  selected: widget.themeService.themeMode == ThemeMode.light,
-                ),
-                const SizedBox(height: 8),
-                _buildThemeOption(
-                  ctx: ctx,
-                  mode: ThemeMode.dark,
-                  icon: Icons.dark_mode,
-                  iconColor: widget.themeService.themeColor,
-                  label: '深色模式',
-                  desc: '始终使用深色外观',
-                  selected: widget.themeService.themeMode == ThemeMode.dark,
-                ),
-                const SizedBox(height: 8),
-                _buildThemeOption(
-                  ctx: ctx,
-                  mode: ThemeMode.system,
-                  icon: Icons.settings_brightness,
-                  iconColor: const Color(0xFF8E8E93),
-                  label: '跟随系统',
-                  desc: isDark ? '当前跟随系统 → 深色' : '当前跟随系统 → 浅色',
-                  selected: widget.themeService.themeMode == ThemeMode.system,
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _buildThemeOption(
+                    ctx: ctx,
+                    mode: ThemeMode.light,
+                    icon: Icons.light_mode,
+                    iconColor: Colors.amber.shade600,
+                    label: '浅色模式',
+                    desc: '始终使用浅色外观',
+                    selected: widget.themeService.themeMode == ThemeMode.light,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildThemeOption(
+                    ctx: ctx,
+                    mode: ThemeMode.dark,
+                    icon: Icons.dark_mode,
+                    iconColor: widget.themeService.themeColor,
+                    label: '深色模式',
+                    desc: '始终使用深色外观',
+                    selected: widget.themeService.themeMode == ThemeMode.dark,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildThemeOption(
+                    ctx: ctx,
+                    mode: ThemeMode.system,
+                    icon: Icons.settings_brightness,
+                    iconColor: const Color(0xFF8E8E93),
+                    label: '跟随系统',
+                    desc: isDark ? '当前跟随系统 → 深色' : '当前跟随系统 → 浅色',
+                    selected: widget.themeService.themeMode == ThemeMode.system,
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/glass_theme.dart';
+import '../widgets/glass_surface.dart';
 import '../utils/hormone_converter_logic.dart';
 
 /// 激素换算器页面
@@ -274,28 +276,23 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           final isSelected = hormone.id == _selectedHormone.id;
 
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          return GestureDetector(
+          // 玻璃药丸：液态模式下由 LiquidGlassLens 接管；简约风退化为实色/透明胶囊。
+          return GlassSurface(
             onTap: () => _selectHormone(hormone),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
+            solidColor: isSelected
+                ? (isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333))
+                : Colors.transparent,
+            borderRadius: 18,
+            shadow: false,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              hormone.name,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? (isDark
-                        ? const Color(0xFFEDEDF0)
-                        : const Color(0xFF333333))
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                hormone.name,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDark ? const Color(0xFF333333) : Colors.white)
-                      : const Color(0xFF8E8E93),
-                ),
+                    ? (isDark ? const Color(0xFF333333) : Colors.white)
+                    : const Color(0xFF8E8E93),
               ),
             ),
           );
@@ -321,16 +318,16 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         ),
         const SizedBox(height: 8),
         Center(
-          child: GestureDetector(
+          child: GlassSurface(
             onTap: _swapUnits,
-            child: Container(
+            solidColor: const Color(0xFFE5E5EA),
+            borderRadius: 14,
+            shadow: false,
+            padding: EdgeInsets.zero,
+            child: const SizedBox(
               width: 36,
               height: 28,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E5EA),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
+              child: Icon(
                 Icons.swap_vert_rounded,
                 size: 18,
                 color: Color(0xFF6B6B76),
@@ -364,25 +361,15 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
+    // 玻璃输入块：液态模式下由 LiquidGlassLens 接管折射/模糊；简约风退化为
+    // 实色圆角块（聚焦态用更浅底色区分）。原聚焦粉色辉光在液态模式下由玻璃
+    // 材质本身提供层次，不再手写 boxShadow。
+    return GlassSurface(
+      solidColor: isFocused
+          ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
+          : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
+      borderRadius: 20,
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
-      decoration: BoxDecoration(
-        color: isFocused
-            ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
-            : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: isFocused
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFF5A9B8).withOpacity(0.06),
-                  blurRadius: 12,
-                  spreadRadius: 0,
-                ),
-              ]
-            : null,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -490,12 +477,13 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           ),
         );
       }).toList(),
-      child: Container(
+      // 单位触发器：GlassSurface(onTap:null) 不抢占手势，PopupMenuButton 的
+      // 外层 InkWell 仍可正常接收点击弹出菜单。
+      child: GlassSurface(
+        solidColor: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
+        borderRadius: 12,
+        shadow: false,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
-          borderRadius: BorderRadius.circular(12),
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

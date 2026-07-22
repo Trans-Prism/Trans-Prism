@@ -30,6 +30,20 @@ class GlassTheme extends InheritedWidget {
   /// 是否当前处于液态玻璃模式（便捷判断）。
   static bool isEnabled(BuildContext context) => of(context).isEnabled;
 
+  /// 模态遮罩色（用于 `showModalBottomSheet` / `showDialog` 的 barrierColor）。
+  ///
+  /// 液态玻璃模式下使用更浅的遮罩：[`LiquidGlassLens`] 的 BackdropFilter 会
+  /// 采样"紧邻其后方"的像素，而模态路由的 barrier 恰好夹在 App 内容与 Sheet
+  /// 之间。若 barrier 过暗（默认 `Colors.black54`），玻璃面会折射到暗 scrim，
+  /// 导致整屏发暗、玻璃发脏。这里把液态模式 barrier 调浅，让玻璃能折射到真实
+  /// App 内容；简约风退化为 Flutter 默认 `Colors.black54`。
+  static Color modalBarrierColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return of(context).isEnabled
+        ? Colors.black.withValues(alpha: isDark ? 0.35 : 0.22)
+        : Colors.black54;
+  }
+
   @override
   bool updateShouldNotify(GlassTheme oldWidget) => tokens != oldWidget.tokens;
 }
