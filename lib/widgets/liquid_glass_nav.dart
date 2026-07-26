@@ -7,14 +7,14 @@ import '../theme/glass_tokens.dart';
 ///
 /// 交互（对照 Apple WWDC25 Liquid Glass tab bar）：
 /// - **平时**：不显示玻璃块，仅选中项文字/图标高亮（品牌色 + 填充图标）。
-/// - **按下**：手指位置出现一个比导航栏更高的玻璃块，其**左边缘**对齐手指 x
-///   （非中心对齐），并随按压增高。
-/// - **拖动**：玻璃块左边缘跟随手指 x 无极移动。
+/// - **按下**：手指位置出现一个比导航栏更高的玻璃块，其**几何中心**对齐手指 x，
+///   并随按压增高。
+/// - **拖动**：玻璃块中心跟随手指 x 无极移动。
 /// - **松手**：玻璃块吸附到最近项（中心对齐该标签）并淡出，切换到该标签。
 ///
 /// 视觉：底层为整条低模糊玻璃胶囊（通透，不糊住）；顶层为按压时出现的玻璃指示
-/// 块——几乎透明 + 边缘折射（LiquidGlassStyle 光学边框），高度比导航栏高、底边
-/// 对齐导航栏底边向上溢出。
+/// 块——几乎透明 + 边缘折射（LiquidGlassStyle 光学边框），高度比导航栏高、上下
+/// 对称超出。
 class LiquidGlassNav extends StatefulWidget {
   const LiquidGlassNav({
     super.key,
@@ -80,35 +80,45 @@ class _LiquidGlassNavState extends State<LiquidGlassNav>
     // 容器高度容纳最大指示块（idle +8、press 再 +10），避免被外层 Stack 裁剪。
     final containerH = barH + 8 + 10 + 6;
 
-    // 导航栏玻璃：低模糊（通透，不糊住），表面色局部降低 alpha 避免与指示块叠加发白。
-    const barBlur = 8.0;
-    final barColor = isDark ? const Color(0x281C1C1E) : const Color(0x33FFFFFF);
-    final barStyle = tokens.toLiquidGlassStyle(cornerRadius: 30).copyWith(
+    // 导航栏玻璃：blur 0 + distortion 0（本体不糊、不涂抹背景），仅保留极薄表面色与
+    // 光学边框；圆角取 barH/2 形成完整药丸形。
+    final barColor = isDark ? const Color(0x0F1C1C1E) : const Color(0x0FFFFFFF);
+    final barStyle = tokens.toLiquidGlassStyle(cornerRadius: barH / 2).copyWith(
           appearance: LiquidGlassAppearance(
             color: barColor,
             saturation: tokens.saturationBoost.clamp(0.0, 3.0),
-            blur: const LiquidGlassBlur(sigmaX: barBlur, sigmaY: barBlur),
+            blur: const LiquidGlassBlur(sigmaX: 0, sigmaY: 0),
+          ),
+          refraction: const LiquidGlassRefraction(
+            distortion: 0.0,
+            distortionWidth: 0,
+            chromaticAberration: 0.015,
+            refractionType: OpticalRefraction(
+              refraction: 1.5,
+              refractionWidth: 24,
+              depth: 0.5,
+            ),
           ),
         );
 
-    // 指示块：近乎全透明（极低 alpha ~2%）+ blur 0（不重模糊导航栏玻璃，避免发白）+
-    // 强色散边缘折射（chromaticAberration 拉高，呈现彩色折射边）。
+    // 指示块：几乎全透明（alpha ~1%）+ blur 0 + 极低 distortion（本体不糊），
+    // 仅靠 chromaticAberration 在边缘呈现彩色折射；大 R 角接近药丸形。
     final indicatorColor =
-        isDark ? const Color(0x061C1C1E) : const Color(0x06FFFFFF);
-    final indicatorStyle = tokens.toLiquidGlassStyle(cornerRadius: 22).copyWith(
+        isDark ? const Color(0x021C1C1E) : const Color(0x02FFFFFF);
+    final indicatorStyle = tokens.toLiquidGlassStyle(cornerRadius: 34).copyWith(
           appearance: LiquidGlassAppearance(
             color: indicatorColor,
             saturation: tokens.saturationBoost.clamp(0.0, 3.0),
             blur: const LiquidGlassBlur(sigmaX: 0, sigmaY: 0),
           ),
           refraction: const LiquidGlassRefraction(
-            distortion: 0.16,
-            distortionWidth: 32,
-            chromaticAberration: 0.03,
+            distortion: 0.03,
+            distortionWidth: 12,
+            chromaticAberration: 0.08,
             refractionType: OpticalRefraction(
               refraction: 1.5,
               refractionWidth: 30,
-              depth: 0.75,
+              depth: 0.85,
             ),
           ),
         );
@@ -164,7 +174,7 @@ class _LiquidGlassNavState extends State<LiquidGlassNav>
                   child: RepaintBoundary(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(barH / 2),
                         boxShadow: [
                           BoxShadow(
                             color: tokens.shadowColor,
@@ -174,7 +184,7 @@ class _LiquidGlassNavState extends State<LiquidGlassNav>
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(barH / 2),
                         child: LiquidGlassLens(
                           style: barStyle,
                           child: Row(

@@ -2119,7 +2119,7 @@ class _ProfileTabState extends State<ProfileTab> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    themeService.themeStyle == 'minimal' ? '简约风' : '液态玻璃',
+                    themeService.themeStyle == 'minimal' ? '简约风' : '毛玻璃',
                     style: TextStyle(fontSize: 13, color: secondaryTextColor),
                   ),
                   const SizedBox(width: 4),
@@ -2814,8 +2814,8 @@ class _ProfileTabState extends State<ProfileTab> {
                       ),
                       _buildStyleOption(
                         context,
-                        title: '液态玻璃',
-                        subtitle: 'Apple WWDC25 Liquid Glass · 半透明模糊材质',
+                        title: '毛玻璃',
+                        subtitle: 'Windows7 · 半透明模糊材质',
                         value: 'liquid',
                         currentValue: themeService.themeStyle,
                         onChanged: (val) {

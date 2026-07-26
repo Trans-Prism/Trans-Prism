@@ -4,9 +4,13 @@ import 'package:flutter/services.dart';
 
 import '../services/bra_calculator.dart';
 import '../services/growth_record_service.dart';
+import '../theme/glass_theme.dart';
+import '../widgets/glass_sheet.dart';
 import '../widgets/glass_surface.dart';
 
 /// 罩杯计算器 — 完整 Light/Dark 自适应 · iOS 风格
+///
+/// 双风格：简约风（实色 Container）/ 毛玻璃（GlassSurface）按当前主题切换。
 class BraCalculatorPage extends StatefulWidget {
   const BraCalculatorPage({super.key});
 
@@ -34,6 +38,9 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
   ];
 
   List<TextEditingController> get _controllers => [_c1, _c2, _c3, _c4, _c5];
+
+  // ---- 当前风格（build 顶部缓存）----
+  bool _isLiquid = false;
 
   @override
   void dispose() {
@@ -79,64 +86,36 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
         overbust45: v4,
         overbust90: v5,
       );
-      _autoSaveRecord(v1, v2, v3, v4, v5, result);
+
+      // 持久化到本地发育记录（GrowthRecord 对象）
+      GrowthRecordService.instance.saveRecord(
+        GrowthRecord(
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+          underbustRelaxed: v1,
+          underbustExhaled: v2,
+          overbustStanding: v3,
+          overbust45: v4,
+          overbust90: v5,
+          result: result,
+        ),
+      );
+
       setState(() {
         _result = result;
         _calculating = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = '计算异常：${e.toString()}';
+        _errorMessage = '计算出错：$e';
         _calculating = false;
       });
     }
   }
 
-  Future<void> _autoSaveRecord(
-    double v1,
-    double v2,
-    double v3,
-    double v4,
-    double v5,
-    BraResult result,
-  ) async {
-    await GrowthRecordService.instance.saveRecord(GrowthRecord(
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-      underbustRelaxed: v1,
-      underbustExhaled: v2,
-      overbustStanding: v3,
-      overbust45: v4,
-      overbust90: v5,
-      result: result,
-    ));
-  }
-
-  /// ⊙⊙ 灵魂标题
-  Widget _stepTitle(String prefix, String suffix, Color textColor,
-      {TextDecoration? decoration}) {
-    return Text.rich(
-      TextSpan(
-        style: TextStyle(
-            fontSize: 15, fontWeight: FontWeight.w500, color: textColor),
-        children: [
-          TextSpan(text: prefix),
-          TextSpan(
-            text: '⊙⊙',
-            style: TextStyle(
-                color: Colors.pinkAccent,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-                decoration: decoration),
-          ),
-          TextSpan(text: suffix),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    _isLiquid = GlassTheme.of(context).isEnabled;
 
     // ── 动态色板 ──
     final scaffoldBg = isDark ? Colors.black : Colors.grey[50]!;
@@ -180,9 +159,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                 ],
               ),
             ),
-            // ── 标题下间距 ──
             const SizedBox(height: 8),
-            // ── 大标题 ──
             Padding(
               padding: const EdgeInsets.only(left: 20),
               child: Text('罩杯计算器',
@@ -255,38 +232,11 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
 
             const SizedBox(height: 28),
 
-            // ── 自适应反转按钮 ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: Material(
-                  color: buttonBg,
-                  borderRadius: BorderRadius.circular(16),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: _calculating ? null : _calculate,
-                    child: Center(
-                      child: _calculating
-                          ? SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2.5, color: buttonText))
-                          : Text('开始计算',
-                              style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                  color: buttonText)),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // ── 计算按钮（分发）──
+            _buildCalculateButton(buttonBg, buttonText),
             const SizedBox(height: 16),
 
-            // ── 错误提示 ──
+            // ── 错误提示（共用）──
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -310,7 +260,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                 ),
               ),
 
-            // ── 结果卡片 ──
+            // ── 结果卡片 —— 分发 ──
             AnimatedSize(
               duration: const Duration(milliseconds: 500),
               curve: Curves.fastLinearToSlowEaseIn,
@@ -318,8 +268,16 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
               child: _result != null
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: _resultCard(_result!, isDark, cardBg, primaryText,
-                          secondaryText, tertiaryText, dividerColor, brandBlue),
+                      child: _buildResultCard(
+                        _result!,
+                        isDark: isDark,
+                        cardBg: cardBg,
+                        primaryText: primaryText,
+                        secondaryText: secondaryText,
+                        tertiaryText: tertiaryText,
+                        dividerColor: dividerColor,
+                        brandBlue: brandBlue,
+                      ),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -341,15 +299,57 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     );
   }
 
-  /// 单行输入组 — 修复垂直居中
+  // =======================================================================
+  // 步骤标题（两套共用）
+  // =======================================================================
+  Widget _stepTitle(String prefix, String suffix, Color color,
+      {TextDecoration decoration = TextDecoration.none}) {
+    return RichText(
+        text: TextSpan(children: [
+      TextSpan(
+          text: prefix,
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: color,
+              decoration: decoration,
+              decorationColor: const Color(0xFFF5A9B8),
+              decorationThickness: 2.0)),
+      TextSpan(
+          text: suffix,
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              color: color.withValues(alpha: 0.7))),
+    ]));
+  }
+
+  // =======================================================================
+  // 输入项 —— 分发
+  // =======================================================================
   Widget _inputGroup(int step, Widget title, TextEditingController controller,
       String hint, Color inputFill, Color hintColor, Color primaryText) {
+    return _isLiquid
+        ? _inputGroupLiquid(
+            step, title, controller, hint, inputFill, hintColor, primaryText)
+        : _inputGroupMinimal(
+            step, title, controller, hint, inputFill, hintColor, primaryText);
+  }
+
+  Widget _inputGroupMinimal(
+      int step,
+      Widget title,
+      TextEditingController controller,
+      String hint,
+      Color inputFill,
+      Color hintColor,
+      Color primaryText) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── 粉色圆序号 ──
+          // 简约风：实色粉色圆序号。
           Container(
             margin: const EdgeInsets.only(top: 2),
             width: 24,
@@ -373,9 +373,93 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
               children: [
                 title,
                 const SizedBox(height: 8),
+                // 简约风：实色填充 Container + 简约边框。
+                Container(
+                  decoration: BoxDecoration(
+                    color: inputFill,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF333338)
+                          : const Color(0xFFD1D1D6),
+                      width: 0.5,
+                    ),
+                  ),
+                  padding: EdgeInsets.zero,
+                  child: TextField(
+                    controller: controller,
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
+                    ],
+                    decoration: InputDecoration(
+                      hintText: hint,
+                      hintStyle: TextStyle(fontSize: 14, color: hintColor),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
+                    ),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: primaryText),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _inputGroupLiquid(
+      int step,
+      Widget title,
+      TextEditingController controller,
+      String hint,
+      Color inputFill,
+      Color hintColor,
+      Color primaryText) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 毛玻璃：GlassSurface 圆形玻璃序号。
+          GlassSurface(
+            shadow: false,
+            borderRadius: 12,
+            padding: EdgeInsets.zero,
+            solidColor: const Color(0x26FF1493),
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: Text('$step',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.pinkAccent)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                title,
+                const SizedBox(height: 8),
+                // 毛玻璃：GlassSurface 子表面。
                 GlassSurface(
                   solidColor: inputFill,
-                  borderRadius: 12,
+                  borderRadius: 14,
                   shadow: false,
                   padding: EdgeInsets.zero,
                   child: TextField(
@@ -410,135 +494,304 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     );
   }
 
-  // ── 结果卡片 ──
-  Widget _resultCard(
-      BraResult result,
-      bool isDark,
-      Color cardBg,
-      Color primaryText,
-      Color secondaryText,
-      Color tertiaryText,
-      Color dividerColor,
-      Color brandBlue) {
-    final needsBra = result.needsBra;
-    final sizeDisplay = result.fullSize.isNotEmpty ? result.fullSize : '--';
+  // =======================================================================
+  // 计算按钮 —— 分发
+  // =======================================================================
+  Widget _buildCalculateButton(Color buttonBg, Color buttonText) {
+    if (_isLiquid) {
+      // 毛玻璃：GlassSurface 玻璃按钮 + 品牌色半透叠加。
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: GlassSurface(
+            onTap: _calculating ? null : _calculate,
+            solidColor: buttonBg,
+            borderRadius: 16,
+            padding: EdgeInsets.zero,
+            child: Center(
+              child: _calculating
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: buttonText))
+                  : Text('开始计算',
+                      style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: buttonText)),
+            ),
+          ),
+        ),
+      );
+    }
+    // 简约风：实色品牌色按钮。
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: double.infinity,
+        height: 54,
+        child: Material(
+          color: buttonBg,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: _calculating ? null : _calculate,
+            child: Center(
+              child: _calculating
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: buttonText))
+                  : Text('开始计算',
+                      style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: buttonText)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =======================================================================
+  // 结果卡片 —— 分发
+  // =======================================================================
+  Widget _buildResultCard(
+    BraResult result, {
+    required bool isDark,
+    required Color cardBg,
+    required Color primaryText,
+    required Color secondaryText,
+    required Color tertiaryText,
+    required Color dividerColor,
+    required Color brandBlue,
+  }) {
+    return _isLiquid
+        ? _buildResultCardLiquid(
+            result,
+            isDark: isDark,
+            cardBg: cardBg,
+            primaryText: primaryText,
+            secondaryText: secondaryText,
+            tertiaryText: tertiaryText,
+            dividerColor: dividerColor,
+            brandBlue: brandBlue,
+          )
+        : _buildResultCardMinimal(
+            result,
+            isDark: isDark,
+            cardBg: cardBg,
+            primaryText: primaryText,
+            secondaryText: secondaryText,
+            tertiaryText: tertiaryText,
+            dividerColor: dividerColor,
+            brandBlue: brandBlue,
+          );
+  }
+
+  Widget _buildResultCardMinimal(
+    BraResult result, {
+    required bool isDark,
+    required Color cardBg,
+    required Color primaryText,
+    required Color secondaryText,
+    required Color tertiaryText,
+    required Color dividerColor,
+    required Color brandBlue,
+  }) {
     final privacyBg =
         isDark ? const Color(0xFF24242C) : const Color(0xFFF2F2F7);
+    // 简约风：实色卡 + 品牌色标题块 + 深度阴影。
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? const Color(0xFF333338) : const Color(0xFFD1D1D6),
+            width: 0.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: _buildResultCardContent(
+          result: result,
+          isDark: isDark,
+          primaryText: primaryText,
+          secondaryText: secondaryText,
+          tertiaryText: tertiaryText,
+          dividerColor: dividerColor,
+          brandBlue: brandBlue,
+          privacyBg: privacyBg,
+        ),
+      ),
+    );
+  }
 
+  Widget _buildResultCardLiquid(
+    BraResult result, {
+    required bool isDark,
+    required Color cardBg,
+    required Color primaryText,
+    required Color secondaryText,
+    required Color tertiaryText,
+    required Color dividerColor,
+    required Color brandBlue,
+  }) {
+    final privacyBg =
+        isDark ? const Color(0xFF24242C) : const Color(0xFFF2F2F7);
+    // 毛玻璃：GlassSurface 卡 + 品牌色折射边。
     return GlassSurface(
       solidColor: cardBg,
-      borderRadius: 14,
+      borderColor: result.needsBra ? brandBlue : null,
+      borderRadius: 16,
       padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          if (needsBra) ...[
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Center(
-                  child: Text(sizeDisplay,
-                      style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white))),
-            ),
-            const SizedBox(height: 10),
-            Text('中国内衣尺码 (CN)',
-                style: TextStyle(fontSize: 12, color: secondaryText)),
-            const SizedBox(height: 10),
-            // ── US / EU 双 Tag ──
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (result.usSize.isNotEmpty)
-                  _capsuleTag('俗称  ${result.usSize}', isDark),
-                if (result.usSize.isNotEmpty && result.euSize.isNotEmpty)
-                  const SizedBox(width: 10),
-                if (result.euSize.isNotEmpty)
-                  _capsuleTag('欧洲  ${result.euSize}', isDark),
-              ],
-            ),
-          ] else ...[
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFF81C784).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.eco_rounded,
-                  size: 36, color: Color(0xFF81C784)),
-            ),
-            const SizedBox(height: 10),
-            Text(result.message ?? '',
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF81C784))),
-          ],
-          const SizedBox(height: 16),
-          Divider(height: 1, thickness: 0.5, color: dividerColor),
-          const SizedBox(height: 14),
-          _dr('下胸围均值', '${result.underbustAvg.toStringAsFixed(1)} cm',
-              primaryText, tertiaryText),
-          const SizedBox(height: 8),
-          _dr('上胸围均值', '${result.overbustAvg.toStringAsFixed(1)} cm',
-              primaryText, tertiaryText),
-          const SizedBox(height: 8),
-          _dr('胸围差', '${result.difference.toStringAsFixed(1)} cm', primaryText,
-              tertiaryText,
-              accent: needsBra, accentColor: brandBlue),
-          if (needsBra) ...[
-            const SizedBox(height: 8),
-            _dr('底围（取整）', '${result.bandSize} cm', primaryText, tertiaryText)
-          ],
-          if (result.message != null && needsBra) ...[
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                  color: brandBlue.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8)),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb_outline, size: 14, color: brandBlue),
-                  const SizedBox(width: 6),
-                  Flexible(
-                      child: Text(result.message!,
-                          style: TextStyle(fontSize: 12, color: brandBlue))),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
+      child: _buildResultCardContent(
+        result: result,
+        isDark: isDark,
+        primaryText: primaryText,
+        secondaryText: secondaryText,
+        tertiaryText: tertiaryText,
+        dividerColor: dividerColor,
+        brandBlue: brandBlue,
+        privacyBg: privacyBg,
+      ),
+    );
+  }
+
+  /// 结果卡片公共内容（两套共用）。
+  Widget _buildResultCardContent({
+    required BraResult result,
+    required bool isDark,
+    required Color primaryText,
+    required Color secondaryText,
+    required Color tertiaryText,
+    required Color dividerColor,
+    required Color brandBlue,
+    required Color privacyBg,
+  }) {
+    final needsBra = result.needsBra;
+    final sizeDisplay = result.fullSize.isNotEmpty ? result.fullSize : '--';
+    return Column(
+      children: [
+        if (needsBra) ...[
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-                color: privacyBg, borderRadius: BorderRadius.circular(10)),
-            child: const Row(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF5A9B8), Color(0xFFF5A9B8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Center(
+                child: Text(sizeDisplay,
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white))),
+          ),
+          const SizedBox(height: 10),
+          Text('中国内衣尺码 (CN)',
+              style: TextStyle(fontSize: 12, color: secondaryText)),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (result.usSize.isNotEmpty)
+                _capsuleTag('俗称  ${result.usSize}', isDark),
+              if (result.usSize.isNotEmpty && result.euSize.isNotEmpty)
+                const SizedBox(width: 10),
+              if (result.euSize.isNotEmpty)
+                _capsuleTag('欧洲  ${result.euSize}', isDark),
+            ],
+          ),
+        ] else ...[
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: const Color(0xFF81C784).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.eco_rounded,
+                size: 36, color: Color(0xFF81C784)),
+          ),
+          const SizedBox(height: 10),
+          Text(result.message ?? '',
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF81C784))),
+        ],
+        const SizedBox(height: 16),
+        Divider(height: 1, thickness: 0.5, color: dividerColor),
+        const SizedBox(height: 14),
+        _dr('下胸围均值', '${result.underbustAvg.toStringAsFixed(1)} cm',
+            primaryText, tertiaryText),
+        const SizedBox(height: 8),
+        _dr('上胸围均值', '${result.overbustAvg.toStringAsFixed(1)} cm', primaryText,
+            tertiaryText),
+        const SizedBox(height: 8),
+        _dr('胸围差', '${result.difference.toStringAsFixed(1)} cm', primaryText,
+            tertiaryText,
+            accent: needsBra, accentColor: brandBlue),
+        if (needsBra) ...[
+          const SizedBox(height: 8),
+          _dr('底围（取整）', '${result.bandSize} cm', primaryText, tertiaryText)
+        ],
+        if (result.message != null && needsBra) ...[
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+                color: brandBlue.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8)),
+            child: Row(
               children: [
-                Icon(Icons.lock_outline, size: 13, color: Color(0xFF81C784)),
-                SizedBox(width: 8),
+                Icon(Icons.lightbulb_outline, size: 14, color: brandBlue),
+                const SizedBox(width: 6),
                 Flexible(
-                  child: Text('运算及记录均在您的设备本地完成，绝不会收集或上传任何数据。',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF8E8E93))),
-                ),
+                    child: Text(result.message!,
+                        style: TextStyle(fontSize: 12, color: brandBlue))),
               ],
             ),
           ),
         ],
-      ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+              color: privacyBg, borderRadius: BorderRadius.circular(10)),
+          child: const Row(
+            children: [
+              Icon(Icons.lock_outline, size: 13, color: Color(0xFF81C784)),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text('运算及记录均在您的设备本地完成，绝不会收集或上传任何数据。',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF8E8E93))),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -557,7 +810,6 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     );
   }
 
-  /// 极简胶囊 Tag
   Widget _capsuleTag(String text, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -573,7 +825,9 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     );
   }
 
-  // ── 发育记录 BottomSheet ──
+  // =======================================================================
+  // 发育记录 BottomSheet —— 分发
+  // =======================================================================
   Future<void> _showGrowthHistory(bool isDark) async {
     final records = await GrowthRecordService.instance.loadRecords();
     if (!mounted) return;
@@ -582,9 +836,36 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
     final card = isDark ? const Color(0xFF24242C) : Colors.white;
     final text = isDark ? Colors.white : Colors.black;
     final secondary = isDark ? Colors.white54 : Colors.black45;
-    final brandBlue = const Color(0xFFF5A9B8);
+    const brandBlue = Color(0xFFF5A9B8);
 
-    showModalBottomSheet(
+    if (_isLiquid) {
+      // 毛玻璃：GlassSheet 包裹。
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: GlassTheme.modalBarrierColor(context),
+        builder: (ctx) => GlassSheet(
+          title: Text('发育记录',
+              style: TextStyle(
+                  fontSize: 26, fontWeight: FontWeight.w700, color: text)),
+          child: _buildGrowthHistoryList(
+            records: records,
+            isDark: isDark,
+            card: card,
+            text: text,
+            secondary: secondary,
+            brandBlue: brandBlue,
+            useGlass: true,
+            setSheetState: (_) {},
+          ),
+        ),
+      );
+      return;
+    }
+
+    // 简约风：实色 Sheet。
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: bg,
@@ -626,133 +907,168 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
                                     color: text)),
                             const Spacer(),
                             if (records.isNotEmpty)
-                              CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                child: Icon(Icons.delete_sweep_outlined,
-                                    size: 22, color: secondary),
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (dCtx) => AlertDialog(
-                                      backgroundColor: card,
-                                      title: Text('确认清除',
-                                          style: TextStyle(color: text)),
-                                      content: Text('清除后无法恢复，确定要删除所有发育记录吗？',
-                                          style: TextStyle(color: secondary)),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dCtx, false),
-                                            child: const Text('取消',
-                                                style: TextStyle(
-                                                    color: Color(0xFFF5A9B8)))),
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dCtx, true),
-                                            child: const Text('确认清除',
-                                                style: TextStyle(
-                                                    color: Color(0xFFE57373)))),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirmed == true) {
-                                    await GrowthRecordService.instance
-                                        .clearAll();
-                                    setSheetState(() {});
-                                  }
-                                },
-                              ),
+                              _buildClearButton(card, text, secondary,
+                                  () async {
+                                final confirmed = await _confirmClear(
+                                    context, card, text, secondary);
+                                if (confirmed == true) {
+                                  await GrowthRecordService.instance.clearAll();
+                                  setSheetState(() {});
+                                }
+                              }),
                           ],
                         ),
                       ),
-                      if (records.isEmpty)
-                        Expanded(
-                            child: Center(
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                              Icon(Icons.inbox_outlined,
-                                  size: 48, color: secondary),
-                              const SizedBox(height: 12),
-                              Text('还没有测量记录\n开始计算后会自动保存',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 14, color: secondary)),
-                            ])))
-                      else
-                        Expanded(
-                          child: ListView.builder(
-                            controller: scrollController,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: records.length,
-                            itemBuilder: (context, index) {
-                              final rec = records[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 1),
-                                color: card,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  child: Row(children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              brandBlue.withValues(alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(14)),
-                                      child: Center(
-                                          child: Text(
-                                              rec.result.fullSize.isNotEmpty
-                                                  ? rec.result.fullSize
-                                                  : '--',
-                                              style: const TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFFF5A9B8)))),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                          Text(rec.formattedDate,
-                                              style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: text)),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                              '下 ${rec.underbustRelaxed.toStringAsFixed(1)}/${rec.underbustExhaled.toStringAsFixed(1)}  ·  '
-                                              '上 ${rec.overbustStanding.toStringAsFixed(1)}/${rec.overbust45.toStringAsFixed(1)}/${rec.overbust90.toStringAsFixed(1)}',
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: secondary),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis),
-                                        ])),
-                                    CupertinoButton(
-                                      padding: EdgeInsets.zero,
-                                      child: Icon(Icons.delete_outline,
-                                          size: 20, color: secondary),
-                                      onPressed: () async {
-                                        await GrowthRecordService.instance
-                                            .deleteRecord(rec.timestamp);
-                                        setSheetState(() {});
-                                      },
-                                    ),
-                                  ]),
-                                ),
-                              );
-                            },
-                          ),
+                      Expanded(
+                        child: _buildGrowthHistoryList(
+                          records: records,
+                          isDark: isDark,
+                          card: card,
+                          text: text,
+                          secondary: secondary,
+                          brandBlue: brandBlue,
+                          useGlass: false,
+                          setSheetState: setSheetState,
+                          scrollController: scrollController,
                         ),
+                      ),
                     ],
                   ),
                 );
               },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildClearButton(
+      Color card, Color text, Color secondary, VoidCallback onPressed) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Icon(Icons.delete_sweep_outlined, size: 22, color: secondary),
+    );
+  }
+
+  Future<bool?> _confirmClear(
+      BuildContext context, Color card, Color text, Color secondary) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: card,
+        title: Text('确认清除', style: TextStyle(color: text)),
+        content:
+            Text('清除后无法恢复，确定要删除所有发育记录吗？', style: TextStyle(color: secondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dCtx, false),
+              child:
+                  const Text('取消', style: TextStyle(color: Color(0xFFF5A9B8)))),
+          TextButton(
+              onPressed: () => Navigator.pop(dCtx, true),
+              child: const Text('确认清除',
+                  style: TextStyle(color: Color(0xFFE57373)))),
+        ],
+      ),
+    );
+  }
+
+  /// 发育记录列表（两套共用，useGlass 控制列表项材质）。
+  Widget _buildGrowthHistoryList({
+    required List records,
+    required bool isDark,
+    required Color card,
+    required Color text,
+    required Color secondary,
+    required Color brandBlue,
+    required bool useGlass,
+    required void Function(VoidCallback) setSheetState,
+    ScrollController? scrollController,
+  }) {
+    if (records.isEmpty) {
+      return Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.inbox_outlined, size: 48, color: secondary),
+        const SizedBox(height: 12),
+        Text('还没有测量记录\n开始计算后会自动保存',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: secondary)),
+      ]));
+    }
+    return StatefulBuilder(
+      builder: (context, ss) {
+        return ListView.builder(
+          controller: scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: records.length,
+          itemBuilder: (context, index) {
+            final rec = records[index];
+            final child = Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                      color: brandBlue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Center(
+                      child: Text(
+                          rec.result.fullSize.isNotEmpty
+                              ? rec.result.fullSize
+                              : '--',
+                          style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFF5A9B8)))),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text(rec.formattedDate,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: text)),
+                      const SizedBox(height: 2),
+                      Text(
+                          '下 ${rec.underbustRelaxed.toStringAsFixed(1)}/${rec.underbustExhaled.toStringAsFixed(1)}  ·  '
+                          '上 ${rec.overbustStanding.toStringAsFixed(1)}/${rec.overbust45.toStringAsFixed(1)}/${rec.overbust90.toStringAsFixed(1)}',
+                          style: TextStyle(fontSize: 12, color: secondary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ])),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  child: Icon(Icons.delete_outline, size: 20, color: secondary),
+                  onPressed: () async {
+                    await GrowthRecordService.instance
+                        .deleteRecord(rec.timestamp);
+                    ss(() {});
+                  },
+                ),
+              ]),
+            );
+            if (useGlass) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: GlassSurface(
+                  solidColor: card,
+                  borderRadius: 14,
+                  shadow: false,
+                  padding: EdgeInsets.zero,
+                  child: child,
+                ),
+              );
+            }
+            return Container(
+              margin: const EdgeInsets.only(bottom: 1),
+              color: card,
+              child: child,
             );
           },
         );

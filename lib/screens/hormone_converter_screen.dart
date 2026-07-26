@@ -12,6 +12,8 @@ import '../utils/hormone_converter_logic.dart';
 ///   未命中卡片（有命中时）→ 灰度化/背景化 (Dim)
 ///   未命中卡片（无命中时）→ 常态微光背景 (Normal)
 ///
+/// 双风格：简约风（实色 Container）/ 毛玻璃（GlassSurface）按当前主题切换。
+///
 /// 色彩符号系统基于跨性别旗帜：
 ///   MtF → Pastel Pink (#F5A9B8)    FtM → Pastel Blue (#5BCEFA)
 ///   NB  → Off-white  (#EBEBED)
@@ -43,6 +45,9 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   // ---- 换算结果缓存 ----
   ConversionResult? _fromResult;
   ConversionResult? _toResult;
+
+  // ---- 当前风格（build 顶部缓存，供子 builder 复用）----
+  bool _isLiquid = false;
 
   @override
   void initState() {
@@ -226,6 +231,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    _isLiquid = GlassTheme.of(context).isEnabled;
     return Scaffold(
       backgroundColor:
           isDark ? const Color(0xFF1C1C1A) : const Color(0xFFF2F2F7),
@@ -262,9 +268,14 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   }
 
   // =======================================================================
-  // 激素 Chips
+  // 激素 Chips —— 分发
   // =======================================================================
   Widget _buildHormoneChips() {
+    return _isLiquid ? _buildHormoneChipsLiquid() : _buildHormoneChipsMinimal();
+  }
+
+  Widget _buildHormoneChipsMinimal() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 36,
       child: ListView.separated(
@@ -274,9 +285,61 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         itemBuilder: (context, index) {
           final hormone = hormones[index];
           final isSelected = hormone.id == _selectedHormone.id;
+          // 简约风：实色胶囊，选中=深底白字，未选=透明灰字，无阴影无玻璃。
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _selectHormone(hormone),
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? (isDark
+                          ? const Color(0xFFEDEDF0)
+                          : const Color(0xFF333333))
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(18),
+                  border: isSelected
+                      ? null
+                      : Border.all(
+                          color: isDark
+                              ? const Color(0xFF333338)
+                              : const Color(0xFFD1D1D6),
+                          width: 0.8,
+                        ),
+                ),
+                child: Text(
+                  hormone.name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? (isDark ? const Color(0xFF333333) : Colors.white)
+                        : const Color(0xFF8E8E93),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          // 玻璃药丸：液态模式下由 LiquidGlassLens 接管；简约风退化为实色/透明胶囊。
+  Widget _buildHormoneChipsLiquid() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: hormones.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final hormone = hormones[index];
+          final isSelected = hormone.id == _selectedHormone.id;
+          // 毛玻璃：GlassSurface 药丸，选中=品牌色半透 + 折射边。
           return GlassSurface(
             onTap: () => _selectHormone(hormone),
             solidColor: isSelected
@@ -302,7 +365,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   }
 
   // =======================================================================
-  // 换算输入区
+  // 换算输入区 —— 分发
   // =======================================================================
   Widget _buildConversionSection() {
     return Column(
@@ -317,24 +380,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           onUnitChanged: _onFromUnitChanged,
         ),
         const SizedBox(height: 8),
-        Center(
-          child: GlassSurface(
-            onTap: _swapUnits,
-            solidColor: const Color(0xFFE5E5EA),
-            borderRadius: 14,
-            shadow: false,
-            padding: EdgeInsets.zero,
-            child: const SizedBox(
-              width: 36,
-              height: 28,
-              child: Icon(
-                Icons.swap_vert_rounded,
-                size: 18,
-                color: Color(0xFF6B6B76),
-              ),
-            ),
-          ),
-        ),
+        _buildSwapButton(),
         const SizedBox(height: 8),
         _buildInputBlock(
           label: '输出',
@@ -349,7 +395,87 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     );
   }
 
+  Widget _buildSwapButton() {
+    if (_isLiquid) {
+      // 毛玻璃：GlassSurface 圆形玻璃按钮。
+      return Center(
+        child: GlassSurface(
+          onTap: _swapUnits,
+          solidColor: const Color(0xFFE5E5EA),
+          borderRadius: 14,
+          shadow: false,
+          padding: EdgeInsets.zero,
+          child: const SizedBox(
+            width: 36,
+            height: 28,
+            child: Icon(
+              Icons.swap_vert_rounded,
+              size: 18,
+              color: Color(0xFF6B6B76),
+            ),
+          ),
+        ),
+      );
+    }
+    // 简约风：实色圆形 Container。
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _swapUnits,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 36,
+            height: 28,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E5EA),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.swap_vert_rounded,
+              size: 18,
+              color: Color(0xFF6B6B76),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =======================================================================
+  // 输入块 —— 分发
+  // =======================================================================
   Widget _buildInputBlock({
+    required String label,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required bool isFocused,
+    required String unit,
+    required ValueChanged<String> onChanged,
+    required ValueChanged<String> onUnitChanged,
+  }) {
+    return _isLiquid
+        ? _buildInputBlockLiquid(
+            label: label,
+            controller: controller,
+            focusNode: focusNode,
+            isFocused: isFocused,
+            unit: unit,
+            onChanged: onChanged,
+            onUnitChanged: onUnitChanged,
+          )
+        : _buildInputBlockMinimal(
+            label: label,
+            controller: controller,
+            focusNode: focusNode,
+            isFocused: isFocused,
+            unit: unit,
+            onChanged: onChanged,
+            onUnitChanged: onUnitChanged,
+          );
+  }
+
+  Widget _buildInputBlockMinimal({
     required String label,
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -361,83 +487,172 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
-    // 玻璃输入块：液态模式下由 LiquidGlassLens 接管折射/模糊；简约风退化为
-    // 实色圆角块（聚焦态用更浅底色区分）。原聚焦粉色辉光在液态模式下由玻璃
-    // 材质本身提供层次，不再手写 boxShadow。
-    return GlassSurface(
-      solidColor: isFocused
-          ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
-          : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
-      borderRadius: 20,
-      padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93),
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  onChanged: onChanged,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                  ],
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    height: 1.15,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: '请输入数值',
-                    hintStyle: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF999999),
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                    isCollapsed: true,
-                  ),
+    // 简约风：实色圆角块 + 焦点态品牌色边框 + 柔阴影。
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+        decoration: BoxDecoration(
+          color: isFocused
+              ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
+              : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
+          borderRadius: BorderRadius.circular(16),
+          border: isFocused
+              ? Border.all(
+                  color: const Color(0xFFF5A9B8),
+                  width: 1.5,
+                )
+              : Border.all(
+                  color: isDark
+                      ? const Color(0xFF333338)
+                      : const Color(0xFFD1D1D6),
+                  width: 0.5,
                 ),
-              ),
-              const SizedBox(width: 4),
-              _buildUnitDropdown(
-                currentUnit: unit,
-                onChanged: onUnitChanged,
-              ),
-            ],
-          ),
-        ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: _buildInputBlockContent(
+          label: label,
+          controller: controller,
+          focusNode: focusNode,
+          onChanged: onChanged,
+          textColor: textColor,
+          unit: unit,
+          onUnitChanged: onUnitChanged,
+        ),
       ),
     );
   }
 
+  Widget _buildInputBlockLiquid({
+    required String label,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required bool isFocused,
+    required String unit,
+    required ValueChanged<String> onChanged,
+    required ValueChanged<String> onUnitChanged,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    // 毛玻璃：GlassSurface 子表面，焦点态品牌色折射边。
+    return GlassSurface(
+      solidColor: isFocused
+          ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
+          : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
+      borderColor: isFocused ? const Color(0xFFF5A9B8) : null,
+      borderRadius: 20,
+      padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+      child: _buildInputBlockContent(
+        label: label,
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: onChanged,
+        textColor: textColor,
+        unit: unit,
+        onUnitChanged: onUnitChanged,
+      ),
+    );
+  }
+
+  /// 输入块公共内容（两套风格共用：标签 + TextField + 单位下拉）。
+  Widget _buildInputBlockContent({
+    required String label,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required ValueChanged<String> onChanged,
+    required Color textColor,
+    required String unit,
+    required ValueChanged<String> onUnitChanged,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93),
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                onChanged: onChanged,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                ],
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  height: 1.15,
+                ),
+                decoration: const InputDecoration(
+                  hintText: '请输入数值',
+                  hintStyle: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF999999),
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                  isDense: true,
+                  isCollapsed: true,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            _buildUnitDropdown(
+              currentUnit: unit,
+              onChanged: onUnitChanged,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // =======================================================================
+  // 单位下拉 —— 分发
+  // =======================================================================
   Widget _buildUnitDropdown({
+    required String currentUnit,
+    required ValueChanged<String> onChanged,
+  }) {
+    return _isLiquid
+        ? _buildUnitDropdownLiquid(
+            currentUnit: currentUnit, onChanged: onChanged)
+        : _buildUnitDropdownMinimal(
+            currentUnit: currentUnit, onChanged: onChanged);
+  }
+
+  Widget _buildUnitDropdownMinimal({
     required String currentUnit,
     required ValueChanged<String> onChanged,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final units = _selectedHormone.units;
-
+    // 简约风：实色 Container 触发器 + 简约边框。
     return PopupMenuButton<String>(
       initialValue: units.any((u) => u.symbol == currentUnit)
           ? currentUnit
@@ -477,8 +692,90 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           ),
         );
       }).toList(),
-      // 单位触发器：GlassSurface(onTap:null) 不抢占手势，PopupMenuButton 的
-      // 外层 InkWell 仍可正常接收点击弹出菜单。
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? const Color(0xFF3A3A40) : const Color(0xFFD1D1D6),
+              width: 0.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                currentUnit,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? const Color(0xFFC7C7CC)
+                      : const Color(0xFF6B6B76),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: isDark
+                      ? const Color(0xFF8E8E96)
+                      : const Color(0xFF8E8E93)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnitDropdownLiquid({
+    required String currentUnit,
+    required ValueChanged<String> onChanged,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final units = _selectedHormone.units;
+    // 毛玻璃：GlassSurface 药丸触发器 + 光学边框。
+    return PopupMenuButton<String>(
+      initialValue: units.any((u) => u.symbol == currentUnit)
+          ? currentUnit
+          : units.first.symbol,
+      offset: const Offset(0, 44),
+      color: isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      onSelected: onChanged,
+      itemBuilder: (context) => units.map((u) {
+        return PopupMenuItem<String>(
+          value: u.symbol,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                u.symbol,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDark
+                      ? const Color(0xFFEDEDF0)
+                      : const Color(0xFF333333),
+                ),
+              ),
+              if (u.isCommon) ...[
+                const SizedBox(width: 6),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5A9B8),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
       child: GlassSurface(
         solidColor: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
         borderRadius: 12,
@@ -508,7 +805,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   }
 
   // =======================================================================
-  // 参考范围卡片 — 全场焦点高亮方案
+  // 参考范围卡片 — 全场焦点高亮方案 —— 分发
   // =======================================================================
   Widget _buildReferenceRanges() {
     final matchedRanges = _toResult?.ranges ?? [];
@@ -523,14 +820,16 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 14),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 14),
           child: Text(
             '参考范围',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF333333),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFFEDEDF0)
+                  : const Color(0xFF333333),
             ),
           ),
         ),
@@ -555,10 +854,30 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     required bool hasAnyMatch,
     required ({double min, double max})? convertedRange,
   }) {
+    return _isLiquid
+        ? _buildRangeCardLiquid(
+            range: range,
+            isMatched: isMatched,
+            hasAnyMatch: hasAnyMatch,
+            convertedRange: convertedRange,
+          )
+        : _buildRangeCardMinimal(
+            range: range,
+            isMatched: isMatched,
+            hasAnyMatch: hasAnyMatch,
+            convertedRange: convertedRange,
+          );
+  }
+
+  Widget _buildRangeCardMinimal({
+    required HormoneRange range,
+    required bool isMatched,
+    required bool hasAnyMatch,
+    required ({double min, double max})? convertedRange,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = _resolveTransFlagPalette(range.iconType);
 
-    // ---- 图标 ----
     final IconData icon;
     switch (range.iconType) {
       case 'male':
@@ -577,7 +896,6 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         icon = Icons.info_outline_rounded;
     }
 
-    // ---- 范围文本 ----
     final rangeText = convertedRange != null
         ? formatRangeText(
             convertedRange.min,
@@ -586,10 +904,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           )
         : formatRangeText(range.min, range.max, hideMax: range.hideMax);
 
-    // ---- 三态判定 ----
     final bool dimmed = !isMatched && hasAnyMatch;
 
-    // 激活态颜色 — 微着色底 + 强调边框 (Tint & Stroke)
     final Color cardBg = isMatched
         ? palette.tintBg
         : dimmed
@@ -604,12 +920,13 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
             ? (isDark ? const Color(0xFF6B6B76) : const Color(0xFF999999))
             : (isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333));
     final Color badgeBg = isMatched
-        ? palette.accent.withOpacity(0.12)
+        ? palette.accent.withValues(alpha: 0.12)
         : (isDark ? const Color(0xFF333338) : const Color(0xFFE5E5EA));
     final Color badgeTextColor = isMatched
         ? palette.accent
         : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF999999));
 
+    // 简约风：实色 AnimatedContainer + 命中态品牌色边框 + 深度阴影。
     return AnimatedScale(
       duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutBack,
@@ -620,102 +937,246 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         margin: EdgeInsets.only(bottom: isMatched ? 14 : 10),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(18),
-          border:
-              isMatched ? Border.all(color: palette.solidBg, width: 2.0) : null,
+          borderRadius: BorderRadius.circular(16),
+          border: isMatched
+              ? Border.all(color: palette.solidBg, width: 2.0)
+              : Border.all(
+                  color: isDark
+                      ? const Color(0xFF333338)
+                      : const Color(0xFFD1D1D6),
+                  width: 0.5,
+                ),
           boxShadow: isMatched
               ? [
                   BoxShadow(
-                    color: palette.solidBg.withOpacity(0.20),
+                    color: palette.solidBg.withValues(alpha: 0.20),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            // 图标
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: isMatched
-                    ? palette.accent.withOpacity(0.18)
-                    : (isDark
-                        ? const Color(0xFF333338)
-                        : const Color(0xFFE5E5EA)),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isMatched
-                    ? palette.accent
-                    : (isDark
-                        ? const Color(0xFF6B6B76)
-                        : const Color(0xFFB0B0B8)),
-              ),
-            ),
-            const SizedBox(width: 14),
-            // 标签与描述
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    range.label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: labelColor,
-                    ),
-                  ),
-                  if (range.description.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      range.description,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: contentColor,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // 范围数值
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '$rangeText ${convertedRange != null ? _toUnit : range.unit}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: badgeTextColor,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-          ],
+        child: _buildRangeCardContent(
+          icon: icon,
+          isMatched: isMatched,
+          isDark: isDark,
+          palette: palette,
+          range: range,
+          contentColor: contentColor,
+          labelColor: labelColor,
+          badgeBg: badgeBg,
+          badgeTextColor: badgeTextColor,
+          rangeText: rangeText,
+          convertedRange: convertedRange,
         ),
       ),
     );
   }
 
+  Widget _buildRangeCardLiquid({
+    required HormoneRange range,
+    required bool isMatched,
+    required bool hasAnyMatch,
+    required ({double min, double max})? convertedRange,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = _resolveTransFlagPalette(range.iconType);
+
+    final IconData icon;
+    switch (range.iconType) {
+      case 'male':
+        icon = Icons.male_rounded;
+        break;
+      case 'female':
+        icon = Icons.female_rounded;
+        break;
+      case 'target':
+        icon = Icons.my_location_rounded;
+        break;
+      case 'warning':
+        icon = Icons.warning_amber_rounded;
+        break;
+      default:
+        icon = Icons.info_outline_rounded;
+    }
+
+    final rangeText = convertedRange != null
+        ? formatRangeText(
+            convertedRange.min,
+            convertedRange.max,
+            hideMax: range.hideMax,
+          )
+        : formatRangeText(range.min, range.max, hideMax: range.hideMax);
+
+    final bool dimmed = !isMatched && hasAnyMatch;
+
+    final Color cardBg = isMatched
+        ? palette.tintBg
+        : dimmed
+            ? (isDark ? const Color(0xFF24242C) : const Color(0xFFEBEBED))
+            : (isDark ? const Color(0xFF24242C) : palette.bgNormal);
+    final Color contentColor = isMatched
+        ? palette.accent
+        : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93));
+    final Color labelColor = isMatched
+        ? palette.onAccent
+        : dimmed
+            ? (isDark ? const Color(0xFF6B6B76) : const Color(0xFF999999))
+            : (isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333));
+    final Color badgeBg = isMatched
+        ? palette.accent.withValues(alpha: 0.12)
+        : (isDark ? const Color(0xFF333338) : const Color(0xFFE5E5EA));
+    final Color badgeTextColor = isMatched
+        ? palette.accent
+        : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF999999));
+
+    // 毛玻璃：GlassSurface 卡，命中态品牌色折射边 + 发光阴影。
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutBack,
+      scale: isMatched ? 1.02 : 1.0,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+        margin: EdgeInsets.only(bottom: isMatched ? 14 : 10),
+        child: GlassSurface(
+          solidColor: cardBg,
+          borderColor: isMatched ? palette.solidBg : null,
+          borderRadius: 18,
+          shadow: isMatched,
+          padding: const EdgeInsets.all(20),
+          child: _buildRangeCardContent(
+            icon: icon,
+            isMatched: isMatched,
+            isDark: isDark,
+            palette: palette,
+            range: range,
+            contentColor: contentColor,
+            labelColor: labelColor,
+            badgeBg: badgeBg,
+            badgeTextColor: badgeTextColor,
+            rangeText: rangeText,
+            convertedRange: convertedRange,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 参考范围卡片公共内容（两套风格共用）。
+  Widget _buildRangeCardContent({
+    required IconData icon,
+    required bool isMatched,
+    required bool isDark,
+    required _TransFlagPalette palette,
+    required HormoneRange range,
+    required Color contentColor,
+    required Color labelColor,
+    required Color badgeBg,
+    required Color badgeTextColor,
+    required String rangeText,
+    required ({double min, double max})? convertedRange,
+  }) {
+    return Row(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 350),
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: isMatched
+                ? palette.accent.withOpacity(0.18)
+                : (isDark ? const Color(0xFF333338) : const Color(0xFFE5E5EA)),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            size: 22,
+            color: isMatched
+                ? palette.accent
+                : (isDark ? const Color(0xFF6B6B76) : const Color(0xFFB0B0B8)),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                range.label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: labelColor,
+                ),
+              ),
+              if (range.description.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(
+                  range.description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: contentColor,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 350),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: badgeBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            '$rangeText ${convertedRange != null ? _toUnit : range.unit}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: badgeTextColor,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // =======================================================================
-  // 开源致谢
+  // 开源致谢 —— 分发
   // =======================================================================
   Widget _buildAttribution() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_isLiquid) {
+      // 毛玻璃：GlassSurface 轻材质药丸包裹。
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: GlassSurface(
+          shadow: false,
+          borderRadius: 12,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Text(
+            '换算算法及参考范围数据衍生自 MtF.wiki (CC BY-SA 4.0) 及网络公开经验数据',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+          ),
+        ),
+      );
+    }
+    // 简约风：纯文本，无容器。
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
