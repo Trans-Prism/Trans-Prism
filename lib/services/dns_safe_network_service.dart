@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
@@ -29,13 +30,30 @@ class DnsSafeNetworkService {
               ),
             );
 
-  /// 通过 DoH 解析并安全获取 URL 响应正文
+  /// 全局单例（R2 下载等高频调用复用）
+  static DnsSafeNetworkService? _instance;
+  static DnsSafeNetworkService get instance =>
+      _instance ??= DnsSafeNetworkService();
+
+  /// 安全获取 URL 响应正文（标准 DNS 优先，DoH 兜底）。
+  ///
+  /// 优先级：
+  /// 1. 标准 DNS 直连——覆盖大多数场景（正常网络 + 真机 TUN 代理 fake-ip）
+  /// 2. DoH 解析真实 IP 直连——标准 DNS 返回 fake-ip 不可路由时兜底
   Future<String> fetchSafe(String targetUrl) async {
     final uri = _parseTargetUri(targetUrl);
     final host = uri.host;
 
     final errors = <String>[];
 
+    // 1. 标准 DNS 直连（大多数场景有效）
+    try {
+      return await _fetchDirect(uri);
+    } catch (e) {
+      errors.add('直连: $e');
+    }
+
+    // 2. DoH 兜底（标准 DNS 返回 fake-ip 不可路由时）
     try {
       final ips = await resolveAllIpv4(host);
       for (final ip in ips) {
@@ -49,14 +67,62 @@ class DnsSafeNetworkService {
       errors.add('DoH: $e');
     }
 
+    throw DnsSafeNetworkException(
+      '所有请求方式均失败 (${errors.join(' | ')})',
+      host: host,
+      uri: uri.toString(),
+    );
+  }
+
+  /// 下载二进制文件（标准 DNS 优先，DoH 兜底）。
+  ///
+  /// 优先级：
+  /// 1. 标准 DNS 直连——覆盖大多数场景（正常网络 + 真机 TUN 代理 fake-ip）
+  /// 2. DoH 解析真实 IP 直连——标准 DNS 返回 fake-ip 不可路由时兜底
+  ///
+  /// [onProgress] 回调接收 0.0~1.0 的进度（无法确定总大小时不回调）。
+  /// 返回下载的字节数据，失败抛出 [DnsSafeNetworkException]。
+  Future<Uint8List> downloadBytes(
+    String targetUrl, {
+    void Function(double progress)? onProgress,
+    Duration? receiveTimeout,
+  }) async {
+    final uri = _parseTargetUri(targetUrl);
+    final host = uri.host;
+    final errors = <String>[];
+
+    // 1. 标准 DNS 直连（大多数场景有效）
     try {
-      return await _fetchDirect(uri);
+      return await _downloadDirect(
+        uri,
+        onProgress: onProgress,
+        receiveTimeout: receiveTimeout,
+      );
     } catch (e) {
       errors.add('直连: $e');
     }
 
+    // 2. DoH 兜底（标准 DNS 返回 fake-ip 不可路由时）
+    try {
+      final ips = await resolveAllIpv4(host);
+      for (final ip in ips) {
+        try {
+          return await _downloadViaResolvedIp(
+            uri: uri,
+            ip: ip,
+            onProgress: onProgress,
+            receiveTimeout: receiveTimeout,
+          );
+        } catch (e) {
+          errors.add('IP $ip: $e');
+        }
+      }
+    } catch (e) {
+      errors.add('DoH: $e');
+    }
+
     throw DnsSafeNetworkException(
-      '所有请求方式均失败 (${errors.join(' | ')})',
+      '所有下载方式均失败 (${errors.join(' | ')})',
       host: host,
       uri: uri.toString(),
     );
@@ -97,7 +163,8 @@ class DnsSafeNetworkService {
     return ips.first;
   }
 
-  Future<List<String>> _resolveViaAliDns(String hostname, {int depth = 0}) async {
+  Future<List<String>> _resolveViaAliDns(String hostname,
+      {int depth = 0}) async {
     if (depth > _maxCnameDepth) {
       throw DnsSafeNetworkException('CNAME 链路过深', host: hostname);
     }
@@ -123,7 +190,8 @@ class DnsSafeNetworkService {
     }
   }
 
-  Future<List<String>> _resolveViaTencentDns(String hostname, {int depth = 0}) async {
+  Future<List<String>> _resolveViaTencentDns(String hostname,
+      {int depth = 0}) async {
     if (depth > _maxCnameDepth) {
       throw DnsSafeNetworkException('CNAME 链路过深', host: hostname);
     }
@@ -215,7 +283,9 @@ class DnsSafeNetworkService {
 
   String _normalizeHostname(String name) {
     final trimmed = name.trim().toLowerCase();
-    return trimmed.endsWith('.') ? trimmed.substring(0, trimmed.length - 1) : trimmed;
+    return trimmed.endsWith('.')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
   }
 
   bool _isARecord(dynamic type) {
@@ -252,7 +322,8 @@ class DnsSafeNetworkService {
         validateStatus: (code) => code != null && code >= 200 && code < 300,
         headers: {
           HttpHeaders.userAgentHeader: 'TransToolbox/1.0',
-          HttpHeaders.acceptHeader: 'text/plain, text/markdown, application/json, */*',
+          HttpHeaders.acceptHeader:
+              'text/plain, text/markdown, application/json, */*',
         },
       ),
     );
@@ -289,7 +360,8 @@ class DnsSafeNetworkService {
         validateStatus: (code) => code != null && code >= 200 && code < 300,
         headers: {
           HttpHeaders.userAgentHeader: 'TransToolbox/1.0',
-          HttpHeaders.acceptHeader: 'text/plain, text/markdown, application/json, */*',
+          HttpHeaders.acceptHeader:
+              'text/plain, text/markdown, application/json, */*',
         },
       ),
     );
@@ -298,7 +370,8 @@ class DnsSafeNetworkService {
       createHttpClient: () {
         final client = HttpClient();
         client.autoUncompress = true;
-        client.connectionFactory = (Uri requestUri, String? proxyHost, int? proxyPort) {
+        client.connectionFactory =
+            (Uri requestUri, String? proxyHost, int? proxyPort) {
           return Socket.startConnect(ip, port);
         };
         return client;
@@ -344,6 +417,142 @@ class DnsSafeNetworkService {
       );
     } finally {
       fetchDio.close();
+    }
+  }
+
+  // ==================== 二进制下载（DoH 解析 + 直连） ====================
+
+  Future<Uint8List> _downloadViaResolvedIp({
+    required Uri uri,
+    required String ip,
+    void Function(double progress)? onProgress,
+    Duration? receiveTimeout,
+  }) async {
+    final host = uri.host;
+    final port = uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80);
+
+    final downloadDio = Dio(
+      BaseOptions(
+        connectTimeout: connectTimeout,
+        receiveTimeout: receiveTimeout ?? DnsSafeNetworkService.receiveTimeout,
+        responseType: ResponseType.bytes,
+        followRedirects: true,
+        maxRedirects: 5,
+        validateStatus: (code) => code != null && code >= 200 && code < 300,
+        headers: {HttpHeaders.userAgentHeader: 'TransToolbox/1.0'},
+      ),
+    );
+
+    downloadDio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.autoUncompress = true;
+        client.connectionFactory =
+            (Uri requestUri, String? proxyHost, int? proxyPort) {
+          return Socket.startConnect(ip, port);
+        };
+        return client;
+      },
+    );
+
+    try {
+      final response = await downloadDio.getUri(
+        uri,
+        options: Options(
+          headers: {HttpHeaders.hostHeader: host},
+          responseType: ResponseType.bytes,
+        ),
+        onReceiveProgress: onProgress != null
+            ? (int received, int total) {
+                if (total > 0) onProgress(received / total);
+              }
+            : null,
+      );
+      final data = response.data;
+      if (data is Uint8List) return data;
+      if (data is List<int>) return Uint8List.fromList(data);
+      throw DnsSafeNetworkException(
+        '下载响应类型异常: ${data.runtimeType}',
+        host: host,
+        uri: uri.toString(),
+      );
+    } on DioException catch (e) {
+      throw DnsSafeNetworkException(
+        _dioErrorMessage(e),
+        host: host,
+        uri: uri.toString(),
+        cause: e,
+      );
+    } on SocketException catch (e) {
+      throw DnsSafeNetworkException(
+        'Socket 连接失败: ${e.message}',
+        host: host,
+        uri: uri.toString(),
+        cause: e,
+      );
+    } on HandshakeException catch (e) {
+      throw DnsSafeNetworkException(
+        'TLS 握手失败: ${e.message}',
+        host: host,
+        uri: uri.toString(),
+        cause: e,
+      );
+    } catch (e) {
+      throw DnsSafeNetworkException(
+        '下载异常: $e',
+        host: host,
+        uri: uri.toString(),
+        cause: e,
+      );
+    } finally {
+      downloadDio.close();
+    }
+  }
+
+  Future<Uint8List> _downloadDirect(
+    Uri uri, {
+    void Function(double progress)? onProgress,
+    Duration? receiveTimeout,
+  }) async {
+    final downloadDio = Dio(
+      BaseOptions(
+        connectTimeout: connectTimeout,
+        receiveTimeout: receiveTimeout ?? DnsSafeNetworkService.receiveTimeout,
+        responseType: ResponseType.bytes,
+        followRedirects: true,
+        maxRedirects: 5,
+        validateStatus: (code) => code != null && code >= 200 && code < 300,
+        headers: {HttpHeaders.userAgentHeader: 'TransToolbox/1.0'},
+      ),
+    );
+
+    try {
+      final response = await downloadDio.getUri(
+        uri,
+        options: Options(responseType: ResponseType.bytes),
+        onReceiveProgress: onProgress != null
+            ? (int received, int total) {
+                if (total > 0) onProgress(received / total);
+              }
+            : null,
+      );
+      final data = response.data;
+      if (data is Uint8List) return data;
+      if (data is List<int>) return Uint8List.fromList(data);
+      throw DnsSafeNetworkException(
+        '下载响应类型异常: ${data.runtimeType}',
+        host: uri.host,
+        uri: uri.toString(),
+      );
+    } on DioException catch (e) {
+      throw DnsSafeNetworkException(
+        _dioErrorMessage(e),
+        host: uri.host,
+        uri: uri.toString(),
+        cause: e,
+      );
+    } finally {
+      downloadDio.close();
     }
   }
 

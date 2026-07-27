@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/foundation.dart';
 
+import 'dns_safe_network_service.dart';
 import 'update_service.dart' show baseUpdateUrl;
 
 /// R2 统一的 HRT Tracker 热更新服务
@@ -60,17 +60,11 @@ class TrackerUpdateService {
       debugPrint(
           '[TrackerUpdateService] Checking for updates at $latestJsonUrl...');
 
-      final response = await http
-          .get(Uri.parse(latestJsonUrl))
+      final bodyStr = await DnsSafeNetworkService.instance
+          .fetchSafe(latestJsonUrl)
           .timeout(const Duration(seconds: 15));
 
-      if (response.statusCode != 200) {
-        debugPrint(
-            '[TrackerUpdateService] Failed to fetch tracker_latest.json: ${response.statusCode}');
-        return;
-      }
-
-      final data = json.decode(response.body) as Map<String, dynamic>;
+      final data = json.decode(bodyStr) as Map<String, dynamic>;
       final String latestFile = data['latest_file'] ?? '';
       final String tag = data['tag'] ?? '';
 
@@ -102,15 +96,10 @@ class TrackerUpdateService {
       final tempDir = await getTemporaryDirectory();
       final tempZipFile = File('${tempDir.path}/hrt_tracker_update.zip');
 
-      final zipResponse =
-          await http.get(Uri.parse(zipUrl)).timeout(const Duration(minutes: 5));
-      if (zipResponse.statusCode != 200) {
-        debugPrint(
-            '[TrackerUpdateService] Failed to download zip: ${zipResponse.statusCode}');
-        return;
-      }
+      final zipBytes = await DnsSafeNetworkService.instance
+          .downloadBytes(zipUrl, receiveTimeout: const Duration(minutes: 5));
 
-      await tempZipFile.writeAsBytes(zipResponse.bodyBytes, flush: true);
+      await tempZipFile.writeAsBytes(zipBytes, flush: true);
       debugPrint(
           '[TrackerUpdateService] Downloaded zip to ${tempZipFile.path}. Unzipping...');
 

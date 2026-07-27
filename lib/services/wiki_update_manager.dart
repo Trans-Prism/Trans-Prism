@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dns_safe_network_service.dart';
 import 'update_service.dart' show baseUpdateUrl;
 import 'wiki_offline_service.dart';
 
@@ -34,8 +32,6 @@ class WikiUpdateManager {
 
   static const Duration _timeout = Duration(seconds: 15);
   static const Duration _downloadTimeout = Duration(minutes: 5);
-
-  final Dio _dio = Dio();
 
   // ==================================================================
   // 版本日志（兼容旧方法，委托到 WikiOfflineService）
@@ -99,16 +95,12 @@ class WikiUpdateManager {
   Future<_R2BuilderLatestJson?> _fetchLatestJson(String wikiType) async {
     try {
       final url = '$baseUpdateUrl/builder/latest/${wikiType}_latest.json';
-      debugPrint('[$wikiType] 正在从 R2 获取版本信息: $url');
+      debugPrint('[$wikiType] 正在从 R2 获取版本信息 (DoH): $url');
 
-      final response = await http.get(Uri.parse(url)).timeout(_timeout);
+      final bodyStr =
+          await DnsSafeNetworkService.instance.fetchSafe(url).timeout(_timeout);
 
-      if (response.statusCode != 200) {
-        debugPrint('[$wikiType] R2 返回非 200: ${response.statusCode}');
-        return null;
-      }
-
-      final body = json.decode(response.body) as Map<String, dynamic>;
+      final body = json.decode(bodyStr) as Map<String, dynamic>;
       final latestFile = body['latest_file'] as String?;
       final tag = body['tag'] as String?;
 
@@ -245,25 +237,21 @@ class WikiUpdateManager {
       final tempFile = File(tempPath);
       if (tempFile.existsSync()) tempFile.deleteSync();
 
-      // ── R2 直链下载（无镜像、无分流）──
-      onStatus?.call('正在连接 R2 边缘节点...');
-      debugPrint("[$wikiType] 从 R2 直链下载: $downloadUrl");
+      // ── R2 直链下载（DoH 抗污染，无镜像、无分流）──
+      onStatus?.call('正在连接 R2 边缘节点 (DoH)...');
+      debugPrint("[$wikiType] 从 R2 直链下载 (DoH): $downloadUrl");
 
-      await _dio.download(downloadUrl, tempPath,
-          options: Options(
-            connectTimeout: _timeout,
-            sendTimeout: _timeout,
-            receiveTimeout: _downloadTimeout,
-          ),
-          onReceiveProgress: onProgress != null
-              ? (count, total) {
-                  if (total > 0) {
-                    onProgress(count / total.clamp(1, total));
-                    onStatus?.call(
-                        '下载中 ${(count * 100 / total).toStringAsFixed(0)}%...');
-                  }
-                }
-              : null);
+      final zipBytes = await DnsSafeNetworkService.instance.downloadBytes(
+        downloadUrl,
+        onProgress: onProgress != null
+            ? (p) {
+                onProgress(p);
+                onStatus?.call('下载中 ${(p * 100).toStringAsFixed(0)}%...');
+              }
+            : null,
+        receiveTimeout: _downloadTimeout,
+      );
+      await tempFile.writeAsBytes(zipBytes, flush: true);
 
       debugPrint("[$wikiType] R2 下载成功");
 

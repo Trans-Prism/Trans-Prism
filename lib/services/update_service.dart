@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'dns_safe_network_service.dart';
 
 /// R2 边缘节点全局加速域名
 const String baseUpdateUrl = 'https://updates.55114514.xyz';
@@ -121,17 +122,15 @@ class UpdateService {
       final filePath = '${tempDir.path}/$fileName';
       final file = File(filePath);
 
-      debugPrint('📥 开始下载 APK: $downloadUrl');
+      debugPrint('📥 开始下载 APK (DoH): $downloadUrl');
 
-      final response =
-          await http.get(Uri.parse(downloadUrl)).timeout(_downloadTimeout);
+      final bytes = await DnsSafeNetworkService.instance.downloadBytes(
+        downloadUrl,
+        onProgress: onProgress,
+        receiveTimeout: _downloadTimeout,
+      );
 
-      if (response.statusCode != 200) {
-        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
-        return null;
-      }
-
-      await file.writeAsBytes(response.bodyBytes, flush: true);
+      await file.writeAsBytes(bytes, flush: true);
       onProgress?.call(1.0);
 
       debugPrint('✅ APK 下载完成: $filePath');
@@ -153,17 +152,15 @@ class UpdateService {
       final filePath = '${tempDir.path}/$fileName';
       final file = File(filePath);
 
-      debugPrint('📥 开始下载 ZIP: $downloadUrl');
+      debugPrint('📥 开始下载 ZIP (DoH): $downloadUrl');
 
-      final response =
-          await http.get(Uri.parse(downloadUrl)).timeout(_downloadTimeout);
+      final bytes = await DnsSafeNetworkService.instance.downloadBytes(
+        downloadUrl,
+        onProgress: onProgress,
+        receiveTimeout: _downloadTimeout,
+      );
 
-      if (response.statusCode != 200) {
-        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
-        return null;
-      }
-
-      await file.writeAsBytes(response.bodyBytes, flush: true);
+      await file.writeAsBytes(bytes, flush: true);
       onProgress?.call(1.0);
 
       debugPrint('✅ ZIP 下载完成: $filePath');
@@ -187,30 +184,15 @@ class UpdateService {
       final filePath = '${tempDir.path}/$fileName';
       final file = File(filePath);
 
-      debugPrint('📥 开始流式下载: $downloadUrl');
+      debugPrint('📥 开始流式下载 (DoH): $downloadUrl');
 
-      final request = http.Request('GET', Uri.parse(downloadUrl));
-      final response = await http.Client().send(request);
+      final bytes = await DnsSafeNetworkService.instance.downloadBytes(
+        downloadUrl,
+        onProgress: onProgress,
+        receiveTimeout: _downloadTimeout,
+      );
 
-      if (response.statusCode != 200) {
-        debugPrint('⚠️ 下载失败: HTTP ${response.statusCode}');
-        return null;
-      }
-
-      final contentLength = response.contentLength ?? -1;
-      int bytesReceived = 0;
-      final sink = file.openWrite();
-
-      await for (final chunk in response.stream) {
-        sink.add(chunk);
-        bytesReceived += chunk.length;
-        if (contentLength > 0) {
-          onProgress(bytesReceived / contentLength);
-        }
-      }
-
-      await sink.flush();
-      await sink.close();
+      await file.writeAsBytes(bytes, flush: true);
       onProgress(1.0);
 
       debugPrint('✅ 流式下载完成: $filePath');
@@ -225,35 +207,23 @@ class UpdateService {
   // R2 API 交互
   // ──────────────────────────────────────────────
 
-  /// 从 R2 获取指定类型的 latest.json
+  /// 从 R2 获取指定类型的 latest.json（走 DoH 抗污染）
   Future<_R2LatestJson?> _fetchLatestJson(String type) async {
     try {
       final url = '$baseUpdateUrl/$type/latest/latest.json';
-      debugPrint('🔍 正在检查 $type 更新: $url');
+      debugPrint('🔍 正在检查 $type 更新 (DoH): $url');
 
-      final response = await http.get(Uri.parse(url)).timeout(_apiTimeout);
-
-      if (response.statusCode != 200) {
-        debugPrint('⚠️ R2 返回非 200: ${response.statusCode}');
-        return null;
-      }
+      final body = await DnsSafeNetworkService.instance
+          .fetchSafe(url)
+          .timeout(_apiTimeout);
 
       debugPrint('✅ $type 版本信息获取成功');
-      return _parseLatestJson(response.body);
-    } on SocketException catch (e) {
-      debugPrint('🚨 网络连接失败 (SocketException): $e');
-      return null;
-    } on HttpException catch (e) {
-      debugPrint('🚨 HTTP 协议异常 (HttpException): $e');
-      return null;
-    } on FormatException catch (e) {
-      debugPrint('🚨 JSON 解析失败 (FormatException): $e');
-      return null;
+      return _parseLatestJson(body);
     } on TimeoutException catch (e) {
       debugPrint('🚨 API 请求超时 (TimeoutException): $e');
       return null;
     } catch (e) {
-      debugPrint('🚨 未预期的异常: $e');
+      debugPrint('🚨 R2 网络请求失败: $e');
       return null;
     }
   }

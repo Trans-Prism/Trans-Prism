@@ -20,7 +20,7 @@
 | **状态管理** | 原生 `StatefulWidget` + `setState`；仅 [`ThemeService`](lib/services/theme_service.dart:7) `extends ChangeNotifier` | 无第三方状态库 |
 | **本地存储** | `SharedPreferences`（JSON Key-Value） | [`pubspec.yaml`](pubspec.yaml:20) |
 | **路由** | 命令式 `Navigator.push`（无 go_router） | [`main.dart`](lib/main.dart:1257) |
-| **网络** | `dio` + `http` + 自研 DoH 抗污染 | [`dns_safe_network_service.dart`](lib/services/dns_safe_network_service.dart:11) |
+| **网络** | `dio` + 自研 DoH 抗污染（R2 三路热更新 + GitHub API 全部走 `DnsSafeNetworkService`，标准 DNS 优先 + DoH 兜底） | [`dns_safe_network_service.dart`](lib/services/dns_safe_network_service.dart:11)（含 [`downloadBytes()`](lib/services/dns_safe_network_service.dart:71) + `instance` 单例） |
 | **Android 构建配置** | `compileSdk = 36`, `targetSdk = 36`, `ndkVersion = "28.2.13676358"` | [`android/app/build.gradle:28`](android/app/build.gradle:28) |
 
 
@@ -161,6 +161,8 @@
 1. **首页与详情页用药数据各自直读 SharedPreferences**：`MedicationStockSummary` 绕过 Service 直读 SP key `drug_inventory_list`，存在双写口子。
 2. **R2 命名空间分裂**：`/app/` 与 `/builder/` 路径规则不同，新增分发类目时容易混淆。
 3. **罩杯发育记录 JSON 整体读写**（非增量）：记录增多后序列化/反序列化成本线性增长，当前数据量可忽略。
+4. **数据备份分裂（待修复）**：[`DataMigrationService`](lib/utils/data_migration_service.dart:25) 统一备份跨 Dart/JS 边界提取 Oyama SPA `localStorage` 依赖 React fiber 树遍历（脆弱）且后台 WebView 初始化存在竞态，**无法可靠导出 PK 模拟数据**。当前需分两步操作（主应用 SP + Oyama 各导出/导入），已列为待修复项，修复方案见 [`docs/DATA_EXPORT_COMPATIBILITY.md`](docs/DATA_EXPORT_COMPATIBILITY.md:1)。
+5. **模拟器 + 宿主机 TUN fake-ip 双重不可路由**：标准 DNS 返回 fake-ip（不经 TUN）+ DoH 解析真实 IP 后直连遭 TUN 干扰，此组合应用层无法修复。真机 TUN 代理因流量经 TUN 拦截故标准 DNS 路径有效，模拟器需调整代理 DNS 模式或将域名设为直连。
 
 ---
 
