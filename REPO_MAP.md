@@ -48,6 +48,8 @@
 | [`tracker_update_service.dart`](lib/services/tracker_update_service.dart:31) | Tracker PWA 热更新下载器 |
 | [`tracker_path_resolver.dart`](lib/utils/tracker_path_resolver.dart:1) | Tracker 文件路径解析 |
 
+> **内置基线版本**：`assets/hrt_tracker/` 打包的 HRT Tracker SPA 构建产物对应 Trans-Prism-Builder release `tracker-2026-07-22`（上游 Oyama `v1.3.0-stable` 衍生构建）。运行时 [`_LocalTrackerServer`](lib/screens/tracker_screen.dart:42) 优先从沙盒热更新目录读取，其次回退到此内置基线。基线升级时仅需整体替换该目录并核对 [`index.html`](assets/hrt_tracker/index.html:12) 内的资源哈希引用，无需改动 Dart 代码或 [`pubspec.yaml`](pubspec.yaml:72)（assets 以目录通配声明）。
+
 ### 3. 嗓音训练
 
 | 文件 | 职责 |
