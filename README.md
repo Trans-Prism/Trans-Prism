@@ -81,21 +81,6 @@
 
 > 📋 此问题已列为待修复项，技术分析与修复方案详见 [`TODO.md`](TODO.md) 与 [`docs/DATA_EXPORT_COMPATIBILITY.md`](docs/DATA_EXPORT_COMPATIBILITY.md)。
 
-### 🟡 模拟器 + 宿主机 TUN 代理可能导致 R2 连接失败
-
-应用三路热更新（APK/Wiki/Tracker）已全部接入 DoH 抗污染层（[标准 DNS 优先 + DoH 兜底](lib/services/dns_safe_network_service.dart:71)），覆盖正常网络与真机 TUN 代理场景。但在**模拟器 + 宿主机 TUN 代理（fake-ip 模式）**这一特殊组合下存在双重不可路由：
-
-- 标准 DNS 返回 fake-ip（`198.18.x.x`），模拟器流量不经宿主机 TUN，不可路由
-- DoH 解析到真实 Cloudflare IP 后直连，又被宿主机 TUN 干扰（连接重置 / HTTP 400）
-
-这是模拟器网络拓扑限制，应用层无法修复。**真机不受此影响**（真机 TUN 代理会拦截所有流量，标准 DNS 路径即可正常工作）。
-
-**模拟器下的临时解决方案**（任选其一）：
-1. 在代理规则中将 `updates.55114514.xyz` 设为**直连**（不走代理），让 DNS 返回真实 IP
-2. 将代理 DNS 模式从 `fake-ip` 改为 `redir-host`
-3. 在模拟器中配置真实 DNS（如 `8.8.8.8`）而非使用宿主机 DNS
-4. 使用真机测试
-
 ---
 
 ## 🚀 快速使用
