@@ -26,7 +26,7 @@
 
 **Trans Prism（稳态光盒）** 是一款致力于为跨性别群体提供安全、客观、无审查的日常辅助工具的开源 App。采用**在线/离线双擎架构**与**纯本地物理持久化**策略，核心知识库和极其隐私的生理数据不依赖任何第三方服务器。
 
-> Created via Deepseek, Gemini, Claude, GLM, Mimo Vibe Coding（按使用率排序）
+> Created via Deepseek, GLM, Gemini, Claude, Mimo Vibe Coding（按使用率排序）
 
 ---
 
