@@ -373,17 +373,11 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
               children: [
                 title,
                 const SizedBox(height: 8),
-                // 简约风：实色填充 Container + 简约边框。
+                // 简约风：实色填充 Container（无边框，对照工作台简约搜索框）。
                 Container(
                   decoration: BoxDecoration(
                     color: inputFill,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF333338)
-                          : const Color(0xFFD1D1D6),
-                      width: 0.5,
-                    ),
                   ),
                   padding: EdgeInsets.zero,
                   child: TextField(
@@ -606,17 +600,13 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
   }) {
     final privacyBg =
         isDark ? const Color(0xFF24242C) : const Color(0xFFF2F2F7);
-    // 简约风：实色卡 + 品牌色标题块 + 深度阴影。
+    // 简约风：实色卡 + 柔弥散阴影（对照首页/工作台简约卡片：实色 + 圆角 + 阴影，无边框）。
     return Material(
       color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isDark ? const Color(0xFF333338) : const Color(0xFFD1D1D6),
-            width: 0.5,
-          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),

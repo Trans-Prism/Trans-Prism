@@ -175,6 +175,12 @@ class _LiquidGlassNavState extends State<LiquidGlassNav>
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(barH / 2),
+                        // 暗色模式加极弱白色高光边，与上方卡片切开层次（防黏连）。
+                        border: isDark
+                            ? Border.all(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                width: 0.5)
+                            : null,
                         boxShadow: [
                           BoxShadow(
                             color: tokens.shadowColor,

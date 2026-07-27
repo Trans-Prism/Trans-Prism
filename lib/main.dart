@@ -1400,6 +1400,11 @@ class _MainDashboardState extends State<MainDashboard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(32),
+            // 暗色模式加极弱白色高光边，与上方卡片切开层次（防黏连）。
+            border: isDark
+                ? Border.all(
+                    color: Colors.white.withValues(alpha: 0.06), width: 0.5)
+                : null,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
@@ -1516,8 +1521,10 @@ class _MainDashboardState extends State<MainDashboard> {
                 padding: const EdgeInsets.only(right: 16),
                 child: GlassSurface(
                   onTap: _showHomeModuleSettings,
-                  solidColor: widget.themeService.themeColor
-                      .withValues(alpha: isDark ? 0.15 : 0.08),
+                  // 暗色模式用 white10% 底 + white70 文字，更通透高级（替代浑浊暗青）。
+                  solidColor: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : widget.themeService.themeColor.withValues(alpha: 0.08),
                   borderRadius: 20,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1528,9 +1535,8 @@ class _MainDashboardState extends State<MainDashboard> {
                       Icon(
                         Icons.dashboard_customize_rounded,
                         size: 16,
-                        color: isDark
-                            ? const Color(0xFF7DD9FB)
-                            : const Color(0xFF00A2DF),
+                        color:
+                            isDark ? Colors.white70 : const Color(0xFF00A2DF),
                       ),
                       const SizedBox(width: 5),
                       Text(
@@ -1538,9 +1544,8 @@ class _MainDashboardState extends State<MainDashboard> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF7DD9FB)
-                              : const Color(0xFF00A2DF),
+                          color:
+                              isDark ? Colors.white70 : const Color(0xFF00A2DF),
                         ),
                       ),
                     ],
@@ -1603,8 +1608,8 @@ class HomeTab extends StatelessWidget {
     // HRT 标题：只要药物存量或血药浓度任一可见就显示
     final showHrtSection = showMedStock || showPkSim;
 
-    final secondaryColor =
-        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    // 暗色模式次要文本/图标用 white70 保证对比度（避免深灰融进背景）。
+    final secondaryColor = isDark ? Colors.white70 : const Color(0xFF8A8A86);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
@@ -1830,8 +1835,7 @@ class HomeTab extends StatelessWidget {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final secondaryColor =
-        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final secondaryColor = isDark ? Colors.white70 : const Color(0xFF8A8A86);
 
     // 使用 GlassSurface：与全域卡片（_buildSettingsTile / MedicationStockSummary）
     // 统一玻璃材质与阴影。GlassCard 的 Material(clipBehavior: antiAlias) 会裁掉
@@ -2014,7 +2018,7 @@ class _ProfileTabState extends State<ProfileTab> {
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
     final themeService = widget.themeService;
     final secondaryTextColor =
-        isDark ? const Color(0xFF98989E) : const Color(0xFF8A8A86);
+        isDark ? Colors.white70 : const Color(0xFF8A8A86);
     final cardBorderColor =
         isDark ? Colors.grey.shade800 : Colors.grey.shade200;
     final cardBg = isDark ? const Color(0xFF1C1C1A) : Colors.white;
@@ -2261,8 +2265,7 @@ class _ProfileTabState extends State<ProfileTab> {
     Widget? trailing,
     required VoidCallback onTap,
   }) {
-    final secondaryColor =
-        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    final secondaryColor = isDark ? Colors.white70 : const Color(0xFF8A8A86);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

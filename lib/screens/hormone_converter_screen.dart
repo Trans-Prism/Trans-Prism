@@ -233,8 +233,10 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _isLiquid = GlassTheme.of(context).isEnabled;
     return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF1C1C1A) : const Color(0xFFF2F2F7),
+      // 简约风背景 0xFFF9F8F6（暖白）；毛玻璃背景 0xFFF2F2F7（iOS grouped）。
+      backgroundColor: isDark
+          ? const Color(0xFF1C1C1A)
+          : (_isLiquid ? const Color(0xFFF2F2F7) : const Color(0xFFF9F8F6)),
       appBar: AppBar(
         title: Text(
           '激素换算器',
@@ -285,7 +287,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         itemBuilder: (context, index) {
           final hormone = hormones[index];
           final isSelected = hormone.id == _selectedHormone.id;
-          // 简约风：实色胶囊，选中=深底白字，未选=透明灰字，无阴影无玻璃。
+          // 简约风：实色胶囊，选中=深底白字，未选=透明灰字，无边框（对照工作台分类药丸）。
           return Material(
             color: Colors.transparent,
             child: InkWell(
@@ -299,16 +301,10 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
                       ? (isDark
                           ? const Color(0xFFEDEDF0)
                           : const Color(0xFF333333))
-                      : Colors.transparent,
+                      : (isDark
+                          ? const Color(0xFF2A2A28)
+                          : const Color(0xFFF0EFEC)),
                   borderRadius: BorderRadius.circular(18),
-                  border: isSelected
-                      ? null
-                      : Border.all(
-                          color: isDark
-                              ? const Color(0xFF333338)
-                              : const Color(0xFFD1D1D6),
-                          width: 0.8,
-                        ),
                 ),
                 child: Text(
                   hormone.name,
@@ -487,27 +483,18 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
         isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
-    // 简约风：实色圆角块 + 焦点态品牌色边框 + 柔阴影。
+    // 简约风：实色圆角块（对照首页/工作台简约卡片：实色 + 圆角 + 柔弥散阴影，无边框）。
+    // 焦点态用更浅底色区分，不引入边框。
     return Material(
       color: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
         decoration: BoxDecoration(
+          // 配色对照首页/工作台简约卡片：卡片白底/0xFF24242C；焦点态用工作台搜索底色区分。
           color: isFocused
-              ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
-              : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
+              ? (isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC))
+              : (isDark ? const Color(0xFF24242C) : Colors.white),
           borderRadius: BorderRadius.circular(16),
-          border: isFocused
-              ? Border.all(
-                  color: const Color(0xFFF5A9B8),
-                  width: 1.5,
-                )
-              : Border.all(
-                  color: isDark
-                      ? const Color(0xFF333338)
-                      : const Color(0xFFD1D1D6),
-                  width: 0.5,
-                ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.06),
@@ -544,8 +531,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     // 毛玻璃：GlassSurface 子表面，焦点态品牌色折射边。
     return GlassSurface(
       solidColor: isFocused
-          ? (isDark ? const Color(0xFF333338) : const Color(0xFFEBEBED))
-          : (isDark ? const Color(0xFF24242C) : const Color(0xFFEDEDF0)),
+          ? (isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC))
+          : (isDark ? const Color(0xFF24242C) : Colors.white),
       borderColor: isFocused ? const Color(0xFFF5A9B8) : null,
       borderRadius: 20,
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
@@ -652,7 +639,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final units = _selectedHormone.units;
-    // 简约风：实色 Container 触发器 + 简约边框。
+    // 简约风：实色 Container 触发器（无边框，对照工作台简约药丸）。
     return PopupMenuButton<String>(
       initialValue: units.any((u) => u.symbol == currentUnit)
           ? currentUnit
@@ -697,12 +684,9 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
+            // 配色对照工作台简约药丸：0xFFF0EFEC / 0xFF2A2A28。
+            color: isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? const Color(0xFF3A3A40) : const Color(0xFFD1D1D6),
-              width: 0.5,
-            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -777,7 +761,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         );
       }).toList(),
       child: GlassSurface(
-        solidColor: isDark ? const Color(0xFF333338) : const Color(0xFFE8E8ED),
+        solidColor: isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC),
         borderRadius: 12,
         shadow: false,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -906,11 +890,12 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
 
     final bool dimmed = !isMatched && hasAnyMatch;
 
+    // 配色对照首页简约卡片：常态白底/0xFF24242C；dimmed 用工作台搜索底色；命中保留品牌色微着色。
     final Color cardBg = isMatched
         ? palette.tintBg
         : dimmed
-            ? (isDark ? const Color(0xFF24242C) : const Color(0xFFEBEBED))
-            : (isDark ? const Color(0xFF24242C) : palette.bgNormal);
+            ? (isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC))
+            : (isDark ? const Color(0xFF24242C) : Colors.white);
     final Color contentColor = isMatched
         ? palette.accent
         : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93));
@@ -926,7 +911,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         ? palette.accent
         : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF999999));
 
-    // 简约风：实色 AnimatedContainer + 命中态品牌色边框 + 深度阴影。
+    // 简约风：实色卡片（对照首页/工作台简约卡片：实色 + 圆角 + 柔弥散阴影，无边框）。
+    // 命中态保留品牌色边框 + 深度阴影（焦点高亮）；未命中态无边框 + 极轻阴影。
     return AnimatedScale(
       duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutBack,
@@ -938,14 +924,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: isMatched
-              ? Border.all(color: palette.solidBg, width: 2.0)
-              : Border.all(
-                  color: isDark
-                      ? const Color(0xFF333338)
-                      : const Color(0xFFD1D1D6),
-                  width: 0.5,
-                ),
+          border:
+              isMatched ? Border.all(color: palette.solidBg, width: 2.0) : null,
           boxShadow: isMatched
               ? [
                   BoxShadow(
@@ -1020,8 +1000,8 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
     final Color cardBg = isMatched
         ? palette.tintBg
         : dimmed
-            ? (isDark ? const Color(0xFF24242C) : const Color(0xFFEBEBED))
-            : (isDark ? const Color(0xFF24242C) : palette.bgNormal);
+            ? (isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC))
+            : (isDark ? const Color(0xFF24242C) : Colors.white);
     final Color contentColor = isMatched
         ? palette.accent
         : (isDark ? const Color(0xFF8E8E96) : const Color(0xFF8E8E93));
@@ -1092,7 +1072,7 @@ class _HormoneConverterScreenState extends State<HormoneConverterScreen> {
           height: 44,
           decoration: BoxDecoration(
             color: isMatched
-                ? palette.accent.withOpacity(0.18)
+                ? palette.accent.withValues(alpha: 0.18)
                 : (isDark ? const Color(0xFF333338) : const Color(0xFFE5E5EA)),
             borderRadius: BorderRadius.circular(14),
           ),
