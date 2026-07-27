@@ -52,4 +52,6 @@ android/key.properties
 *.jks
 
 # Android memory dumps
-*.hprof
+*.hprof-e 
+# Android build reports
+android/build/
