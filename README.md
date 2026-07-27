@@ -11,7 +11,8 @@
     <a href="https://github.com/daanser/Trans-Prism/network/members"><img src="https://img.shields.io/github/forks/daanser/Trans-Prism.svg?style=social&label=Fork" alt="GitHub forks"></a>
   </p>
   <p>
-    <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter"></a>
+    <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.27%2B-02569B?logo=flutter" alt="Flutter"></a>
+    <a href="https://dart.dev/"><img src="https://img.shields.io/badge/Dart-%E2%89%A5%203.6.2%20%3C4.0.0-0175C2?logo=dart" alt="Dart SDK: >=3.6.2 <4.0.0"></a>
     <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
     <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="https://github.com/Trans-Prism/Trans-Prism/releases"><img src="https://img.shields.io/github/v/release/Trans-Prism/Trans-Prism?include_prereleases&color=%235BCEFA&label=Version" alt="Version"></a>
@@ -30,6 +31,9 @@
 ---
 
 ## ✨ 核心功能
+
+### 🧭 首次启动向导 (Onboarding Wizard)
+首次打开 App 时以「稳态光盒向导」引导新用户完成初始化：欢迎页 → 权限说明（声明公益 / 无广告 / 离线优先 / 不上传，再触发系统级通知权限申请，可拒绝继续）→ 性别认同 → 明暗模式（☀️ 折射白昼 / 🌙 吸收余光 / 🌓 随光流转）→ 主题风格（简约 / 毛玻璃）→ 称呼前缀与昵称 → 免责协议 → 「少女祈祷中…」装饰过渡 → 一切就绪。任意步骤点「跳过」即套用默认值（MtF + 跟随系统 + 简约风 + 无前缀 + 伙伴）并完成。老用户（已通过旧免责流程且已存性别认同）自动迁移、不再被打扰。所有偏好实时预览并写入 [`SharedPreferences`](lib/storage/gender_identity_repository.dart:6)，入口由 [`main.dart`](lib/main.dart:704) 的 `onboarding_completed` 标志位单分支判定。
 
 ### 💊 药物存量仪表盘 & 智能调度提醒
 追踪 HRT 药物库存与安全续航天数。**Chronos 智能调度引擎**支持小时/天/周/月四种给药周期——从口服（12h）、外用凝胶到针剂（7天）、GnRHa（28天/84天）全覆盖。基于绝对时间戳的 OS 级通知，点击"已服药"自动扣减库存、推算下次给药时间并重设系统闹钟。
@@ -54,6 +58,9 @@
       |
 ### 🎨 SVG 图解资源库
 跨性别主题 SVG 图标库（Noto/OpenMoji/Twemoji 三种风格），支持导出 PNG/JPEG/WEBP、分享、存相册。
+
+### 🪟 双风格主题系统
+内置 **简约风** 与 **毛玻璃** 两套可切换主题（「我的 → 主题风格」），选择持久化于本地。毛玻璃风格基于 [`liquid_glass_easy`](https://pub.dev/packages/liquid_glass_easy) 渲染包 + Impeller 后端实现 Snell 折射、光学边框与色散边缘；简约风为实色 + 软弥散阴影。组件库「双模自适应」——`GlassCard`/`GlassSurface`/`GlassSheet`/`GlassAppBar`/`LiquidGlassNav` 等在两风格间无缝切换，业务页调用点改动极小。激素换算器与罩杯计算器采用「页面级双风格分离」以追求像素级统一。支持无障碍降级（实心化）与暗色模式。
 
 ---
 
@@ -100,7 +107,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 
 | 维度 | 方案 |
 |------|------|
-| 框架 | Flutter 3.x / Dart ≥3.4 |
+| 框架 | Flutter 3.27+ / Dart `>=3.6.2 <4.0.0` |
 | 状态管理 | 原生 `StatefulWidget` + `setState`（仅主题一处 ChangeNotifier） |
 | 本地存储 | `SharedPreferences`（JSON Key-Value）+ 文件系统（离线包） |
 | 网络 | `dio` + `http` + 自研 DoH 抗污染 |
@@ -110,6 +117,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 | 通知 | `flutter_local_notifications` + `timezone` |
 | 更新分发 | Cloudflare R2 边缘节点 `updates.55114514.xyz` |
 | 本地服务器 | `shelf`（PK 模拟器内嵌 HttpServer） |
+| 主题 | 双风格（简约风 + 毛玻璃）+ `liquid_glass_easy` 渲染包 + Impeller；`GlassTheme`（InheritedWidget）+ `GlassTokens` |
 
 ---
 
@@ -129,14 +137,15 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 
 | 想做什么 | 先去哪个文件 |
 |----------|-------------|
+| 改首次启动向导 | [`onboarding_wizard.dart`](lib/screens/onboarding/onboarding_wizard.dart:38) / [`main.dart`](lib/main.dart:704)（`AppRootController` 三态判定 + 迁移分支）|
 | 改用药/提醒 | [`medication_service.dart`](lib/services/medication_service.dart:25) / [`notification_service.dart`](lib/services/notification_service.dart:14) |
 | 改 PK 模拟 | [`tracker_screen.dart`](lib/screens/tracker_screen.dart:189)（⚠️ 算法在 WebView JS 中，非 Dart）|
 | 改嗓音训练 | [`pitch_detection_service.dart`](lib/services/pitch_detection_service.dart:16) / `screens/voice_training/` |
 | 改 Wiki 知识库 | [`wiki_sync_service.dart`](lib/services/wiki_sync_service.dart:37) / [`wiki_update_manager.dart`](lib/services/wiki_update_manager.dart:31) |
 | 改医疗名录 | [`medical_directory_service.dart`](lib/services/medical_directory_service.dart:22) |
 | 改激素换算 | [`hormone_converter_logic.dart`](lib/utils/hormone_converter_logic.dart:1)（纯函数）|
-| 改罩杯计算 | [`bra_calculator.dart`](lib/services/bra_calculator.dart:1)（纯函数）/ [`bra_calculator_page.dart`](lib/screens/bra_calculator_page.dart:1)（UI）|
-| 改主题 | [`theme_service.dart`](lib/services/theme_service.dart:7) |
+| 改罩杯计算 | [`bra_calculator.dart`](lib/services/bra_calculator.dart:1)（纯函数）/ [`bra_calculator_page.dart`](lib/screens/bra_calculator_page.dart:14)（UI，双风格分离）|
+| 改主题/玻璃组件 | [`theme_service.dart`](lib/services/theme_service.dart:7) / [`glass_tokens.dart`](lib/theme/glass_tokens.dart:18) / [`glass_theme.dart`](lib/theme/glass_theme.dart:13) / [`glass_surface.dart`](lib/widgets/glass_surface.dart:27) |
 | 改更新逻辑 | [`update_service.dart`](lib/services/update_service.dart:52) |
 | 了解全貌 | [`REPO_MAP.md`](REPO_MAP.md)（AI Agent 导航）|
 

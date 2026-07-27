@@ -8,8 +8,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'models/gender_identity.dart';
 import 'screens/about_screen.dart';
 import 'screens/bra_calculator_page.dart';
-import 'screens/disclaimer_page.dart';
 import 'screens/disclaimer_view_screen.dart';
+import 'screens/onboarding/onboarding_wizard.dart';
 import 'screens/hormone_converter_screen.dart';
 import 'screens/image_converter_screen.dart';
 import 'screens/medical_directory/medical_directory_list_screen.dart';
@@ -23,7 +23,6 @@ import 'services/home_module_visibility.dart';
 import 'services/image_export_service.dart';
 import 'services/resource_service.dart';
 import 'services/notification_service.dart';
-import 'services/permission_manager.dart';
 import 'services/update_service.dart';
 import 'services/wiki_sync_service.dart';
 import 'services/theme_service.dart';
@@ -706,7 +705,7 @@ class _AppRootControllerState extends State<AppRootController> {
   final GenderIdentityRepository _genderRepository = GenderIdentityRepository();
   final DisclaimerRepository _disclaimerRepository = DisclaimerRepository();
   String? _genderIdentity;
-  bool _disclaimerAccepted = false;
+  bool _onboardingCompleted = false;
   bool _isLoading = true;
 
   // 用户问候设置
@@ -728,16 +727,11 @@ class _AppRootControllerState extends State<AppRootController> {
   }
 
   Future<void> _initNotifications() async {
-    // 1. 初始化 Chronos 通知引擎
+    // 仅初始化 Chronos 通知引擎（无系统弹窗）。
+    // 权限申请（通知 / 精确闹钟 / 忽略电池优化）已移至 Onboarding 向导的
+    // 「隐私与权限」步骤，由用户明确点击「授权并继续」后触发，
+    // 避免一打开 App 就弹出系统级权限索求。
     await NotificationService().initialize();
-
-    // 2. 请求基础通知权限（Android 13+）
-    await NotificationService().requestPermission();
-
-    // 3. 批量请求所有关键保活权限（通知 + 精确闹钟 + 忽略电池优化）
-    final permResult =
-        await PermissionManager().requestAllCriticalPermissions();
-    debugPrint('📋 [main] 权限请求总览: $permResult');
   }
 
   /// 初始化 JSON 驱动的资源服务并运行搜索测试
@@ -830,14 +824,31 @@ class _AppRootControllerState extends State<AppRootController> {
   }
 
   Future<void> _loadAppState() async {
+    final prefs = await SharedPreferences.getInstance();
     final accepted = await _disclaimerRepository.hasAccepted();
     final saved = await _genderRepository.getIdentity();
+
+    // 老用户迁移：已同意免责 + 已选性别但无 onboarding_completed 标志的，
+    // 视为已完成向导，写上标志，避免被新向导二次打扰。
+    final migrated = accepted && saved != null;
+    final stored = prefs.getBool('onboarding_completed') ?? false;
+    final completed = stored || migrated;
+    if (migrated && !stored) {
+      await prefs.setBool('onboarding_completed', true);
+    }
+
     if (!mounted) return;
     setState(() {
-      _disclaimerAccepted = accepted;
       _genderIdentity = saved;
+      _onboardingCompleted = completed;
       _isLoading = false;
     });
+  }
+
+  /// 向导完成（含跳过）后回调：重新加载全部状态，触发重建进入主面板。
+  Future<void> _onOnboardingCompleted() async {
+    await _loadAppState();
+    await _loadGreetingSettings();
   }
 
   Future<void> _loadGreetingSettings() async {
@@ -865,18 +876,6 @@ class _AppRootControllerState extends State<AppRootController> {
     setState(() => _namePrefix = prefix);
   }
 
-  Future<void> _handleDisclaimerAccepted() async {
-    await _disclaimerRepository.setAccepted();
-    if (!mounted) return;
-    setState(() => _disclaimerAccepted = true);
-  }
-
-  Future<void> _handleIdentitySelection(String identity) async {
-    await _genderRepository.saveIdentity(identity);
-    if (!mounted) return;
-    setState(() => _genderIdentity = identity);
-  }
-
   Future<void> _handleIdentityChange(String identity) async {
     await _genderRepository.saveIdentity(identity);
     if (!mounted) return;
@@ -889,12 +888,13 @@ class _AppRootControllerState extends State<AppRootController> {
       return const Scaffold(body: LoadingIndicator());
     }
 
-    if (!_disclaimerAccepted) {
-      return DisclaimerPage(onAccepted: _handleDisclaimerAccepted);
-    }
-
-    if (_genderIdentity == null) {
-      return OnboardingScreen(onSelect: _handleIdentitySelection);
+    // 未完成向导（含全新用户与半截用户）→ 统一进入 Onboarding 向导。
+    // 老用户（已同意免责 + 已选性别）已在 _loadAppState 中迁移并置完成标志，不会进此分支。
+    if (!_onboardingCompleted) {
+      return OnboardingWizard(
+        themeService: widget.themeService,
+        onCompleted: _onOnboardingCompleted,
+      );
     }
 
     final displayName =
