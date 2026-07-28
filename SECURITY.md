@@ -74,7 +74,7 @@
 | 嗓音训练模块（VFS Tracker） | CC BY-NC-SA 4.0 |
 | 内置知识库文本 | CC BY-SA 4.0 / CC BY-ND 4.0 |
 
-详见 [`Trans-Prism/LICENSE`](Trans-Prism/LICENSE)。
+详见 [`Trans-Prism/LICENSE.md`](Trans-Prism/LICENSE.md)。
 
 ---
 
