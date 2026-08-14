@@ -179,6 +179,8 @@
 
 > **污染范围可深入 `.git/` 内部**（2026-08-15 实测 Builder 仓库 `.git/` 下清理出 80+ 个副本：`objects/xx/xxx 2`、`HEAD 2`、`config 2`、`refs/remotes/origin/HEAD 2`、pack 文件副本等），会导致 git 命令报 `fatal: bad object refs/remotes/origin/HEAD 2` / push 被拒。清理：`find .git -type f -name "* *" -delete`。此类副本与源码副本一样，均属 Finder 复制产生的冗余残留，删除安全。
 
+> **污染源头（2026-08-15 全盘排查确认）**：workspace 位于 `~/Desktop/` 下，而本机开启了 **iCloud「桌面与文稿」同步**——`~/Desktop` 被 iCloud 完全接管（`bird`/`replicatord` 守护进程常驻）。iCloud 在多设备/多会话间合并桌面内容时，冲突副本以 `xxx 2` 命名（铁证：iCloud Desktop 同步目录同时存在 `桌面 - ProBook Mac` 与 `桌面 - ProBook Mac - 2` 两个内容不同的桌面版本文件夹）。workspace 内的 `.git/`、`build/`、源码目录、venv 全部处于同步范围，冲突合并时**每个文件都可能产生 ` 2` 副本**——这就是周期性（约 1–2 周一次、凌晨设备闲置充电时段）污染的根源。**根治：把 workspace 移出 `~/Desktop`（如 `~/Developer/Trans_Prism`）以脱离 iCloud 同步范围，或关闭 iCloud「桌面与文稿」同步；同时清理 iCloud 中的 `桌面 - ProBook Mac - 2` 冗余版本。**
+
 **修复**：删除整个 `Trans-Prism/build/` 目录后重新构建即可——源码干净时全量重建（`flutter build apk --debug`）不会复现。排查时先确认源码目录无违规文件名：`find android -type f | grep -E "[ (（]"`。
 
 **根治（已植入）**：[`android/app/build.gradle`](android/app/build.gradle:91) 内置自愈钩子任务 `cleanInvalidResourceNames`——每次构建开始（挂载于所有 `preBuild` 之前）自动递归删除 `build/` 与 `src/main/res` 下所有文件名含空格的副本文件，保证 AAPT2 永远看不到非法资源名。Finder 污染无论何时复发，下次构建都会自动自愈，无需手动删缓存。已实测验证：人为在 `packageDebugResources/drawable/` 放置 `launch_image 2.png` 后 `flutter build apk --debug` 依然成功，污染文件被钩子自动清除（日志输出 `TransPrism 自愈: 删除非法文件名副本 ...`）。
