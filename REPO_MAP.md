@@ -2,7 +2,8 @@
 
 > 本文件是 AI Agent 的项目导航地图。目标不是列文件，而是帮助 AI 在第一次进入仓库时快速理解架构、定位业务逻辑、定位功能入口、定位状态管理、定位数据流。
 >
-> 配套阅读：[`SYSTEM_MAP.md`](../SYSTEM_MAP.md:1)（生态全貌）/ [`ARCHITECTURE_DECISIONS.md`](../ARCHITECTURE_DECISIONS.md:1)（架构决策记录）。
+> 配套阅读：[`SYSTEM_MAP.md`](../SYSTEM_MAP.md:1)（生态全貌）/ [`ARCHITECTURE_DECISIONS.md`](../ARCHITECTURE_DECISIONS.md:1)（架构决策记录，含 ADR-011）。
+> workspace 根目录另有 **开发辅助子系统** [`rag-system/`](../rag-system/mcp_bridge_bge.py:1)（RAG 知识库 MCP Bridge，检索本生态全部文档），属 workspace 级组件、不属于本 App 仓库；其配置双写点（Zoo/Roo 两处 mcp.json）见 ADR-011 与 SYSTEM_MAP 对应章节。
 
 ---
 
@@ -114,6 +115,8 @@
 | [`main.dart:413`](lib/main.dart:413) | `AppRootController`：性别认同/免责路由编排 + 后台同步调度 |
 | [`main.dart:782`](lib/main.dart:782) | `MainDashboard`：`IndexedStack` 承载 4 个 Tab |
 | [`main.dart:1176`](lib/main.dart:1176) | `HomeTab`：首页模块容器（问候语 + HRT + 工具箱 + 声音训练），模块可见性由 SP 控制 |
+| [`main.dart:1893`](lib/main.dart:1893) | `ProfileTab`（我的）：身份与资料 / 外观与显示 / 高级与系统（通知权限与保活、数据导出与恢复、关于与支持、**检查更新**） |
+| [`main.dart:1966`](lib/main.dart:1966) | `_handleCheckUpdate`：手动检查更新入口（SnackBar「正在检查更新…」→ `UpdateService.checkForUpdate()` → 新版本弹 `UpdateDialog` / 网络错误 / 已是最新 三态） |
 
 所有页面跳转均使用 `Navigator.push(MaterialPageRoute(...))`，无路由表。
 
@@ -163,6 +166,22 @@
 3. **罩杯发育记录 JSON 整体读写**（非增量）：记录增多后序列化/反序列化成本线性增长，当前数据量可忽略。
 4. **数据备份分裂（待修复）**：[`DataMigrationService`](lib/utils/data_migration_service.dart:25) 统一备份跨 Dart/JS 边界提取 Oyama SPA `localStorage` 依赖 React fiber 树遍历（脆弱）且后台 WebView 初始化存在竞态，**无法可靠导出 PK 模拟数据**。当前需分两步操作（主应用 SP + Oyama 各导出/导入），已列为待修复项，修复方案见 [`docs/DATA_EXPORT_COMPATIBILITY.md`](docs/DATA_EXPORT_COMPATIBILITY.md:1)。
 5. **模拟器 + 宿主机 TUN fake-ip 双重不可路由**：标准 DNS 返回 fake-ip（不经 TUN）+ DoH 解析真实 IP 后直连遭 TUN 干扰，此组合应用层无法修复。真机 TUN 代理因流量经 TUN 拦截故标准 DNS 路径有效，模拟器需调整代理 DNS 模式或将域名设为直连。
+
+---
+
+## 构建排障（Android）
+
+### `Failed file name validation for file .../drawable/launch_image 2.png`
+
+**症状**：`flutter run` / `flutter build apk` 在 `:app:parseDebugLocalResources` 任务失败，报错指向 `build/app/intermediates/packaged_res/debug/packageDebugResources/drawable/launch_image 2.png` 这类含空格的文件名。
+
+**根因**：**不是源码问题**。源码 `android/app/src/main/res/` 命名完全合规；但 macOS Finder 复制（拖拽 / Command+D）会把副本命名为 `xxx 2.png`。若复制恰好发生在 Gradle 构建中间产物目录（`build/app/intermediates/packaged_res/...`），残留的 `xxx 2.png`（连同 `ic_launcher 2.png`、`values 2.xml`、`launch_background 2.xml` 等几十个副本）会在 AAPT2 增量构建时触发文件名合法性校验失败（Android 资源文件名只允许小写字母/数字/下划线/点）。
+
+**修复**：删除整个 `Trans-Prism/build/` 目录后重新构建即可——源码干净时全量重建（`flutter build apk --debug`）不会复现。排查时先确认源码目录无违规文件名：`find android -type f | grep -E "[ (（]"`。
+
+**根治（已植入）**：[`android/app/build.gradle`](android/app/build.gradle:91) 内置自愈钩子任务 `cleanInvalidResourceNames`——每次构建开始（挂载于所有 `preBuild` 之前）自动递归删除 `build/` 与 `src/main/res` 下所有文件名含空格的副本文件，保证 AAPT2 永远看不到非法资源名。Finder 污染无论何时复发，下次构建都会自动自愈，无需手动删缓存。已实测验证：人为在 `packageDebugResources/drawable/` 放置 `launch_image 2.png` 后 `flutter build apk --debug` 依然成功，污染文件被钩子自动清除（日志输出 `TransPrism 自愈: 删除非法文件名副本 ...`）。
+
+**预防**：勿在 `build/` 目录内使用 Finder 复制/移动文件（Finder 会把副本命名为 `xxx 2.xxx`）；即使误操作，自愈钩子会在下次构建时自动清理。
 
 ---
 

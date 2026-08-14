@@ -3,7 +3,7 @@
 //
 // Phase 1 重构移除了所有基于 IP 归属地的路由分发逻辑。
 // 现在无论用户身处何地，统一使用 Cloudflare R2 边缘节点
-// 全局加速域名 https://downloads.chengxi.online 进行版本比对与下载。
+// 全局加速域名 https://downloads.chengxi.moe 进行版本比对与下载。
 //
 // 旧文件保留为空占位，避免导入断链。
 // 所有依赖已迁移至 R2 统一更新引擎。

@@ -87,3 +87,42 @@ dependencies {
     // flutter_local_notifications 需要 core library desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
+
+// ─── 自愈钩子：清理 macOS Finder 复制产生的 "xxx 2.ext" 违规资源副本 ───
+// 背景：Finder 复制会把副本命名为 "launch_image 2.png"；若该副本混入 build 缓存
+// （build/app/intermediates/packaged_res/...），AAPT2 增量构建
+// :app:parseDebugLocalResources 会对含空格的文件名做合法性校验并抛
+// "Failed file name validation"（Android 资源文件名只允许 [a-z0-9_.]）。
+// 本钩子在每次构建开始前（preBuild）自动清除 build/ 与 src/main/res 下
+// 所有文件名含空格的副本，从机制上根治，无需再手动删除 build 目录。
+// 详见 Trans_Prism/REPO_MAP.md「构建排障（Android）」小节。
+def cleanInvalidResourceNames = tasks.register("cleanInvalidResourceNames") {
+    doLast {
+        def roots = [
+            file("src/main/res"),   // 源码资源目录（防止源码被 Finder 污染）
+            file("build"),          // 全部 Gradle 中间产物缓存
+        ]
+        def removed = 0
+        roots.each { root ->
+            if (root.exists()) {
+                root.eachFileRecurse { f ->
+                    // 文件名含空格即非法（" 2" 副本特征），构建中间产物中不可能合法存在
+                    if (f.isFile() && f.name.contains(" ")) {
+                        logger.warn("TransPrism 自愈: 删除非法文件名副本 ${f.path}")
+                        f.delete()
+                        removed++
+                    }
+                }
+            }
+        }
+        logger.lifecycle("TransPrism 自愈: 本次构建清理非法文件名副本 ${removed} 个")
+    }
+}
+
+// 挂载到所有 preBuild 任务（先于 mergeDebugResources / parseDebugLocalResources 执行，
+// 保证 AAPT2 永远看不到脏文件）
+tasks.configureEach { task ->
+    if (task.name.equals("preBuild")) {
+        task.dependsOn(cleanInvalidResourceNames)
+    }
+}

@@ -140,7 +140,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Trans-Prism-Builder 
 | WebView | `webview_flutter` |
 | 音频 | `record` + `pitch_detector_dart`（YIN 算法） |
 | 通知 | `flutter_local_notifications` + `timezone` |
-| 更新分发 | Cloudflare R2 边缘节点 `downloads.chengxi.online` |
+| 更新分发 | Cloudflare R2 边缘节点 `downloads.chengxi.moe` |
 | 本地服务器 | `shelf`（PK 模拟器内嵌 HttpServer） |
 | 主题 | 双风格（简约风 + 毛玻璃）+ `liquid_glass_easy` 渲染包 + Impeller；`GlassTheme`（InheritedWidget）+ `GlassTokens` |
 

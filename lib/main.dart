@@ -2224,6 +2224,17 @@ class _ProfileTabState extends State<ProfileTab> {
             );
           },
         ),
+        // ── 检查更新入口 ──
+        // 手动触发 UpdateService().checkForUpdate()（对应生命周期 B：App APK 自更新，
+        // 与首页启动静默检测共用同一服务与 UpdateDialog）。
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.system_update_rounded,
+          leadingColor: themeService.themeColor,
+          title: '检查更新',
+          subtitle: '手动检测是否有新版本可用',
+          onTap: () => _handleCheckUpdate(context),
+        ),
 
         const SizedBox(height: 24),
 

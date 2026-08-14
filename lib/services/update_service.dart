@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dns_safe_network_service.dart';
 
 /// R2 边缘节点全局加速域名
-const String baseUpdateUrl = 'https://downloads.chengxi.online';
+const String baseUpdateUrl = 'https://downloads.chengxi.moe';
 
 /// 更新检测结果
 class UpdateCheckResult {
