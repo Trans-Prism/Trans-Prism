@@ -14,7 +14,7 @@ Trans Prism 的数据备份功能（「我的 → 数据导出与恢复」）当
 | 数据类别 | 存储位置 | 访问方式 | 导出入口 |
 |---------|---------|---------|---------|
 | 主应用数据 | `SharedPreferences`（Dart 侧 JSON Key-Value） | Dart 直接读写 | 我的 → 数据导出与恢复 |
-| PK 模拟数据 | WebView `localStorage`（绑定 `http://localhost:53140` origin） | 仅可通过 JS 注入访问 | PK 模拟页面内 SPA 设置菜单 |
+| PK 模拟数据 | WebView `localStorage`（绑定 `http://localhost:{port}` origin，默认 53140、可配置） | 仅可通过 JS 注入访问 | PK 模拟页面内 SPA 设置菜单 |
 
 这两类数据处于**不同的语言运行时**（Dart vs JS）和**不同的存储沙盒**（SP vs WebView origin），由 [ADR-006](../ARCHITECTURE_DECISIONS.md) 的 WebView + shelf 架构决定。
 
@@ -191,7 +191,7 @@ static Future<({bool success, bool includedPkData})> exportData() async {
 
 ### 5.2 localStorage origin 绑定
 
-Oyama SPA 的 `localStorage` 绑定到 `http://localhost:53140` origin（ADR-006 固定端口）。如果端口被占用回退到随机端口，`localStorage` 会因 origin 变化而**数据丢失**。提取数据时必须确保使用已注册的控制器（同一 origin）。
+Oyama SPA 的 `localStorage` 绑定到 `http://localhost:{port}` origin（默认 53140，可配置，见 ADR-006 与 [`TrackerPortConfig`](../lib/services/tracker_port_config.dart:19)）。如果端口被占用顺延到新端口、或用户变更端口，`localStorage` 会因 origin 变化而**在新端口不可见**（数据未删除、切回原端口可恢复）。提取数据时必须确保使用已注册的控制器（同一 origin）。
 
 ### 5.3 React Fiber 遍历的局限性
 

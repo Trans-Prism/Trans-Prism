@@ -39,14 +39,15 @@ class GlassSheet extends StatelessWidget {
     var tokens = GlassTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // 简约风退化：实色 Sheet
+    // 简约风退化：实色 Sheet（背景承载于 Material 上）
+    // 子级若含 ListTile（如主题模式/性别认同选择），其 ink splash 绘制在最近
+    // Material 上；若背景放在内层 Container（DecoratedBox）上会被判定为遮挡
+    // 而触发框架断言 "ListTile background color or ink splashes may be invisible"。
     if (!tokens.isEnabled) {
-      return Container(
-        decoration: BoxDecoration(
-          color:
-              surfaceColor ?? (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-        ),
+      return Material(
+        color:
+            surfaceColor ?? (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
         child: _content(context),
       );
     }

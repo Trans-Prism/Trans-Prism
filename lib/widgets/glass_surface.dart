@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 import '../theme/glass_theme.dart';
-import '../theme/glass_tokens.dart';
 
 /// 通用玻璃表面包装器 —— 双模自适应。
 ///
@@ -55,12 +54,18 @@ class GlassSurface extends StatelessWidget {
       tokens = tokens.toReducedTransparency();
     }
 
-    // 简约风：实色 Container
+    // 简约风：实色 Material（背景承载于 Material 上）
+    // 若把背景色放在内层 Container（DecoratedBox）上，子级 ListTile 的
+    // _debugCheckBackgroundIsHidden 会在"最近 Material 之前"撞见该带背景容器，
+    // 断言报 "ListTile background color or ink splashes may be invisible"；
+    // 且 InkWell 波纹绘制在 Material 上也会被内层背景遮挡。故背景必须上移。
     if (!tokens.isEnabled) {
       final bg =
           solidColor ?? (isDark ? const Color(0xFF24242C) : Colors.white);
       return Material(
-        color: Colors.transparent,
+        color: bg,
+        borderRadius: BorderRadius.circular(borderRadius),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
@@ -68,7 +73,6 @@ class GlassSurface extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: bg,
               borderRadius: BorderRadius.circular(borderRadius),
               border: borderColor != null
                   ? Border.all(color: borderColor!, width: 0.5)
@@ -81,7 +85,26 @@ class GlassSurface extends StatelessWidget {
     }
 
     // 液态玻璃：LiquidGlassLens + 轻阴影
-    final style = tokens.toLiquidGlassStyle(cornerRadius: borderRadius);
+    // solidColor 语义在液态下同样生效：简约风"实色"（alpha==1）以
+    // tokens.surfaceColor 的 alpha 掺入玻璃表面色，使"选中/实色"在液态下清晰
+    // 可辨（否则被忽略——如工作台分类胶囊选中态深灰底不生效，白字落在白玻璃上
+    // 对比度不足）；调用方已传半透明色（alpha<1，如 10% 白/15% 品红）则尊重其
+    // 原 alpha。与 GlassCard 液态分支的 appearance 注入方式保持一致。
+    final sc = solidColor;
+    final glassColor = sc != null
+        ? (sc.a >= 1.0 ? sc.withValues(alpha: tokens.surfaceColor.a) : sc)
+        : tokens.surfaceColor;
+    final style =
+        tokens.toLiquidGlassStyle(cornerRadius: borderRadius).copyWith(
+              appearance: LiquidGlassAppearance(
+                color: glassColor,
+                saturation: tokens.saturationBoost.clamp(0.0, 3.0),
+                blur: LiquidGlassBlur(
+                  sigmaX: tokens.blurSigma,
+                  sigmaY: tokens.blurSigma,
+                ),
+              ),
+            );
     final radius = BorderRadius.circular(borderRadius);
     return Material(
       color: Colors.transparent,

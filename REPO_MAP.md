@@ -45,7 +45,8 @@
 
 | 文件 | 职责 |
 |------|------|
-| [`tracker_screen.dart`](lib/screens/tracker_screen.dart:42) | 内嵌 shelf HttpServer 托管 HRT Tracker SPA |
+| [`tracker_screen.dart`](lib/screens/tracker_screen.dart:42) | 内嵌 shelf HttpServer 托管 HRT Tracker SPA；端口由 `TrackerPortConfig` 管理（智能顺延/自定义） |
+| [`tracker_port_config.dart`](lib/services/tracker_port_config.dart:19) | Tracker 端口配置：智能/自定义模式读写 + 智能顺延探测（53140~53159） |
 | [`tracker_update_service.dart`](lib/services/tracker_update_service.dart:31) | Tracker PWA 热更新下载器 |
 | [`tracker_path_resolver.dart`](lib/utils/tracker_path_resolver.dart:1) | Tracker 文件路径解析 |
 
@@ -115,8 +116,10 @@
 | [`main.dart:413`](lib/main.dart:413) | `AppRootController`：性别认同/免责路由编排 + 后台同步调度 |
 | [`main.dart:782`](lib/main.dart:782) | `MainDashboard`：`IndexedStack` 承载 4 个 Tab |
 | [`main.dart:1176`](lib/main.dart:1176) | `HomeTab`：首页模块容器（问候语 + HRT + 工具箱 + 声音训练），模块可见性由 SP 控制 |
-| [`main.dart:1893`](lib/main.dart:1893) | `ProfileTab`（我的）：身份与资料 / 外观与显示 / 高级与系统（通知权限与保活、数据导出与恢复、关于与支持、**检查更新**） |
+| [`main.dart:1893`](lib/main.dart:1893) | `ProfileTab`（我的）：身份与资料 / 外观与显示 / **高级**（通知权限与保活、数据导出与恢复、**血药浓度模拟端口**）/ **系统**（关于与支持、**相关链接**、**检查更新**、**再次进入向导**）。所有设置项经 [`_buildSettingsTile`](lib/main.dart:2270) 渲染且**统一无副标题**（`subtitle` 一律为 `null`）；端口设置弹层 [`_showTrackerPortSheet`](lib/main.dart:2964)（智能/自定义 + 修改确认，变更端口会改变 SPA origin，须先内置导出备份；配置**重启应用后生效**）；「再次进入向导」经 `Navigator.push` 重跑 `OnboardingWizard`，完成后 pop 回主界面 |
 | [`main.dart:1966`](lib/main.dart:1966) | `_handleCheckUpdate`：手动检查更新入口（SnackBar「正在检查更新…」→ `UpdateService.checkForUpdate()` → 新版本弹 `UpdateDialog` / 网络错误 / 已是最新 三态） |
+| [`onboarding_wizard.dart`](lib/screens/onboarding/onboarding_wizard.dart:1) | `OnboardingWizard` 初始化引导：欢迎 → 权限 → 性别/主题/称呼 → **使用须知（免责声明，须勾选同意）** → 完成。**「跳过」仅跳转到使用须知步骤（接受默认选择，不自动同意免责）**——必须勾选同意后才能完成进入主界面。启动场景由 `AppRootController` 在 `onboarding_completed` 缺失时展示；「我的 → 系统 → 再次进入向导」可手动重跑（`onCompleted` 后 pop） |
+| [`links_screen.dart`](lib/screens/links_screen.dart:1) | `LinksScreen`（相关链接二级页）：「我的 → 系统 → 相关链接」进入，集中展示外部链接（官网 `transprism.chengxi.moe` / GitHub `github.com/Trans-Prism/Trans-Prism`），经 `url_launcher` `LaunchMode.externalApplication` 跳系统浏览器。纯静态 UI，App 内零网络请求、不经 R2 / `DnsSafeNetworkService`，无持久化 / 状态管理 / 新依赖；双模自适应（GlassSurface） |
 
 所有页面跳转均使用 `Navigator.push(MaterialPageRoute(...))`，无路由表。
 
@@ -131,7 +134,7 @@
 | [`theme_service.dart`](lib/services/theme_service.dart:7) | `ThemeService`（ChangeNotifier）：`themeMode`/`themeColor`/`themeStyle` 三态持久化 |
 | [`glass_tokens.dart`](lib/theme/glass_tokens.dart:1) | `GlassTokens`：液态玻璃 Token（模糊/表面色/边框/阴影/高光边）+ 简约退化 Token + 无障碍降级变体 |
 | [`glass_theme.dart`](lib/theme/glass_theme.dart:1) | `GlassTheme`（InheritedWidget）：向下游暴露当前 Token，`GlassTheme.of(context)` |
-| [`glass_card.dart`](lib/widgets/glass_card.dart:1) | `GlassCard`：双模自适应卡片（液态=模糊+半透明+高光边；简约=实色+弥散阴影） |
+| [`glass_card.dart`](lib/widgets/glass_card.dart:1) | `GlassCard`：双模自适应卡片（液态=模糊+半透明+高光边；简约=实色+弥散阴影）。阴影承载于最外层 `DecoratedBox`（不被 Material 裁剪，2026-08-15 修复卡片无阴影/扁平问题） |
 | [`glass_app_bar.dart`](lib/widgets/glass_app_bar.dart:1) | `GlassAppBar`：浮动玻璃 AppBar（液态=模糊+滚动边缘；简约=实色） |
 | [`glass_nav.dart`](lib/widgets/glass_nav.dart:1) | `GlassNav`：玻璃底部导航（液态=浮动胶囊+高光边；简约=实色） |
 | [`glass_sheet.dart`](lib/widgets/glass_sheet.dart:1) | `GlassSheet`：玻璃 BottomSheet 容器 |
@@ -140,6 +143,10 @@
 | [`main.dart`](lib/main.dart:530) | `_TransToolboxAppState.build()`：按 `themeStyle` 分支选择 `_buildLiquidXxxTheme`/`_buildXxxTheme`，注入 `GlassTheme`，并按 `accessibleNavigation` 触发无障碍降级 |
 
 **设计原则**：组件库"双模自适应"——`GlassXxx` 在 minimal 模式下退化为与既有简约外观一致，业务页调用点改动极小即可在两风格间无缝切换。液态玻璃遵循 Apple WWDC *Designing Fluid Interfaces* §12 Materials & depth（半透明浮动层 + 顶部高光边 + 滚动边缘效果）与 §14 无障碍降级。
+
+**简约风背景承载约定（2026-08-15 修复）**：`GlassSurface` / `GlassSheet` / `GlassCard` 在简约风下**必须把背景色渲染在 `Material` 上**（而非内层 `Container`/`DecoratedBox`）。原因：子级 `ListTile` 的 ink splash 绘制在最近 `Material` 上，若背景放在内层带颜色容器（`ColoredBox`/`DecoratedBox`），Flutter 框架断言 `ListTile._debugCheckBackgroundIsHidden` 会判定该容器遮挡 ink splash，抛出 "ListTile background color or ink splashes may be invisible"（曾误报于百科 Tab 列表项、主题/性别/风格选择 BottomSheet、引导页 CheckboxListTile）。背景承载于 Material 后：① 断言检查向上遇 Material 即停、不再误报；② InkWell 波纹真实绘制在背景之上可见。任何新增玻璃容器组件均须遵守此模式（`Material(color) → InkWell → 无背景 Container`）。
+
+**`solidColor` 双模语义（2026-08-15 修复）**：[`GlassSurface`](lib/widgets/glass_surface.dart:27) 液态分支此前完全忽略 `solidColor`，导致简约风"实色强调"语义在液态下丢失（如工作台分类胶囊选中态深灰底不生效，白字落在白玻璃上对比度不足）。现已与 `GlassCard` 液态分支对齐：**不透明** `solidColor`（alpha==1）以 `GlassTokens.surfaceColor.a` 的 alpha 掺入玻璃表面色；调用方已传半透明色（alpha<1，如 10% 白 / 15% 品红）则保留其原 alpha。配合 [`workspace_tab.dart:293`](lib/screens/workspace_tab.dart:293) 分类胶囊选中态文字在液态下反相（亮色深字 `0xFF333333` / 暗色白字 `Colors.white`，简约风保持深底白字/白底黑字不变），保证选中态对比度。
 
 ---
 
@@ -155,6 +162,7 @@
 | `SharedPreferences` JSON | Wiki 同步状态 | `wiki_sync_snapshots` |
 | `SharedPreferences` 直接 bool | 模块可见性 | `home_module_*` |
 | `SharedPreferences` 直接 string | 主题/称呼/前缀 | `user_greeting_name` |
+| `SharedPreferences` 直接 string/int | Tracker 端口模式/自定义端口 | `tracker_port_mode` / `tracker_custom_port` |
 | 文件系统 | 离线 Wiki/Tracker ZIP | `getApplicationDocumentsDirectory()` |
 
 ---

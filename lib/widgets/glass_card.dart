@@ -50,37 +50,16 @@ class GlassCard extends StatelessWidget {
     }
     final radius = borderRadius ?? tokens.borderRadius;
 
-    final card = _buildSurface(context, tokens, radius);
+    final bg = surfaceColor ?? tokens.surfaceColor;
+    final card = _buildSurface(context, tokens, radius, bg);
 
     return Container(
       margin: margin,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(radius),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(radius),
-          child: card,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSurface(
-    BuildContext context,
-    GlassTokens tokens,
-    double radius,
-  ) {
-    final bg = surfaceColor ?? tokens.surfaceColor;
-    final blur = blurSigma ?? tokens.blurSigma;
-
-    // 简约风退化：实心表面，无模糊，无高光边
-    if (!tokens.isEnabled) {
-      return Container(
+      child: DecoratedBox(
+        // 阴影承载于最外层：Material 的 Clip.antiAlias 会裁剪其 child，若阴影
+        // 放在 Material 内层 DecoratedBox 上会被裁掉，卡片将无阴影/扁平、丢失
+        // 材质立体感（GlassSurface 已有同样注释）。置于外层则阴影始终可见。
         decoration: BoxDecoration(
-          color: bg,
           borderRadius: BorderRadius.circular(radius),
           boxShadow: [
             BoxShadow(
@@ -90,13 +69,42 @@ class GlassCard extends StatelessWidget {
             ),
           ],
         ),
-        padding: padding,
-        child: child,
-      );
+        child: Material(
+          // 简约风背景承载于 Material 上：InkWell 波纹与子级 ListTile 的 ink
+          // splash 绘制在最近 Material 上，若背景放在内层 DecoratedBox 会被判定
+          // 为遮挡而触发 "ListTile background color or ink splashes may be
+          // invisible" 断言。液态风保持透明由 LiquidGlassLens 渲染。
+          color: tokens.isEnabled ? Colors.transparent : bg,
+          borderRadius: BorderRadius.circular(radius),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            borderRadius: BorderRadius.circular(radius),
+            child: card,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSurface(
+    BuildContext context,
+    GlassTokens tokens,
+    double radius,
+    Color bg,
+  ) {
+    final blur = blurSigma ?? tokens.blurSigma;
+
+    // 简约风退化：实心表面，无模糊，无高光边。
+    // 背景色由外层 Material 承载、阴影由 build() 外层 DecoratedBox 承载，
+    // 此处仅承载 padding，避免内层 DecoratedBox 遮挡子级 ListTile 的 ink splash。
+    if (!tokens.isEnabled) {
+      return Padding(padding: padding, child: child);
     }
 
     // 液态玻璃：LiquidGlassLens 接管折射/模糊/边框/光泽。
-    // 阴影由外层 DecoratedBox 承载（渲染在 lens 之后方）。
+    // 阴影已由 build() 外层 DecoratedBox 承载（不被 Material 裁剪）。
     // RepaintBoundary 隔离重绘区域（§D 性能优化）。
     final style = tokens.toLiquidGlassStyle(cornerRadius: radius).copyWith(
           appearance: LiquidGlassAppearance(
@@ -107,23 +115,11 @@ class GlassCard extends StatelessWidget {
         );
 
     return RepaintBoundary(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          boxShadow: [
-            BoxShadow(
-              color: tokens.shadowColor,
-              blurRadius: tokens.shadowBlur,
-              offset: tokens.shadowOffset,
-            ),
-          ],
-        ),
-        child: LiquidGlassLens(
-          style: style,
-          child: Padding(
-            padding: padding,
-            child: child,
-          ),
+      child: LiquidGlassLens(
+        style: style,
+        child: Padding(
+          padding: padding,
+          child: child,
         ),
       ),
     );

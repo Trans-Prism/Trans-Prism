@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'models/gender_identity.dart';
 import 'screens/about_screen.dart';
+import 'screens/links_screen.dart';
 import 'screens/bra_calculator_page.dart';
 import 'screens/disclaimer_view_screen.dart';
 import 'screens/onboarding/onboarding_wizard.dart';
@@ -26,9 +28,11 @@ import 'services/notification_service.dart';
 import 'services/update_service.dart';
 import 'services/wiki_sync_service.dart';
 import 'services/theme_service.dart';
+import 'services/tracker_port_config.dart';
 import 'widgets/gradient_icon.dart';
 import 'widgets/loading_indicator.dart';
 import 'widgets/medication_stock_summary.dart';
+import 'widgets/glass_dialog.dart';
 import 'widgets/glass_sheet.dart';
 import 'widgets/glass_surface.dart';
 import 'widgets/liquid_glass_nav.dart';
@@ -2188,9 +2192,9 @@ class _ProfileTabState extends State<ProfileTab> {
         const SizedBox(height: 12),
 
         // ═══════════════════════════════════════════════
-        //   高级与系统
+        //   高级
         // ═══════════════════════════════════════════════
-        _buildSectionHeader('高级与系统', isDark: isDark),
+        _buildSectionHeader('高级', isDark: isDark),
         // ── 通知与提醒权限入口 ──
         _buildSettingsTile(
           isDark: isDark,
@@ -2210,6 +2214,22 @@ class _ProfileTabState extends State<ProfileTab> {
           onTap: () =>
               _showDataManagementBottomSheet(context, isDark, themeService),
         ),
+        // ── 血药浓度模拟端口入口 ──
+        // 智能/自定义端口（TrackerPortConfig）；修改会改变 SPA localStorage 的
+        // origin，须先在内置导出功能备份（见 _confirmPortChange 警告）。
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.settings_ethernet_rounded,
+          leadingColor: themeService.themeColor,
+          title: '血药浓度模拟端口',
+          subtitle: null,
+          onTap: () => _showTrackerPortSheet(context),
+        ),
+
+        // ═══════════════════════════════════════════════
+        //   系统
+        // ═══════════════════════════════════════════════
+        _buildSectionHeader('系统', isDark: isDark),
         // ── 关于与支持入口 ──
         _buildSettingsTile(
           isDark: isDark,
@@ -2224,6 +2244,21 @@ class _ProfileTabState extends State<ProfileTab> {
             );
           },
         ),
+        // ── 相关链接入口 ──
+        // 二级页面 LinksScreen：官网 + GitHub 仓库（url_launcher 外部浏览器打开）
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.link_rounded,
+          leadingColor: themeService.themeColor,
+          title: '相关链接',
+          subtitle: null,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LinksScreen()),
+            );
+          },
+        ),
         // ── 检查更新入口 ──
         // 手动触发 UpdateService().checkForUpdate()（对应生命周期 B：App APK 自更新，
         // 与首页启动静默检测共用同一服务与 UpdateDialog）。
@@ -2232,8 +2267,31 @@ class _ProfileTabState extends State<ProfileTab> {
           leadingIcon: Icons.system_update_rounded,
           leadingColor: themeService.themeColor,
           title: '检查更新',
-          subtitle: '手动检测是否有新版本可用',
+          subtitle: null,
           onTap: () => _handleCheckUpdate(context),
+        ),
+        // ── 再次进入向导入口 ──
+        // 重新运行 OnboardingWizard（完整初始化流程）；引导内「跳过」只跳转到
+        // 使用须知（免责声明），必须勾选同意后才能完成并返回主界面。
+        _buildSettingsTile(
+          isDark: isDark,
+          leadingIcon: Icons.restart_alt_rounded,
+          leadingColor: themeService.themeColor,
+          title: '再次进入向导',
+          subtitle: null,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OnboardingWizard(
+                  themeService: themeService,
+                  onCompleted: () async {
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                ),
+              ),
+            );
+          },
         ),
 
         const SizedBox(height: 24),
@@ -2914,6 +2972,295 @@ class _ProfileTabState extends State<ProfileTab> {
           ],
         ),
       ),
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  血药浓度模拟端口设置（智能 / 自定义，TrackerPortConfig）
+  // ════════════════════════════════════════════════════════════
+
+  /// 血药浓度模拟端口设置弹层。
+  /// 智能模式：基准 53140 起被占用自动顺延（53140~53159）；
+  /// 自定义模式：手动指定端口（1024~65535）。
+  /// 修改端口会改变 SPA localStorage 的 origin，导致旧端口数据不可见，
+  /// 因此保存前必须弹确认框，提示先在血药浓度模拟内置导出功能备份。
+  Future<void> _showTrackerPortSheet(BuildContext context) async {
+    // 预取 async gap 后仍需的 context 派生值，避免 use_build_context_synchronously
+    final messenger = ScaffoldMessenger.of(context);
+    final barrierColor = GlassTheme.modalBarrierColor(context);
+
+    final initialMode = await TrackerPortConfig.readMode();
+    final initialCustom = await TrackerPortConfig.readCustomPort();
+    if (!context.mounted) return;
+
+    var newMode = initialMode;
+    var newCustomPort = initialCustom;
+    final portController = TextEditingController(text: '$initialCustom');
+    String? portError;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: barrierColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final sheetIsDark = Theme.of(ctx).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final textColor =
+                sheetIsDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+            final secondaryTextColor =
+                sheetIsDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+
+            void validatePort() {
+              final v = int.tryParse(portController.text.trim());
+              if (v == null || !TrackerPortConfig.isValidCustomPort(v)) {
+                portError =
+                    '请输入 ${TrackerPortConfig.minPort} ~ ${TrackerPortConfig.maxPort} 之间的端口号';
+              } else {
+                portError = null;
+                newCustomPort = v;
+              }
+              setSheetState(() {});
+            }
+
+            return GlassSheet(
+              showGrabHandle: false,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        '血药浓度模拟端口',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '修改端口会影响已录入的血药浓度模拟数据的可见性',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildPortModeOption(
+                        isDark: sheetIsDark,
+                        selected: newMode == TrackerPortConfig.modeSmart,
+                        icon: Icons.auto_fix_high_rounded,
+                        title: '智能（推荐）',
+                        desc: '默认 53140，被占用自动顺延；端口不变时数据持续可见',
+                        onTap: () {
+                          newMode = TrackerPortConfig.modeSmart;
+                          setSheetState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPortModeOption(
+                        isDark: sheetIsDark,
+                        selected: newMode == TrackerPortConfig.modeCustom,
+                        icon: Icons.tune_rounded,
+                        title: '自定义',
+                        desc: '手动指定端口；更换端口后旧数据将不可见',
+                        onTap: () {
+                          newMode = TrackerPortConfig.modeCustom;
+                          setSheetState(() {});
+                        },
+                      ),
+                      if (newMode == TrackerPortConfig.modeCustom) ...[
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: portController,
+                          keyboardType: TextInputType.number,
+                          maxLength: 5,
+                          decoration: InputDecoration(
+                            labelText: '端口号',
+                            hintText: '1024 ~ 65535',
+                            errorText: portError,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onChanged: (_) => validatePort(),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      Text(
+                        '提示：血药浓度模拟数据保存在页面内置存储中，且按端口隔离。'
+                        '修改端口后，此前录入的数据在新端口下将不可见（数据仍在设备上、'
+                        '未删除；切回原端口可恢复）。如需保留，请先在血药浓度模拟页面'
+                        '使用其内置导出功能完成备份——本页面无法代为导出。',
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.6,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: FilledButton(
+                          onPressed: () async {
+                            if (newMode == TrackerPortConfig.modeCustom) {
+                              validatePort();
+                              if (portError != null) return;
+                            }
+                            final changed = newMode != initialMode ||
+                                (newMode == TrackerPortConfig.modeCustom &&
+                                    newCustomPort != initialCustom);
+                            if (!changed) {
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              return;
+                            }
+                            final confirmed = await _confirmPortChange(context);
+                            if (confirmed != true) return;
+                            await TrackerPortConfig.save(
+                              mode: newMode,
+                              customPort: newCustomPort,
+                            );
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('端口设置已保存，重启应用后生效'),
+                              ),
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          },
+                          child: const Text('保存'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// 修改端口确认框：警告数据隔离，引导先在血药浓度模拟内置导出备份。
+  Future<bool?> _confirmPortChange(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333);
+    final secondaryTextColor =
+        isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => GlassDialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '确认修改端口？',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '修改端口后，此前在该端口下录入的血药浓度模拟数据将不可见'
+              '（数据仍在设备上、未删除；切回原端口可恢复）。\n\n'
+              '如需保留数据，请先在血药浓度模拟页面使用其内置导出功能完成备份'
+              '——本页面无法代为导出。',
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.6,
+                color: secondaryTextColor,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // 破坏性确认：默认动作是"取消"（醒目主按钮），
+                // "确认修改"弱化为次级按钮，降低误触风险。
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('确认修改'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('取消'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 端口模式选项（智能 / 自定义）
+  Widget _buildPortModeOption({
+    required bool isDark,
+    required bool selected,
+    required IconData icon,
+    required String title,
+    required String desc,
+    required VoidCallback onTap,
+  }) {
+    final themeColor = widget.themeService.themeColor;
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: selected
+            ? BorderSide(color: themeColor, width: 1.5)
+            : BorderSide.none,
+      ),
+      tileColor: selected ? themeColor.withValues(alpha: 0.06) : null,
+      leading: Icon(
+        icon,
+        color: selected
+            ? themeColor
+            : (isDark ? Colors.grey.shade400 : Colors.grey.shade500),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: isDark ? const Color(0xFFEDEDF0) : const Color(0xFF333333),
+        ),
+      ),
+      subtitle: Text(
+        desc,
+        style: TextStyle(
+          fontSize: 12,
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+        ),
+      ),
+      trailing: selected
+          ? Icon(Icons.check_circle, color: themeColor, size: 22)
+          : null,
+      onTap: onTap,
     );
   }
 

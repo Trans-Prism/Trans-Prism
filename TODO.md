@@ -6,7 +6,7 @@
 
 - [ ] 统一数据备份导出/导入（主应用 + Oyama HRT Tracker PK 数据合并）
   - **现状**：需分两步分别导出/导入主应用数据（SharedPreferences）与 PK 模拟数据（WebView localStorage），体验割裂
-  - **根因**：PK 数据在 WebView `localStorage` 中（绑定 `localhost:53140` origin），跨 Dart/JS 边界提取依赖 React fiber 树遍历，存在竞态条件与版本脆弱性
+  - **根因**：PK 数据在 WebView `localStorage` 中（绑定 `localhost:{port}` origin，默认 53140、可配置），跨 Dart/JS 边界提取依赖 React fiber 树遍历，存在竞态条件与版本脆弱性
   - **修复方案**：详见 [`docs/DATA_EXPORT_COMPATIBILITY.md`](docs/DATA_EXPORT_COMPATIBILITY.md)
 
 - [ ] [HRT TransMTF](https://hrt.transmtf.com/) 的 Web 接入及离线版构建

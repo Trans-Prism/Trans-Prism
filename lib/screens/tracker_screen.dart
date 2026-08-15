@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
+import '../services/tracker_port_config.dart';
 import '../utils/data_migration_service.dart';
 
 // ========================
@@ -43,55 +44,50 @@ class _LocalTrackerServer {
   HttpServer? _server;
   bool _started = false;
 
-  /// 固定端口，确保 WebView origin 跨启动不变，localStorage 持续可用。
-  /// 若被占用则自动回退到随机端口，并将实际端口持久化到 SharedPreferences。
-  static const int _preferredPort = 53140;
-  static const String _prefsPortKey = '_tracker_server_port';
+  /// 本次进程内已确定的端口（static：App 进程存活期间固定）。
+  /// 端口配置（智能/自定义）变更在**重启应用后**才生效——即使 TrackerScreen
+  /// 销毁重建，进程内也继续复用本端口，避免中途换 origin 导致数据"消失"。
+  static int? _sessionPort;
 
+  /// 端口由 TrackerPortConfig 统一管理（智能/自定义），确保 WebView origin
+  /// 跨启动尽量不变，localStorage 持续可用。
   Future<String> ensureStarted() async {
     if (_started && _server != null) {
       return 'http://${_server!.address.host}:${_server!.port}';
     }
 
-    // 优先使用持久化的端口（跨启动复用），其次尝试固定端口，最后回退到随机
-    final prefs = await SharedPreferences.getInstance();
-    int port = prefs.getInt(_prefsPortKey) ?? 0;
-
-    if (port == 0) {
-      // 无持久化记录：尝试固定端口
-      try {
-        final probe =
-            await HttpServer.bind(InternetAddress.loopbackIPv4, _preferredPort);
-        await probe.close();
-        port = _preferredPort;
-      } catch (_) {
-        // 固定端口被占用（如 TIME_WAIT），使用随机端口
-        port = 0;
-      }
+    // 进程内已有固定端口 → 直接复用（配置变更仅重启后生效）
+    final sessionPort = _sessionPort;
+    int port;
+    if (sessionPort != null) {
+      port = sessionPort;
     } else {
-      // 有持久化记录：尝试复用旧端口
-      try {
-        final probe = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
-        await probe.close();
-      } catch (_) {
-        // 旧端口不可用 → 尝试固定端口 → 最后随机
-        port = 0;
-        try {
-          final probe = await HttpServer.bind(
-              InternetAddress.loopbackIPv4, _preferredPort);
-          await probe.close();
-          port = _preferredPort;
-        } catch (_) {
-          port = 0;
+      // 首次启动：读取端口配置（智能/自定义，见 TrackerPortConfig）
+      final mode = await TrackerPortConfig.readMode();
+      final lastBound = await TrackerPortConfig.readBoundPort();
+
+      if (mode == TrackerPortConfig.modeCustom) {
+        // 自定义模式：直接使用用户指定端口；被占/非法则回退智能顺延保证可用
+        final custom = await TrackerPortConfig.readCustomPort();
+        if (TrackerPortConfig.isValidCustomPort(custom) &&
+            await TrackerPortConfig.canBindPort(custom)) {
+          port = custom;
+        } else {
+          port = await TrackerPortConfig.findSmartPort(preferred: lastBound);
         }
+      } else {
+        // 智能模式：优先复用上次端口，其次基准 53140 起顺延（53140~53159），
+        // 全部被占则由 bind(0) 绑定随机端口
+        port = await TrackerPortConfig.findSmartPort(preferred: lastBound);
       }
     }
 
     _server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
     _started = true;
+    _sessionPort = _server!.port;
 
-    // 持久化实际绑定的端口，后续启动复用
-    await prefs.setInt(_prefsPortKey, _server!.port);
+    // 持久化实际绑定端口，后续启动复用（保持 origin 稳定）
+    await TrackerPortConfig.saveBoundPort(_server!.port);
 
     _server!.listen(_handleRequest, onError: (err) {
       debugPrint('[TrackerServer] error: $err');

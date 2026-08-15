@@ -74,7 +74,7 @@
 
 ### 🔴 数据备份需分两步操作
 
-由于血药浓度模拟（PK）基于内嵌 WebView 运行的 [Oyama HRT Tracker](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) SPA，其数据存储在 WebView 的 `localStorage` 中（绑定到 `localhost:53140` origin，见 [ADR-006](ARCHITECTURE_DECISIONS.md)），与主应用的 `SharedPreferences` 数据相互隔离。当前**统一备份功能无法可靠地导出 PK 模拟数据**——跨 Dart/JS 边界提取 `localStorage` 的机制存在竞态与脆弱性。
+由于血药浓度模拟（PK）基于内嵌 WebView 运行的 [Oyama HRT Tracker](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) SPA，其数据存储在 WebView 的 `localStorage` 中（绑定到 `localhost:{port}` origin，默认端口 53140、可配置，见 [ADR-006](ARCHITECTURE_DECISIONS.md)），与主应用的 `SharedPreferences` 数据相互隔离。当前**统一备份功能无法可靠地导出 PK 模拟数据**——跨 Dart/JS 边界提取 `localStorage` 的机制存在竞态与脆弱性。
 
 **当前操作方式（需分两步）**：
 

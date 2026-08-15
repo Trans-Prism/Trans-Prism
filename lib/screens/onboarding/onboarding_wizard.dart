@@ -17,7 +17,8 @@ import '../../widgets/glass_card.dart';
 /// 免责同意，最后落盘并标记 `onboarding_completed`，后续不再弹出。
 ///
 /// 任意步骤均可「跳过」——跳过即接受全部默认值（MtF + 跟随系统 + 简约风 +
-/// 无前缀 + 伙伴 + 同意免责）并完成。
+/// 无前缀 + 伙伴）并**跳转到「使用须知（免责声明）」步骤**；用户必须勾选同意
+/// 免责后才能完成进入主界面，不允许直接跳过同意环节。
 ///
 /// 严守 ADR-001（仅 SharedPreferences）/ ADR-002（纯 StatefulWidget + setState）/
 /// ADR-010（双风格 GlassCard 自适应）。所有设置项复用既有 SP 键，不另起一套。
@@ -147,17 +148,19 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
     if (_currentStep > 0) _goToStep(_currentStep - 1);
   }
 
-  /// 跳过：接受全部默认值并完成。
+  /// 跳过：接受默认选择并跳转到「使用须知（免责声明）」步骤。
+  /// 不自动同意免责、不直接完成——必须由用户在免责页勾选同意后才能继续并完成。
   void _skip() {
+    if (_isCommitting) return;
     setState(() {
       _genderIdentity = GenderIdentity.mtf;
       _themeMode = ThemeMode.system;
       _themeStyle = 'minimal';
       _namePrefix = '';
       _greetingName = '';
-      _disclaimerAgreed = true;
+      _disclaimerAgreed = false; // 强制用户在免责页手动勾选
     });
-    _commit();
+    _goToStep(_stepDisclaimer);
   }
 
   /// 落盘全部选择 + 标记完成，然后通知 AppRootController 重建。
@@ -343,7 +346,7 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
     final bodyColor = isDark ? Colors.white70 : const Color(0xFF8E8E93);
     final skipColor = isDark ? Colors.white70 : const Color(0xFF8E8E93);
     const subtitleColor = Color(0xFFC49EA8); // 低饱和灰粉（副标隐退，不抢主标题）
-    const ctaColor = Color(0xFFFF92A5); // 马卡龙柔和粉（主按钮，降饱和）
+    const ctaColor = Color(0xFFF5A9B8); // 品牌粉（与全站主题色一致）
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -420,7 +423,7 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
                       minimumSize: const Size.fromHeight(52),
                       elevation: 4,
                       shadowColor:
-                          const Color(0xFFFF8FA3).withValues(alpha: 0.25),
+                          const Color(0xFFF5A9B8).withValues(alpha: 0.25),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -661,15 +664,15 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
         ),
       );
     }
-    // 未授权或未请求：可点击触发系统权限申请（马卡龙柔和粉，与整体 CTA 调性一致）
+    // 未授权或未请求：可点击触发系统权限申请（品牌粉，与全站主题色一致）
     return FilledButton.icon(
       onPressed: _isCommitting ? null : _requestPermissions,
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFFFF92A5),
+        backgroundColor: const Color(0xFFF5A9B8),
         foregroundColor: Colors.white,
         minimumSize: const Size.fromHeight(48),
         elevation: 3,
-        shadowColor: const Color(0xFFFF92A5).withValues(alpha: 0.30),
+        shadowColor: const Color(0xFFF5A9B8).withValues(alpha: 0.30),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
@@ -1002,7 +1005,7 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
             height: 46,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF92A5)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF5A9B8)),
             ),
           ),
           const SizedBox(height: 28),
@@ -1106,8 +1109,8 @@ class _OnboardingWizardState extends State<OnboardingWizard> {
             ? (_permissionGranted == true ? '继续' : '暂不授权，继续')
             : '下一步');
     final canNext = _canAdvanceFromDisclaimer;
-    // 「继续 / 下一步」统一使用马卡龙柔和粉，与中间「授予提醒权限」按钮同色系。
-    const nextBg = Color(0xFFFF92A5);
+    // 「继续 / 下一步」统一使用品牌粉，与全站主题色一致。
+    const nextBg = Color(0xFFF5A9B8);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
       child: Row(

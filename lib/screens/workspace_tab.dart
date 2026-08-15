@@ -298,6 +298,13 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
         isDark ? const Color(0xFF8E8E96) : const Color(0xFF8A8A86);
     final unselectedBg =
         isDark ? const Color(0xFF2A2A28) : const Color(0xFFF0EFEC);
+    // 液态下选中背景 = solidColor 以 GlassTokens.surfaceColor 的 alpha 掺入的
+    // 半透明玻璃着色（亮色≈中灰、暗色≈中暗灰），与简约风"深底白字/白底黑字"
+    // 方向相反——文字色需反相才能保证对比度（白字落在浅色玻璃上会糊）。
+    final isLiquid = GlassTheme.of(context).isEnabled;
+    final selectedTextColor = isLiquid
+        ? (isDark ? Colors.white : const Color(0xFF333333))
+        : (isDark ? Colors.black : Colors.white);
     return GlassSurface(
       onTap: onTap,
       solidColor: isSelected
@@ -312,9 +319,7 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected
-                ? (isDark ? Colors.black : Colors.white)
-                : defaultSecondary,
+            color: isSelected ? selectedTextColor : defaultSecondary,
           ),
         ),
       ),
