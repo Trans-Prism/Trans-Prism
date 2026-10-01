@@ -10,7 +10,6 @@ import 'image_converter_screen.dart';
 import 'medical_directory/medical_directory_list_screen.dart';
 import 'svg_resource_gallery_screen.dart';
 import 'tracker_screen.dart';
-import 'voice_training/voice_training_home.dart';
 
 /// =============================================================================
 /// WorkspaceTab — 工作台 Tab
@@ -137,20 +136,6 @@ class _WorkspaceTabState extends State<WorkspaceTab> {
             context,
             MaterialPageRoute(
               builder: (context) => const MedicalDirectoryListScreen(),
-            ),
-          );
-        },
-        category: '实用指引',
-      ),
-      _ToolItem(
-        title: '声音训练辅助',
-        subtitle: '基于 VFS Tracker 的嗓音训练工具',
-        icon: Icons.mic_external_on_rounded,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const VoiceTrainingHomeScreen(),
             ),
           );
         },

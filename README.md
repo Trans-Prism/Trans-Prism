@@ -69,9 +69,6 @@ Android 主屏可选两种尺寸：**3×4 一览**（今日进度 + 三行药 + 
 ### 📚 双擎动态知识库
 无缝集成 **MtF.wiki / FtM.wiki / RLE.wiki / MioMtFWiki** 四大开源指南。默认轻量在线模式（零缓存），支持一键下载离线包（OTA 静默热更新），退出离线模式时可选清理缓存（"阅后即焚"）。
 
-### 🎙️ 声音训练辅助
-基于开源项目 [VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 适配集成。包含 F0 实时检测、音阶练习、88 键钢琴、嗓音测试向导、RBH/TVQ-G/OVHS9 主观量表、训练记录时间线与 AI 鼓励消息。
-
 ### 🔄 激素换算器
 6 项核心激素（E2/T/PRL/P4/FSH/LH）质量浓度 ↔ 摩尔浓度双向换算，数据衍生自 MtF.wiki。
 
@@ -99,7 +96,7 @@ Android 主屏可选两种尺寸：**3×4 一览**（今日进度 + 三行药 + 
 
 | 步骤 | 操作路径 | 导出内容 |
 |------|---------|---------|
-| 1️⃣ 导出主应用数据 | 我的 → 数据导出与恢复 → 导出数据 | 药物记录、嗓音训练、医疗名录收藏、罩杯发育记录等 SharedPreferences 数据 |
+| 1️⃣ 导出主应用数据 | 我的 → 数据导出与恢复 → 导出数据 | 药物记录、医疗名录收藏、罩杯发育记录等 SharedPreferences 数据 |
 | 2️⃣ 导出 PK 模拟数据 | 血药浓度模拟页面 → SPA 内部设置菜单 → 导出 | 血药浓度事件、化验结果、体重等 Oyama localStorage 数据 |
 
 **导入同样需要分别操作**：先导入主应用备份 JSON，再在 PK 模拟页面内导入 Oyama 备份。
@@ -148,7 +145,7 @@ flutter build macos     # macOS（需自行签名）
 ```
 Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂（VitePress）
      │                                               │
-     │ 11 大功能模块                                  │ 清洗 4 个 Wiki 上游 + 2 个 Tracker
+     │ 主要功能模块                                  │ 清洗 4 个 Wiki 上游 + 2 个 Tracker
      │ 纯本地存储 (SharedPreferences)                 │ vitepress build → 打包期做离线相对化
      │ 三路 OTA: APK / Wiki / Tracker                 │ 封包 ZIP → GitHub Release → R2
      │  Wiki / Tracker 走 `vp-builder/` 通道          │  (旧 MkDocs 链保留在 `builder/` 前缀)
@@ -170,7 +167,6 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂
 | 网络 | `dio` + `http` + 自研 DoH 抗污染 |
 | 路由 | 命令式 `Navigator.push`（无 go_router） |
 | WebView | `webview_flutter` |
-| 音频 | `record` + `pitch_detector_dart`（YIN 算法） |
 | 通知 | `flutter_local_notifications` + `timezone` |
 | 更新分发 | Cloudflare R2 边缘节点 `downloads.chengxi.moe` |
 | 离线内容 | Builder 产出 **VitePress** 站点 ZIP（R2 `vp-builder/` 通道），App 侧 `shelf` 本地服务器与 `file://` 双兼容加载 |
@@ -185,10 +181,9 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂
 
 1. **原创客户端代码** — [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 2. **PK 计算引擎**（衍生自 Oyama）— [MIT License](https://opensource.org/licenses/MIT)
-3. **嗓音训练模块**（衍生自 VFS Tracker）— [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-4. **内置知识库文本** — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) / [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
-5. **激素换算器及罩杯计算器** (衍生自MtF-wiki及网络公开资料) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) 
-6. **知识库主题** — [@project-trans/vitepress-theme-project-trans](https://github.com/project-trans/vitepress-theme-project-trans) — 优雅的 VitePress 知识库主题（[MIT](https://opensource.org/licenses/MIT)） 
+3. **内置知识库文本** — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) / [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
+4. **激素换算器及罩杯计算器** (衍生自MtF-wiki及网络公开资料) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) 
+5. **知识库主题** — [@project-trans/vitepress-theme-project-trans](https://github.com/project-trans/vitepress-theme-project-trans) — 优雅的 VitePress 知识库主题（[MIT](https://opensource.org/licenses/MIT)） 
 
 ---
 
@@ -200,7 +195,6 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂
 | 改用药/提醒 | [`medication_service.dart`](lib/services/medication_service.dart:25) / [`notification_service.dart`](lib/services/notification_service.dart:14) |
 | 改用药成本 / 价格 | [`medication_cost_service.dart`](lib/services/medication_cost_service.dart:130)（**纯函数**：加权均价、够用次数折算）/ [`restock_sheet.dart`](lib/widgets/restock_sheet.dart:31)（补货录入口）/ [`inventory_dashboard_screen.dart`](lib/screens/inventory_dashboard_screen.dart:672)（药物表单 `_DrugFormPage`，含首次购入价格）/ [`medication_report_view.dart`](lib/widgets/medication_report_view.dart:44) + [`medication_report_renderer.dart`](lib/services/medication_report_renderer.dart:44)（导出长图与分片）|
 | 改 PK 模拟 | [`tracker_screen.dart`](lib/screens/tracker_screen.dart:189)（⚠️ 算法在 WebView JS 中，非 Dart）|
-| 改嗓音训练 | [`pitch_detection_service.dart`](lib/services/pitch_detection_service.dart:16) / `screens/voice_training/` |
 | 改 Wiki 知识库 | [`wiki_sync_service.dart`](lib/services/wiki_sync_service.dart:37) / [`wiki_update_manager.dart`](lib/services/wiki_update_manager.dart:31) |
 | 改医疗名录 | [`medical_directory_service.dart`](lib/services/medical_directory_service.dart:22) |
 | 改激素换算 | [`hormone_converter_logic.dart`](lib/utils/hormone_converter_logic.dart:1)（纯函数）|
@@ -213,7 +207,7 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂
 
 ## 🤝 致谢
 
-感谢 [Project Trans](https://project-trans.org/)（MtF/FtM/RLE Wiki）、[MioMtFWiki](https://github.com/KitsuMio/MioMtFWiki)、[Oyama-s-HRT-Recorder](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) 及 [HRT-Recorder-online](https://github.com/LaoZhong-Mihari/HRT-Recorder-online)、[VFS Tracker](https://github.com/Ethanlita/vfs-tracker) 等开源项目与社区。
+感谢 [Project Trans](https://project-trans.org/)（MtF/FtM/RLE Wiki）、[MioMtFWiki](https://github.com/KitsuMio/MioMtFWiki)、[Oyama-s-HRT-Recorder](https://github.com/SmirnovaOyama/Oyama-s-HRT-Tracker) 及 [HRT-Recorder-online](https://github.com/LaoZhong-Mihari/HRT-Recorder-online) 等开源项目与社区。
 
 ---
 

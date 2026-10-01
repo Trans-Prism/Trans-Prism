@@ -21,7 +21,7 @@
 | APK 更新 | 检测并下载新版 APK（可选） |
 | DNS 安全层 | 内置 DoH 抗污染机制，确保在 DNS 受限环境仍可正常获取开源资料 |
 
-**核心隐私保障：** 你所有极其隐私的生理数据（用药记录、血药浓度、嗓音训练参数等）**绝不离开设备**，仅存储在本地 `SharedPreferences`。
+**核心隐私保障：** 你的个人生理数据（用药记录、血药浓度等）**绝不离开设备**，仅存储在本地。
 
 ---
 
@@ -71,7 +71,6 @@
 |------|--------|
 | 原创客户端代码 | Apache License 2.0 |
 | PK 计算引擎（Oyama） | MIT License |
-| 嗓音训练模块（VFS Tracker） | CC BY-NC-SA 4.0 |
 | 内置知识库文本 | CC BY-SA 4.0 / CC BY-ND 4.0 |
 
 详见 [`Trans-Prism/LICENSE`](Trans-Prism/LICENSE)。

@@ -9,7 +9,7 @@
 
 ## 项目概述
 
-**Trans Prism（稳态光盒）** 是一款专为跨性别群体打造的 Flutter 跨平台客户端（iOS/Android/macOS/Windows/Web），提供 HRT 用药追踪与提醒、血药浓度 PK 模拟、嗓音训练辅助、离线知识库（MtF/FtM/RLE Wiki）、友善医疗名录、激素换算、罩杯计算器等一站式本地优先工具箱。核心策略是**在线/离线双擎 + 纯本地物理持久化**，隐私数据不依赖任何第三方服务器。
+**Trans Prism（稳态光盒）** 是一款专为跨性别群体打造的 Flutter 跨平台客户端（iOS/Android/macOS/Windows/Web），提供 HRT 用药追踪与提醒、血药浓度 PK 模拟、离线知识库（MtF/FtM/RLE Wiki）、友善医疗名录、激素换算、罩杯计算器等一站式本地优先工具箱。核心策略是**在线/离线双擎 + 纯本地物理持久化**，隐私数据不依赖任何第三方服务器。
 
 ---
 
@@ -79,17 +79,7 @@
 
 > **内置基线版本**：`assets/hrt_tracker/` 打包的 HRT Tracker SPA 构建产物对应 Trans-Prism-Builder release `tracker-2026-07-22`（上游 Oyama `v1.3.0-stable` 衍生构建）。运行时 [`_LocalTrackerServer`](lib/screens/tracker_screen.dart:42) 优先从沙盒热更新目录读取，其次回退到此内置基线。基线升级时仅需整体替换该目录并核对 [`index.html`](assets/hrt_tracker/index.html:12) 内的资源哈希引用，无需改动 Dart 代码或 [`pubspec.yaml`](pubspec.yaml:72)（assets 以目录通配声明）。
 
-### 3. 嗓音训练
-
-| 文件 | 职责 |
-|------|------|
-| [`voice_training_home.dart`](lib/screens/voice_training/voice_training_home.dart:1) | 嗓音训练首页 |
-| [`voice_training_service.dart`](lib/services/voice_training_service.dart:12) | 训练事件持久化 + F0 分析 |
-| [`pitch_detection_service.dart`](lib/services/pitch_detection_service.dart:16) | YIN 算法基频检测 |
-| [`audio_recorder_widget.dart`](lib/widgets/audio_recorder_widget.dart:1) | 录音控件 |
-| [`f0_meter.dart`](lib/widgets/f0_meter.dart:1) | 实时 F0 显示仪表盘 |
-
-### 4. 离线知识库（Wiki）
+### 3. 离线知识库（Wiki）
 
 | 文件 | 职责 |
 |------|------|
@@ -100,7 +90,7 @@
 | [`wiki_tab.dart`](lib/screens/wiki_tab.dart:1) | 百科 Tab 主页面 |
 | [`wiki_web_screen.dart`](lib/screens/wiki_web_screen.dart:1) | WebView 加载器（在线/离线双擎） |
 
-### 5. 友善医疗名录
+### 4. 友善医疗名录
 
 | 文件 | 职责 |
 |------|------|
@@ -109,7 +99,7 @@
 | [`medical_directory_list_screen.dart`](lib/screens/medical_directory/medical_directory_list_screen.dart:1) | 名录列表页 |
 | [`institution_detail_screen.dart`](lib/screens/medical_directory/institution_detail_screen.dart:1) | 机构详情页 |
 
-### 6. 罩杯计算器 & 发育记录追踪（v1.6.0 新增）
+### 5. 罩杯计算器 & 发育记录追踪（v1.6.0 新增）
 
 | 文件 | 职责 |
 |------|------|
@@ -121,7 +111,7 @@
 
 **数据流**：用户输入 → `BraCalculator.calculate()` → `BraResult` → 自动 `GrowthRecordService.saveRecord()` → SharedPreferences JSON → 发育记录 BottomSheet 读取展示。
 
-### 7. 工具模块
+### 6. 工具模块
 
 | 文件 | 职责 |
 |------|------|
@@ -131,7 +121,7 @@
 | [`svg_resource_gallery_screen.dart`](lib/screens/svg_resource_gallery_screen.dart:1) | SVG 图库浏览 |
 | [`resource_service.dart`](lib/services/resource_service.dart:14) | SVG 资源元数据服务 |
 
-### 8. 桌面用药小组件（Android / Glance）
+### 7. 桌面用药小组件（Android / Glance）
 
 | 文件 | 职责 |
 |------|------|
@@ -190,7 +180,7 @@
 | [`main.dart:679`](lib/main.dart:679) | `_TransToolboxAppState.build()`：`ListenableBuilder` + `ThemeService` + `MaterialApp`（含 `DevicePreview.locale()` / `DevicePreview.appBuilder`） |
 | [`main.dart:719`](lib/main.dart:719) | `AppRootController`：性别认同/免责路由编排 + 后台同步调度 |
 | [`main.dart:1285`](lib/main.dart:1285) | `MainDashboard`：`IndexedStack` 承载 4 个 Tab |
-| [`main.dart:1798`](lib/main.dart:1798) | `HomeTab`：首页模块容器（问候语 + HRT + 工具箱 + 声音训练），模块可见性由 SP 控制 |
+| [`main.dart:1798`](lib/main.dart:1798) | `HomeTab`：首页模块容器（问候语 + HRT + 工具箱），模块可见性由 SP 控制 |
 | [`main.dart:2120`](lib/main.dart:2120) | `ProfileTab`（我的）：身份与资料 / 外观与显示（主题模式、主题风格、主题色、**添加到主屏幕**） / **高级**（通知权限与保活、数据导出与恢复、**血药浓度模拟端口**）/ **系统**（关于与支持、**相关链接**、**检查更新**、**再次进入向导**）。所有设置项经 [`_buildSettingsTile`](lib/main.dart:2607) 渲染且**统一无副标题**（`subtitle` 一律为 `null`）；端口设置弹层 [`_showTrackerPortSheet`](lib/main.dart:3368)（智能/自定义 + 修改确认，变更端口会改变 SPA origin，须先内置导出备份；配置**重启应用后生效**）；「再次进入向导」经 `Navigator.push` 重跑 `OnboardingWizard`，完成后 pop 回主界面；「添加到主屏幕」弹层 [`_showAddToHomeSheet`](lib/main.dart:3784)（选尺寸 → 原生 `requestPinAppWidget`）|
 | [`main.dart:2197`](lib/main.dart:2197) | `_handleCheckUpdate`：手动检查更新入口（SnackBar「正在检查更新…」→ `UpdateService.checkForUpdate()` → 新版本弹 `UpdateDialog`（含 `release_notes` 更新内容，源字段为 `latest.json` 的**可选** `release_notes`）/ 网络错误 / 已是最新 三态） |
 | [`onboarding_wizard.dart`](lib/screens/onboarding/onboarding_wizard.dart:1) | `OnboardingWizard` 初始化引导：欢迎 → 权限 → 性别/主题/称呼 → **使用须知（免责声明，须勾选同意）** → 完成。**「跳过」仅跳转到使用须知步骤（接受默认选择，不自动同意免责）**——必须勾选同意后才能完成进入主界面。启动场景由 `AppRootController` 在 `onboarding_completed` 缺失时展示；「我的 → 系统 → 再次进入向导」可手动重跑（`onCompleted` 后 pop） |
@@ -233,7 +223,6 @@
 | `SharedPreferences` JSON | 给药日志 | `medication_logs` |
 | `SharedPreferences` JSON | 补货价格 / 规格记录 | `medication_purchase_records` |
 | `SharedPreferences` 直接 string | 成本展示币种（仅符号） | `cost_currency_code` |
-| `SharedPreferences` JSON | 嗓音训练事件 | `voice_training_events` |
 | `SharedPreferences` JSON | 罩杯发育记录 | `bra_growth_records` |
 | `SharedPreferences` JSON | 医疗名录收藏 | `medical_directory_favorites` |
 | `SharedPreferences` JSON | Wiki 同步状态 | `wiki_sync_snapshots` |
@@ -331,7 +320,6 @@ aapt2 dump xmltree --file AndroidManifest.xml build/app/outputs/flutter-apk/app-
 |------|--------|------|
 | 原创 Dart/Flutter 源码（`lib/`、`android/`、`ios/` 等） | **Apache License 2.0** | 允许商业使用、修改、分发，须保留版权声明 |
 | PK 计算引擎（`assets/hrt_tracker/`，WebView JS） | **MIT License** | 衍生自 Oyama's HRT Recorder |
-| 嗓音训练模块（`lib/screens/voice_training/`） | **CC BY-NC-SA 4.0** | 衍生自 VFS Tracker，**禁止商业使用** |
 | 内置知识库内容（MtF/FtM/RLE Wiki） | **CC BY-SA 4.0** | Project Trans 系，修改后须相同方式共享 |
 | MioMtFWiki 内容 | **CC BY-ND 4.0** | **禁止修改后再次发布** |
 | 激素换算器 & 罩杯计算器算法 | **CC BY-SA 4.0** | 衍生自 MtF.wiki 及网络公开资料 |

@@ -21,7 +21,6 @@ import 'screens/tracker_screen.dart';
 import 'screens/medication_cost_screen.dart';
 import 'services/tracker_update_service.dart';
 import 'screens/svg_resource_gallery_screen.dart';
-import 'screens/voice_training/voice_training_home.dart';
 import 'screens/wiki_tab.dart';
 import 'screens/workspace_tab.dart';
 import 'services/home_module_visibility.dart';
@@ -1791,7 +1790,6 @@ class _MainDashboardState extends State<MainDashboard> {
 /// 可定制模块：
 ///   - 问候语（"你好，Mrs. 伙伴"）
 ///   - HRT 追踪提醒（药物存量 + 血药浓度模拟）
-///   - 声音训练辅助
 ///
 /// 用户可通过 AppBar 右侧配置按钮开关各模块的显示。
 /// =============================================================================
@@ -1819,8 +1817,6 @@ class HomeTab extends StatelessWidget {
     final showMedStock =
         moduleVisibility[HomeModuleVisibility.keyMedStock] ?? true;
     final showPkSim = moduleVisibility[HomeModuleVisibility.keyPkSim] ?? true;
-    final showVoiceTraining =
-        moduleVisibility[HomeModuleVisibility.keyVoiceTraining] ?? true;
     final showMedicalDirectory =
         moduleVisibility[HomeModuleVisibility.keyMedicalDirectory] ?? true;
     final showSvgLibrary =
@@ -2009,28 +2005,6 @@ class HomeTab extends StatelessWidget {
                 );
               },
             ),
-          const SizedBox(height: 28),
-        ],
-
-        // ── 声音训练辅助 ──
-        if (showVoiceTraining) ...[
-          _buildSectionTitle('声音训练', isDark: isDark),
-          const SizedBox(height: 12),
-          _buildPersonalCard(
-            context,
-            title: '声音训练辅助',
-            subtitle: '基于 VFS Tracker 的嗓音训练工具集',
-            icon: Icons.mic_external_on_rounded,
-            isDark: isDark,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const VoiceTrainingHomeScreen(),
-                ),
-              );
-            },
-          ),
           const SizedBox(height: 28),
         ],
 

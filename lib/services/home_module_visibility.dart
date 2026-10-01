@@ -18,7 +18,6 @@ class HomeModuleVisibility {
   static const String keyGreeting = 'home_module_greeting';
   static const String keyMedStock = 'home_module_med_stock';
   static const String keyPkSim = 'home_module_pk_sim';
-  static const String keyVoiceTraining = 'home_module_voice_training';
   static const String keyMedicalDirectory = 'home_module_medical_directory';
   static const String keySvgLibrary = 'home_module_svg_library';
   static const String keyImageConverter = 'home_module_image_converter';
@@ -38,7 +37,6 @@ class HomeModuleVisibility {
     keyGreeting,
     keyMedStock,
     keyPkSim,
-    keyVoiceTraining,
     keyMedicalDirectory,
     keySvgLibrary,
     keyImageConverter,
@@ -46,12 +44,11 @@ class HomeModuleVisibility {
     keyBraCalculator,
   ];
 
-  /// 6 个核心模块（首次启动默认开启）
+  /// 5 个核心模块（首次启动默认开启）
   static const Set<String> coreKeys = {
     keyGreeting,
     keyMedStock,
     keyPkSim,
-    keyVoiceTraining,
     keyMedicalDirectory,
     keyBraCalculator,
   };
@@ -61,7 +58,6 @@ class HomeModuleVisibility {
     keyGreeting: '问候语',
     keyMedStock: '药物存量',
     keyPkSim: '血药浓度模拟',
-    keyVoiceTraining: '声音训练',
     keyMedicalDirectory: '友善医疗名录',
     keySvgLibrary: '图解资源 (SVG库)',
     keyImageConverter: '图片格式转换',
@@ -74,7 +70,6 @@ class HomeModuleVisibility {
     keyGreeting: '👋',
     keyMedStock: '💊',
     keyPkSim: '📈',
-    keyVoiceTraining: '🎤',
     keyMedicalDirectory: '🏥',
     keySvgLibrary: '🖼️',
     keyImageConverter: '🔄',
