@@ -320,10 +320,12 @@ aapt2 dump xmltree --file AndroidManifest.xml build/app/outputs/flutter-apk/app-
 |------|--------|------|
 | 原创 Dart/Flutter 源码（`lib/`、`android/`、`ios/` 等） | **Apache License 2.0** | 允许商业使用、修改、分发，须保留版权声明 |
 | PK 计算引擎（`assets/hrt_tracker/`，WebView JS） | **MIT License** | 衍生自 Oyama's HRT Recorder |
-| 内置知识库内容（MtF/FtM/RLE Wiki） | **CC BY-SA 4.0** | Project Trans 系，修改后须相同方式共享 |
-| MioMtFWiki 内容 | **CC BY-ND 4.0** | **禁止修改后再次发布** |
-| 激素换算器 & 罩杯计算器算法 | **CC BY-SA 4.0** | 衍生自 MtF.wiki 及网络公开资料 |
+| 内置知识库内容（MtF/FtM/RLE Wiki） | **CC BY-SA 4.0** | Project Trans 系，独立模块随 App 提供，修改后须相同方式共享；已获授权 |
+| MioMtFWiki 内容 | **CC BY-ND 4.0** | 独立模块；**禁止修改后再次发布**；已获授权 |
+| vitepress-theme-project-trans（知识库主题） | **MIT License** | Project Trans 官方 VitePress 主题，用于构建离线知识库 |
 | SVG 图标资源（`assets/svg_resources/`） | 各自原始许可 | Twemoji(CC-BY) / OpenMoji(CC BY-SA) / Noto(Apache 2.0) |
 | 第三方依赖（pubspec.yaml） | 各自许可 | MIT / BSD / Apache 2.0 等 |
+
+> 激素换算与罩杯计算使用公开的通用换算 / 测量方法，不作为第三方内容许可组件登记。
 
 **贡献者须知**：向本仓库提交的原创代码贡献，将被视为按 Apache License 2.0 条款授权。

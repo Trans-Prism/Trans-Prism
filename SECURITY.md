@@ -71,7 +71,8 @@
 |------|--------|
 | 原创客户端代码 | Apache License 2.0 |
 | PK 计算引擎（Oyama） | MIT License |
-| 内置知识库文本 | CC BY-SA 4.0 / CC BY-ND 4.0 |
+| 内置知识库文本（独立模块） | CC BY-SA 4.0 / CC BY-ND 4.0 |
+| vitepress-theme-project-trans（知识库主题） | MIT License |
 
 详见 [`Trans-Prism/LICENSE`](Trans-Prism/LICENSE)。
 

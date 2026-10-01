@@ -285,7 +285,7 @@ class _BraCalculatorPageState extends State<BraCalculatorPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                '核心算法与测量文案参考自 MtF.wiki (CC BY-SA 4.0) 及网络公开经验数据',
+                '核心算法与测量文案基于公开的罩杯测量方法与网络公开经验数据',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 11,

@@ -181,9 +181,13 @@ Trans_Prism (Flutter App) ←── Cloudflare R2 ──→ Builder 内容工厂
 
 1. **原创客户端代码** — [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 2. **PK 计算引擎**（衍生自 Oyama）— [MIT License](https://opensource.org/licenses/MIT)
-3. **内置知识库文本** — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) / [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
-4. **激素换算器及罩杯计算器** (衍生自MtF-wiki及网络公开资料) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) 
-5. **知识库主题** — [@project-trans/vitepress-theme-project-trans](https://github.com/project-trans/vitepress-theme-project-trans) — 优雅的 VitePress 知识库主题（[MIT](https://opensource.org/licenses/MIT)） 
+3. **内置知识库文本**（独立模块）— [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.zh) / [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
+4. **知识库主题** — [@project-trans/vitepress-theme-project-trans](https://github.com/project-trans/vitepress-theme-project-trans)（[MIT](https://opensource.org/licenses/MIT)）
+
+> 激素换算与罩杯计算使用的是公开的通用换算与测量方法，不适用第三方内容许可。
+
+> Trans Prism is open-source software licensed under Apache License 2.0.
+> The Trans Prism name, logo, and other branding are not licensed under Apache License 2.0.
 
 ---
 

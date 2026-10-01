@@ -132,14 +132,6 @@ class _WikiLicenseNoticeState extends State<WikiLicenseNotice> {
                   color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
             ),
             const SizedBox(height: 4),
-            Text(
-              '• FtM.Wiki 的源代码采用 LGPLv3 许可证进行许可。',
-              style: TextStyle(
-                  fontSize: 13,
-                  height: 1.55,
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
-            ),
-            const SizedBox(height: 4),
             RichText(
               text: TextSpan(
                 style: TextStyle(

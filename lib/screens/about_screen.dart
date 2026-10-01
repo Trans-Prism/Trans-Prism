@@ -195,7 +195,11 @@ class _AboutScreenState extends State<AboutScreen> {
                   Text(
                     '本应用原创代码（含 Flutter UI、业务逻辑、资产资源编排等）采用 '
                     'Apache License 2.0 协议进行许可，区别于第三方开源库的各自有许可证。\n'
-                    '详情参见：https://www.apache.org/licenses/LICENSE-2.0',
+                    '详情参见：https://www.apache.org/licenses/LICENSE-2.0\n'
+                    '「Trans Prism」名称与项目标识（Logo）不属于 Apache License 2.0 的授权范围。\n'
+                    'Trans Prism is open-source software licensed under Apache License 2.0. '
+                    'The Trans Prism name, logo, and other branding are not licensed under '
+                    'Apache License 2.0.',
                     style: TextStyle(
                       fontSize: 12,
                       color: secondaryTextColor,
@@ -217,7 +221,9 @@ class _AboutScreenState extends State<AboutScreen> {
             copyright: 'Project Trans',
             url: 'https://github.com/project-trans',
             description:
-                '内置 Wiki 内容（MtF.Wiki、FtM.Wiki、RLE.Wiki 等）采用「署名—相同方式共享 4.0 协议国际版」许可。',
+                '内置 Wiki 内容（MtF.Wiki、FtM.Wiki、RLE.Wiki 等）采用「署名—相同方式共享 4.0 协议国际版」许可。'
+                '知识库作为独立模块随 App 提供，与 Apache-2.0 原创代码在分发上明确区分。'
+                '本项目已就内置知识库内容取得 Project Trans 的授权。',
             isDark: isDark,
             cardBg: cardBg,
             cardBorderColor: cardBorderColor,
@@ -230,7 +236,8 @@ class _AboutScreenState extends State<AboutScreen> {
             title: '@project-trans/vitepress-theme-project-trans',
             license: 'MIT',
             copyright: 'Project Trans',
-            url: 'https://github.com/project-trans/vitepress-theme-project-trans',
+            url:
+                'https://github.com/project-trans/vitepress-theme-project-trans',
             description:
                 '优雅的 VitePress 知识库主题，采用 MIT 许可证。用于 MtF.Wiki、FtM.Wiki、RLE.Wiki 等 VitePress 离线知识库的排版呈现与构建。',
             isDark: isDark,
@@ -250,7 +257,8 @@ class _AboutScreenState extends State<AboutScreen> {
                 '允许转载、镜像、离线打包和重新分发；允许转换格式、建立索引、'
                 '全文搜索、响应式排版等技术性处理；允许在应用程序中集成和展示；允许商业传播。'
                 '但不得修改、删减、重写或翻译后再次发布项目内容。'
-                '使用时须保留来源信息、标明 MioMtFWiki 项目链接并保留协议声明。',
+                '使用时须保留来源信息、标明 MioMtFWiki 项目链接并保留协议声明。'
+                '本项目已就该内容取得项目作者的授权。',
             isDark: isDark,
             cardBg: cardBg,
             cardBorderColor: cardBorderColor,
@@ -260,11 +268,13 @@ class _AboutScreenState extends State<AboutScreen> {
           _buildLicenseCard(
             context,
             icon: Icons.language,
-            title: '2345.lgbt（跨性别友好资源导航站）',
-            license: 'LGPL-3.0',
+            title: 'vitepress-theme-project-trans（知识库主题）',
+            license: 'MIT',
             copyright: 'Project Trans',
-            url: 'https://github.com/project-trans/2345.LGBT',
-            description: '跨性别友好资源导航页，源代码采用 LGPL-3.0 许可证。',
+            url:
+                'https://github.com/project-trans/vitepress-theme-project-trans',
+            description: 'Project Trans 官方的 VitePress 主题，本项目内置的离线知识库'
+                '站点基于该主题构建，采用 MIT 许可证。',
             isDark: isDark,
             cardBg: cardBg,
             cardBorderColor: cardBorderColor,
@@ -289,10 +299,10 @@ class _AboutScreenState extends State<AboutScreen> {
             context,
             icon: Icons.menu_book,
             title: 'FtM-wiki（FtM.Wiki 内容仓库）',
-            license: 'LGPLv3 / CC BY-SA 4.0',
+            license: 'CC BY-SA 4.0',
             copyright: 'Project Trans',
             url: 'https://github.com/project-trans/FtM-wiki',
-            description: 'FtM.Wiki 的源代码采用 LGPLv3 许可，网站内容采用 CC BY-SA 4.0 许可。',
+            description: 'FtM.Wiki 内容采用「署名—相同方式共享 4.0 协议国际版（CC BY-SA 4.0）」许可。',
             isDark: isDark,
             cardBg: cardBg,
             cardBorderColor: cardBorderColor,
