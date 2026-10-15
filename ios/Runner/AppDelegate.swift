@@ -3,17 +3,24 @@ import UIKit
 import Photos
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let controller = window?.rootViewController as! FlutterViewController
+    // UIScene 生命周期下，UI 相关逻辑不再放在这里。
+    // 插件注册与平台通道改在 didInitializeImplicitFlutterEngine 中完成。
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
     let channel = FlutterMethodChannel(
       name: "com.daanser.transprism/gallery_saver",
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
-    
+
     channel.setMethodCallHandler { [weak self] (call, result) in
       if call.method == "saveImage" {
         guard let args = call.arguments as? [String: Any],
@@ -26,17 +33,14 @@ import Photos
         result(FlutterMethodNotImplemented)
       }
     }
-    
-    GeneratedPluginRegistrant.register(with: self)
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-  
+
   private func saveImageToGallery(filePath: String, result: @escaping FlutterResult) {
     guard let image = UIImage(contentsOfFile: filePath) else {
       result(FlutterError(code: "READ_FAILED", message: "Failed to read image from file", details: nil))
       return
     }
-    
+
     PHPhotoLibrary.requestAuthorization { status in
       if status == .authorized || status == .limited {
         PHPhotoLibrary.shared().performChanges {
